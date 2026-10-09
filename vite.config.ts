@@ -47,7 +47,7 @@ export default defineConfig({
   preview: { port: 4173, strictPort: true },
   test: {
     environment: 'jsdom',
-    include: ['src/**/*.test.{ts,tsx}', 'shared/**/*.test.ts'],
+    include: ['src/**/*.test.{ts,tsx}', 'shared/**/*.test.ts', 'supabase/functions/**/*.test.ts'],
     setupFiles: ['src/test/setup.ts'],
   },
 });

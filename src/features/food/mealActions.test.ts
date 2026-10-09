@@ -16,7 +16,7 @@ const entry: MealEntry = {
 };
 
 describe('meal actions', () => {
-  it('describes calibrated quantities in personal units', () => {
+  it('describes quantities in personal units', () => {
     expect(describeQuantity(roti, 1)).toBe('2 rotis');
     expect(describeQuantity(roti, 1.5)).toBe('3 rotis');
   });

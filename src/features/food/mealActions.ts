@@ -13,13 +13,25 @@ export function slotForHour(h: number): MealSlot {
 
 export const SLOT_LABEL: Record<MealSlot, string> = { breakfast: 'Breakfast', lunch: 'Lunch', snack: 'Snack', dinner: 'Dinner' };
 
+export function plural(unit: string, q: number): string {
+  if (q === 1 || unit === 'g' || unit.endsWith('s')) return unit;
+  if (unit.endsWith('ch') || unit.endsWith('sh')) return `${unit}es`;
+  return `${unit}s`;
+}
+
+export function formatQty(q: number): string {
+  const r = Math.round(q * 100) / 100;
+  if (r === 0.5) return '½';
+  if (Number.isInteger(r - 0.5) && r > 0.5) return `${r - 0.5}½`;
+  return String(r);
+}
+
+export function describeAmount(unit: string, q: number): string {
+  return unit === 'g' ? `${Math.round(q)} g` : `${formatQty(q)} ${plural(unit, q)}`;
+}
+
 export function describeQuantity(preset: MealPreset, multiplier: number): string {
-  return preset.items
-    .map((it) => {
-      const q = Math.round(it.default_quantity * multiplier * 100) / 100;
-      return `${q} ${it.unit_label}${q === 1 || it.unit_label.endsWith('s') ? '' : 's'}`;
-    })
-    .join(' + ');
+  return preset.items.map((it) => describeAmount(it.unit_label, it.default_quantity * multiplier)).join(' + ');
 }
 
 export function buildEntry(args: {

@@ -1,7 +1,9 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import type { LocalProfile, RestTimer } from '@shared/contracts';
 import { Journal } from '@/core/database/journal';
 import { seedDemoIfEmpty } from '@/core/database/seed';
+import { syncExclusive } from '@/core/sync/engine';
+import { recordConsent, supabaseTransport } from '@/core/sync/supabaseTransport';
 import { deviceTimezone, localDateIn } from '@/core/time/localDate';
 
 export interface Toast {
@@ -11,41 +13,57 @@ export interface Toast {
   action?: { label: string; run: () => void };
 }
 
+export type SyncState =
+  | { kind: 'local_only' } // demo, or the member chose not to back up
+  | { kind: 'idle'; pending: number; lastSyncedAt: string | null }
+  | { kind: 'syncing'; pending: number }
+  | { kind: 'offline'; pending: number }
+  | { kind: 'error'; pending: number; message: string };
+
+export type Mode = 'demo' | 'account';
+
 interface Ctx {
   journal: Journal;
+  mode: Mode;
+  email: string | null;
   profile: LocalProfile;
   today: string;
-  /** Increments after every local write; screens re-query on change. */
   revision: number;
   refresh: () => void;
   notify: (t: Omit<Toast, 'id'>) => void;
   timer: RestTimer | null;
   setTimer: (t: RestTimer | null) => Promise<void>;
-  switchProfile: (id: string) => void;
   updateProfile: (p: LocalProfile) => Promise<void>;
+  sync: SyncState;
+  syncNow: () => Promise<void>;
+  conflictsCount: number;
 }
 
 const JournalCtx = createContext<Ctx | null>(null);
+const SetupCtx = createContext<{ journal: Journal; mode: Mode; email: string | null; complete: (p: LocalProfile) => Promise<void> } | null>(null);
 const ToastCtx = createContext<{ toast: Toast | null; dismiss: () => void }>({ toast: null, dismiss: () => {} });
 
-const PROFILE_KEY = 'rozana.activeProfile';
+const PENDING_CONSENT_KEY = 'pending_consent';
 
-function readActiveProfile(): string {
-  try {
-    return localStorage.getItem(PROFILE_KEY) ?? 'demo-a';
-  } catch {
-    return 'demo-a';
-  }
-}
-
-export function JournalProvider({ children }: { children: ReactNode }) {
-  const [profileId, setProfileId] = useState(readActiveProfile);
-  const [state, setState] = useState<{ journal: Journal; profile: LocalProfile } | null>(null);
+export function JournalProvider({ ownerId, mode, email, onboarding, children }: {
+  ownerId: string;
+  mode: Mode;
+  email: string | null;
+  /** Rendered instead of the app when a signed-in member has no profile yet. */
+  onboarding: ReactNode;
+  children: ReactNode;
+}) {
+  const [journal, setJournal] = useState<Journal | null>(null);
+  const [profile, setProfile] = useState<LocalProfile | null | undefined>(undefined);
   const [error, setError] = useState<string | null>(null);
   const [revision, setRevision] = useState(0);
   const [timer, setTimerState] = useState<RestTimer | null>(null);
   const [toast, setToast] = useState<Toast | null>(null);
   const [today, setToday] = useState(() => localDateIn(deviceTimezone()));
+  const [sync, setSync] = useState<SyncState>({ kind: 'local_only' });
+  const [conflictsCount, setConflictsCount] = useState(0);
+  const syncTimer = useRef<number | undefined>(undefined);
+  const commitListener = useRef<(() => void) | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -53,101 +71,159 @@ export function JournalProvider({ children }: { children: ReactNode }) {
     (async () => {
       try {
         const tz = deviceTimezone();
-        const j = await Journal.open(profileId);
+        const j = await Journal.open(ownerId, { onCommit: () => commitListener.current?.() });
         opened = j;
-        await seedDemoIfEmpty(j, profileId, localDateIn(tz), tz);
-        const profile = await j.getProfile();
-        if (!profile) throw new Error('Profile missing after setup');
+        if (mode === 'demo') await seedDemoIfEmpty(j, ownerId, localDateIn(tz), tz);
+        const p = await j.getProfile();
         const t = await j.getTimer();
         if (cancelled) return j.close();
         setTimerState(t);
-        setState({ journal: j, profile });
+        setProfile(p);
+        setJournal(j);
+        setConflictsCount((await j.conflicts()).length);
       } catch (e) {
         if (!cancelled) setError(e instanceof Error ? e.message : String(e));
       }
     })();
     return () => {
       cancelled = true;
+      window.clearTimeout(syncTimer.current);
       opened?.close();
     };
-  }, [profileId]);
+  }, [ownerId, mode]);
 
-  // Keep "today" correct across midnight and when returning to the app.
+  const backupEnabled = mode === 'account' && Boolean(profile?.consent.cloud_backup);
+
+  const flushConsent = useCallback(async (j: Journal) => {
+    const queue = (await j.getMeta<{ type: 'cloud_backup' | 'ai_processing'; granted: boolean }[]>(PENDING_CONSENT_KEY)) ?? [];
+    while (queue.length) {
+      const c = queue[0]!;
+      await recordConsent(c.type, c.granted);
+      queue.shift();
+      await j.setMeta(PENDING_CONSENT_KEY, queue);
+    }
+  }, []);
+
+  const syncNow = useCallback(async () => {
+    if (!journal || mode !== 'account') return;
+    const pending = (await journal.pendingOps()).length;
+    // Consent decisions are recorded even when backup itself is off.
+    if (navigator.onLine) await flushConsent(journal).catch(() => undefined);
+    if (!profile?.consent.cloud_backup) return setSync({ kind: 'local_only' });
+    if (!navigator.onLine) return setSync({ kind: 'offline', pending });
+    setSync({ kind: 'syncing', pending });
+    try {
+      const r = await syncExclusive(journal, supabaseTransport);
+      if (!r) return;
+      setSync({ kind: 'idle', pending: r.pending, lastSyncedAt: new Date().toISOString() });
+      setConflictsCount((await journal.conflicts()).length);
+      if (r.pulled || r.conflicts) {
+        const p = await journal.getProfile();
+        if (p) setProfile(p);
+        setRevision((x) => x + 1);
+      }
+    } catch {
+      setSync({ kind: navigator.onLine ? 'error' : 'offline', pending: (await journal.pendingOps()).length, message: 'Couldn’t back up just now. Your entries are safe on this phone.' } as SyncState);
+    }
+  }, [journal, mode, flushConsent, profile?.consent.cloud_backup]);
+
+  // Schedule sync shortly after each local save; on network return; when visible; every 60 s in the foreground.
   useEffect(() => {
-    const tick = () => setToday(localDateIn(state?.profile.timezone ?? deviceTimezone()));
+    if (!journal || mode !== 'account') return;
+    commitListener.current = () => {
+      window.clearTimeout(syncTimer.current);
+      syncTimer.current = window.setTimeout(() => void syncNow(), 1500);
+    };
+    const first = window.setTimeout(() => void syncNow(), 0);
+    const onVisible = () => document.visibilityState === 'visible' && void syncNow();
+    window.addEventListener('online', onVisible);
+    window.addEventListener('offline', onVisible);
+    document.addEventListener('visibilitychange', onVisible);
+    const id = window.setInterval(() => document.visibilityState === 'visible' && void syncNow(), 60_000);
+    return () => {
+      commitListener.current = null;
+      window.clearTimeout(first);
+      window.removeEventListener('online', onVisible);
+      window.removeEventListener('offline', onVisible);
+      document.removeEventListener('visibilitychange', onVisible);
+      window.clearInterval(id);
+    };
+  }, [journal, mode, syncNow, backupEnabled]);
+
+
+  useEffect(() => {
+    const tick = () => setToday(localDateIn(profile?.timezone ?? deviceTimezone()));
     const id = window.setInterval(tick, 60_000);
     document.addEventListener('visibilitychange', tick);
     return () => {
       window.clearInterval(id);
       document.removeEventListener('visibilitychange', tick);
     };
-  }, [state?.profile.timezone]);
+  }, [profile?.timezone]);
 
   const notify = useCallback((t: Omit<Toast, 'id'>) => setToast({ ...t, id: Date.now() }), []);
   useEffect(() => {
     if (!toast) return;
-    const id = window.setTimeout(() => setToast(null), toast.action ? 7000 : 4000);
+    const id = window.setTimeout(() => setToast(null), toast.action ? 6000 : 3200);
     return () => window.clearTimeout(id);
   }, [toast]);
   const dismiss = useCallback(() => setToast(null), []);
   const refresh = useCallback(() => setRevision((r) => r + 1), []);
 
+  const updateProfile = useCallback(async (p: LocalProfile) => {
+    if (!journal) return;
+    const prev = profile ?? null;
+    const consentChanged = prev && (prev.consent.cloud_backup !== p.consent.cloud_backup || prev.consent.ai_processing !== p.consent.ai_processing);
+    await journal.setProfile(p);
+    if (mode === 'account' && (consentChanged || !prev)) {
+      const queue = (await journal.getMeta<{ type: string; granted: boolean }[]>(PENDING_CONSENT_KEY)) ?? [];
+      if (!prev || prev.consent.cloud_backup !== p.consent.cloud_backup) queue.push({ type: 'cloud_backup', granted: p.consent.cloud_backup });
+      if (!prev || prev.consent.ai_processing !== p.consent.ai_processing) queue.push({ type: 'ai_processing', granted: p.consent.ai_processing });
+      await journal.setMeta(PENDING_CONSENT_KEY, queue);
+    }
+    setProfile(p);
+    // Sync runs from the profile-change effect (it needs the updated consent).
+  }, [journal, mode, profile]);
+
   const value = useMemo<Ctx | null>(() => {
-    if (!state) return null;
+    if (!journal || !profile) return null;
     return {
-      journal: state.journal,
-      profile: state.profile,
-      today,
-      revision,
-      refresh,
-      notify,
-      timer,
+      journal, mode, email, profile, today, revision, refresh, notify, timer,
       setTimer: async (t) => {
-        await state.journal.setTimer(t);
+        await journal.setTimer(t);
         setTimerState(t);
       },
-      switchProfile: (id) => {
-        try {
-          localStorage.setItem(PROFILE_KEY, id);
-        } catch {
-          // storage unavailable: switch for this session only
-        }
-        setToast(null);
-        setTimerState(null);
-        setState(null); // unmount screens before the old database closes
-        setProfileId(id);
-      },
-      updateProfile: async (p) => {
-        await state.journal.setProfile(p);
-        setState({ journal: state.journal, profile: p });
-      },
+      updateProfile, sync, syncNow, conflictsCount,
     };
-  }, [state, today, revision, refresh, notify, timer]);
+  }, [journal, mode, email, profile, today, revision, refresh, notify, timer, updateProfile, sync, syncNow, conflictsCount]);
 
   if (error) {
     return (
-      <main className="app">
-        <div className="card" role="alert">
-          <h2>This device could not open local storage</h2>
-          <p>{error}</p>
-          <p className="muted small">
-            Private browsing, blocked site data, or a full disk can cause this. Nothing was sent anywhere. Try a normal
-            browser window, free up space, or reload.
-          </p>
-          <button className="btn" onClick={() => location.reload()}>Reload</button>
+      <main className="app no-nav">
+        <div className="card stack" role="alert" style={{ marginTop: 48 }}>
+          <h2>Rozana can’t open its storage on this device</h2>
+          <p className="muted">Private browsing, blocked site data, or a full disk can cause this. Nothing was sent anywhere.</p>
+          <button className="btn" onClick={() => location.reload()}>Try again</button>
+        </div>
+      </main>
+    );
+  }
+  if (!journal || profile === undefined) {
+    return (
+      <main className="app no-nav" aria-busy="true">
+        <div className="stack" style={{ marginTop: 56 }}>
+          <div className="skeleton" />
+          <div className="skeleton" style={{ minHeight: 160 }} />
+          <div className="skeleton" />
         </div>
       </main>
     );
   }
   if (!value) {
     return (
-      <main className="app" aria-busy="true">
-        <div className="stack" style={{ marginTop: 48 }}>
-          <div className="skeleton" />
-          <div className="skeleton" />
-          <div className="skeleton" />
-        </div>
-      </main>
+      <SetupCtx.Provider value={{ journal, mode, email, complete: updateProfile }}>
+        <ToastCtx.Provider value={{ toast, dismiss }}>{onboarding}</ToastCtx.Provider>
+      </SetupCtx.Provider>
     );
   }
   return (
@@ -160,6 +236,17 @@ export function JournalProvider({ children }: { children: ReactNode }) {
 export function useJournal(): Ctx {
   const c = useContext(JournalCtx);
   if (!c) throw new Error('useJournal outside provider');
+  return c;
+}
+
+/** For components rendered both inside and outside a journal (e.g. toasts during onboarding). */
+export function useJournalOptional(): Ctx | null {
+  return useContext(JournalCtx);
+}
+
+export function useSetup() {
+  const c = useContext(SetupCtx);
+  if (!c) throw new Error('useSetup outside onboarding');
   return c;
 }
 

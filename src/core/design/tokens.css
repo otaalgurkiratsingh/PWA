@@ -1,104 +1,118 @@
-/* Rozana design tokens — original system: warm white / charcoal, restrained green + blue. */
-:root {
-  color-scheme: light dark;
-  --font: system-ui, -apple-system, 'Segoe UI', Roboto, 'Noto Sans', sans-serif;
+/* Rozana design tokens. Light is the default on first launch; dark is opt-in (or "System").
+   The theme attribute is set before first paint by /theme-init.js, so there is no flash. */
+:root,
+:root[data-theme='light'] {
+  color-scheme: light;
+  --font: system-ui, -apple-system, 'Segoe UI', Roboto, 'Noto Sans', 'Helvetica Neue', Arial, sans-serif;
 
-  --bg: #f4f3ef;
-  --surface: #fcfcfb;
-  --surface-2: #f0efea;
-  --surface-sunken: #e9e7e1;
-  --border: #e2e0d9;
-  --ink: #1b1b19;
-  --ink-2: #4a4945;
-  --ink-3: #6b6a64;
-  --accent: #1d7a48;          /* primary action green (4.9:1 on white with white text) */
-  --accent-ink: #ffffff;
-  --accent-soft: #e2f1e8;
-  --accent-soft-ink: #12512f;
-  --info: #2a78d6;            /* data series blue (validated vs chart surface) */
-  --info-soft: #e5effb;
-  --warn-soft: #fbf0d9;
-  --warn-ink: #6b4a00;
-  --danger: #b3261e;
-  --danger-soft: #fbe5e3;
-  --grid: #e6e4de;
-  --chart-surface: #fcfcfb;
-  --shadow: 0 1px 2px rgb(27 27 25 / 6%), 0 4px 16px rgb(27 27 25 / 6%);
-  --shadow-lift: 0 2px 4px rgb(27 27 25 / 8%), 0 10px 28px rgb(27 27 25 / 10%);
+  --page: #f7f8fa;
+  --card: #ffffff;
+  --card-2: #f2f4f7;
+  --text: #17191d;
+  --text-2: #626975;
+  --text-3: #6b7280;
+  --border: #e7eaf0;
+  --primary: #2563eb;
+  --primary-ink: #ffffff;
+  --primary-soft: #e8efff;
+  --primary-soft-ink: #1d4ed8;
 
-  --r-sm: 10px;
-  --r-md: 16px;
-  --r-lg: 22px;
-  --r-pill: 999px;
-  --s-1: 4px;
-  --s-2: 8px;
-  --s-3: 12px;
-  --s-4: 16px;
-  --s-5: 20px;
-  --s-6: 24px;
-  --s-8: 32px;
-  --tap: 48px;
-  --nav-h: 64px;
-  --t-fast: 160ms;
-  --t-med: 220ms;
-  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
-}
+  --food: #fff0e6;
+  --food-strong: #ffd9bf;
+  --food-ink: #9a3412;
+  --train: #e6f5ef;
+  --train-strong: #c6eadb;
+  --train-ink: #166534;
+  --coach: #f1ecff;
+  --coach-strong: #ddd2ff;
+  --coach-ink: #5b21b6;
 
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme='light']) {
-    --bg: #121211;
-    --surface: #1a1a19;
-    --surface-2: #232321;
-    --surface-sunken: #0e0e0d;
-    --border: #2f2f2c;
-    --ink: #f2f1ec;
-    --ink-2: #c9c7c0;
-    --ink-3: #a3a19a;
-    --accent: #3fae73;
-    --accent-ink: #08130d;
-    --accent-soft: #173826;
-    --accent-soft-ink: #a9e3c2;
-    --info: #3987e5;
-    --info-soft: #172a42;
-    --warn-soft: #3a2f12;
-    --warn-ink: #f2d38a;
-    --danger: #ff8a80;
-    --danger-soft: #3d1a17;
-    --grid: #2c2c29;
-    --chart-surface: #1a1a19;
-    --shadow: 0 1px 2px rgb(0 0 0 / 40%);
-    --shadow-lift: 0 4px 18px rgb(0 0 0 / 50%);
-  }
+  --success: #15803d;
+  --warn-bg: #fff6db;
+  --warn-ink: #7a5300;
+  --danger: #c2261d;
+  --danger-soft: #fdecea;
+
+  --chart-weight: #2563eb;
+  --chart-train: #16a37a;
+  --chart-grid: #edf0f4;
+  --chart-surface: #ffffff;
+  --scrim: rgb(17 19 24 / 36%);
+
+  --shadow-1: 0 1px 2px rgb(16 24 40 / 5%);
+  --shadow-2: 0 4px 16px rgb(16 24 40 / 8%);
+  --shadow-sheet: 0 -8px 32px rgb(16 24 40 / 14%);
 }
 
 :root[data-theme='dark'] {
-  --bg: #121211;
-  --surface: #1a1a19;
-  --surface-2: #232321;
-  --surface-sunken: #0e0e0d;
-  --border: #2f2f2c;
-  --ink: #f2f1ec;
-  --ink-2: #c9c7c0;
-  --ink-3: #a3a19a;
-  --accent: #3fae73;
-  --accent-ink: #08130d;
-  --accent-soft: #173826;
-  --accent-soft-ink: #a9e3c2;
-  --info: #3987e5;
-  --info-soft: #172a42;
-  --warn-soft: #3a2f12;
-  --warn-ink: #f2d38a;
+  color-scheme: dark;
+  --page: #101216;
+  --card: #1b1e24;
+  --card-2: #23272f;
+  --text: #f4f5f7;
+  --text-2: #a9b1be;
+  --text-3: #8c95a3;
+  --border: #303640;
+  --primary: #80a7ff;
+  --primary-ink: #0b1530;
+  --primary-soft: #1d2a4a;
+  --primary-soft-ink: #b9cdff;
+
+  --food: #35251d;
+  --food-strong: #4a3227;
+  --food-ink: #fdba8c;
+  --train: #183128;
+  --train-strong: #21453a;
+  --train-ink: #86efac;
+  --coach: #29213d;
+  --coach-strong: #382c55;
+  --coach-ink: #c4b5fd;
+
+  --success: #4ade80;
+  --warn-bg: #3a2f12;
+  --warn-ink: #f6d58a;
   --danger: #ff8a80;
   --danger-soft: #3d1a17;
-  --grid: #2c2c29;
-  --chart-surface: #1a1a19;
-  --shadow: 0 1px 2px rgb(0 0 0 / 40%);
-  --shadow-lift: 0 4px 18px rgb(0 0 0 / 50%);
+
+  --chart-weight: #5b8def;
+  --chart-train: #24a27a;
+  --chart-grid: #2a2f38;
+  --chart-surface: #1b1e24;
+  --scrim: rgb(0 0 0 / 55%);
+
+  --shadow-1: 0 1px 2px rgb(0 0 0 / 30%);
+  --shadow-2: 0 4px 18px rgb(0 0 0 / 35%);
+  --shadow-sheet: 0 -8px 32px rgb(0 0 0 / 45%);
+}
+
+:root {
+  --r-xs: 8px;
+  --r-sm: 12px;
+  --r-md: 16px;
+  --r-lg: 22px;
+  --r-xl: 28px;
+  --r-pill: 999px;
+  --gutter: 20px;
+  --tap: 48px;
+  --nav-h: 68px;
+  --dock-h: 64px;
+
+  --fs-title: 1.875rem; /* 30px */
+  --fs-section: 1.25rem; /* 20px */
+  --fs-body: 1rem; /* 16px */
+  --fs-small: 0.875rem; /* 14px */
+  --fs-label: 0.8125rem; /* 13px */
+
+  --t-press: 140ms;
+  --t-content: 220ms;
+  --t-sheet: 280ms;
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 @media (prefers-reduced-motion: reduce) {
   :root {
-    --t-fast: 0ms;
-    --t-med: 0ms;
+    --t-press: 0ms;
+    --t-content: 0ms;
+    --t-sheet: 0ms;
   }
 }

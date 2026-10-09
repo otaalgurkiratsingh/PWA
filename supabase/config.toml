@@ -1,0 +1,5 @@
+# Minimal Supabase CLI config for this project's functions. Run `supabase init` merges as needed.
+[functions.ai]
+# The platform rejects requests without a valid user JWT before our code runs;
+# the function verifies the token again with getClaims().
+verify_jwt = true

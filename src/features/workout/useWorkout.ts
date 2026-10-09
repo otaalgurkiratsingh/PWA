@@ -3,10 +3,10 @@ import type { ProgramDay, ProgramVersion, WorkoutSession } from '@shared/contrac
 import { useJournal } from '@/app/JournalContext';
 import { startSession } from '@/domain/training/session';
 import { startTimer } from '@/domain/training/timer';
-import { saveErrorMessage } from '@/features/meals/useMeals';
+import { saveErrorMessage } from '@/features/food/useFood';
 import { newId } from '@/core/ids';
 
-export function useTraining() {
+export function useWorkout() {
   const { journal, profile, today, refresh, notify, setTimer } = useJournal();
 
   /** Apply a pure change to the LATEST stored copy, then save atomically. */
@@ -31,8 +31,8 @@ export function useTraining() {
     async (program: ProgramVersion, day: ProgramDay) => {
       const active = await journal.activeSession();
       if (active) {
-        notify({ kind: 'error', message: `Finish or discard “${active.day_name}” first.` });
-        return;
+        notify({ kind: 'error', message: `Finish “${active.day_name}” first.` });
+        return null;
       }
       const history = await journal.sessions();
       const s = startSession({
@@ -51,8 +51,10 @@ export function useTraining() {
       try {
         await journal.commit('workout_sessions', s);
         refresh();
+        return s;
       } catch (e) {
         notify({ kind: 'error', message: saveErrorMessage(e) });
+        return null;
       }
     },
     [journal, today, profile, refresh, notify],

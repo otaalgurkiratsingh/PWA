@@ -70,6 +70,16 @@ describe('document sync', () => {
     expect(rows.rows).toEqual([{ version: '2', name: 'Dal (2 bowls)' }]);
   });
 
+  it('a lost acknowledgement followed by a newer local edit is not a conflict', async () => {
+    const first = op(A);
+    await push(A, [first]); // applied on the server, but pretend the reply never arrived (client still thinks v0)
+    const newer = { ...first, op_id: randomUUID(), base_version: 0, prior_op_ids: [first.op_id], body: { owner_id: A, name: 'Dal + ghee' } };
+    expect((await push(A, [newer]))[0]).toMatchObject({ status: 'applied', server_version: 2 });
+    // Without proof of the earlier own op it is still a conflict.
+    const other = { ...first, op_id: randomUUID(), base_version: 0, prior_op_ids: [randomUUID()] };
+    expect((await push(A, [other]))[0]).toMatchObject({ status: 'conflict' });
+  });
+
   it('pull returns only the caller\'s changes, in server order, including tombstones', async () => {
     const o1 = op(A);
     await push(A, [o1]);

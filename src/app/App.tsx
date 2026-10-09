@@ -1,30 +1,40 @@
-import { useEffect, useState } from 'react';
-import { NavIcon } from '@/core/design/icons';
+import { useEffect, useState, type ReactNode } from 'react';
+import { DEMO_PROFILES } from '@shared/fixtures/demo';
+import { AuthProvider, useAuth } from '@/core/auth/AuthContext';
+import { Icon, Mark, type IconName } from '@/core/design/icons';
+import { Sheet } from '@/core/design/ui';
+import { watchSystemTheme } from '@/core/design/theme';
 import { formatLongDate } from '@/core/time/localDate';
-import { MealsScreen } from '@/features/meals/MealsScreen';
+import { AccessScreen, WelcomeScreen } from '@/features/auth/WelcomeScreen';
+import { CoachScreen } from '@/features/coach/CoachScreen';
+import { FoodScreen } from '@/features/food/FoodScreen';
+import { MealEditor } from '@/features/food/MealEditor';
+import { Onboarding } from '@/features/onboarding/Onboarding';
 import { ProgressScreen } from '@/features/progress/ProgressScreen';
 import { SettingsScreen } from '@/features/settings/SettingsScreen';
 import { TodayScreen } from '@/features/today/TodayScreen';
-import { RestTimerBar } from '@/features/train/RestTimerBar';
-import { TrainScreen } from '@/features/train/TrainScreen';
-import { JournalProvider, useJournal, useToast } from './JournalContext';
-import { navigate, useRoute, type Route } from './router';
-import { onUpdateReady, applyUpdate } from './serviceWorker';
+import { PlanEditor } from '@/features/workout/PlanEditor';
+import { RestDock } from '@/features/workout/RestDock';
+import { WorkoutScreen } from '@/features/workout/WorkoutScreen';
+import { JournalProvider, useJournal, useJournalOptional, useToast } from './JournalContext';
+import { navigate, TABS, useRoute, type RouteName } from './router';
+import { applyUpdate, onUpdateReady } from './serviceWorker';
 
-const TITLES: Record<Route, string> = { today: 'Today', meals: 'Meals', train: 'Train', progress: 'Progress', settings: 'Settings' };
-const NAV: Exclude<Route, 'settings'>[] = ['today', 'meals', 'train', 'progress'];
+const TITLES: Record<RouteName, string> = {
+  today: 'Today', food: 'Food', workout: 'Workout', progress: 'Progress', settings: 'Settings', coach: 'Coach', plan: 'Edit plan', meal: 'Meal',
+};
+const NAV_ICON: Record<(typeof TABS)[number], IconName> = { today: 'today', food: 'food', workout: 'workout', progress: 'progress' };
 
 function ToastView() {
   const { toast, dismiss } = useToast();
+  const journal = useJournalOptional();
   if (!toast) return null;
   return (
-    <div className="toast-wrap" role="status" aria-live="polite">
+    <div className={`toast-wrap${journal?.timer ? ' above-dock' : ''}`} role="status" aria-live="polite">
       <div className={`toast${toast.kind === 'error' ? ' error' : ''}`} key={toast.id}>
         <span className="msg">{toast.message}</span>
-        {toast.action ? (
-          <button className="btn" onClick={() => { toast.action!.run(); dismiss(); }}>{toast.action.label}</button>
-        ) : null}
-        <button className="btn" aria-label="Dismiss" onClick={dismiss}>×</button>
+        {toast.action ? <button className="t-action" onClick={() => { toast.action!.run(); dismiss(); }}>{toast.action.label}</button> : null}
+        <button aria-label="Dismiss" onClick={dismiss}><Icon name="close" size={18} /></button>
       </div>
     </div>
   );
@@ -33,74 +43,169 @@ function ToastView() {
 function UpdatePrompt() {
   const { journal } = useJournal();
   const [ready, setReady] = useState(false);
-  const [activeWorkout, setActiveWorkout] = useState(false);
+  const [busyWorkout, setBusyWorkout] = useState(false);
   useEffect(() => onUpdateReady(() => setReady(true)), []);
   useEffect(() => {
-    if (ready) void journal.activeSession().then((s) => setActiveWorkout(!!s));
+    if (ready) void journal.activeSession().then((s) => setBusyWorkout(!!s));
   }, [ready, journal]);
-  if (!ready || activeWorkout) return null; // never swap the app mid-workout
+  if (!ready || busyWorkout) return null; // never replace the app mid-workout
   return (
-    <div className="card" role="status" style={{ marginBottom: 12 }}>
-      <div className="row">
-        <span className="small" style={{ flex: 1 }}>An app update is ready. Your saved entries are kept.</span>
-        <button className="btn" onClick={applyUpdate}>Update</button>
-      </div>
+    <div className="notice row" role="status" style={{ marginBottom: 16 }}>
+      <span className="grow">A new version is ready. Your entries are kept.</span>
+      <button className="btn sm" onClick={applyUpdate}>Update</button>
     </div>
+  );
+}
+
+function SyncChip() {
+  const { sync, mode } = useJournal();
+  if (mode !== 'account') return null;
+  const [icon, text]: [IconName, string] =
+    sync.kind === 'local_only' ? ['phone', 'On this phone']
+      : sync.kind === 'syncing' ? ['cloud', 'Backing up']
+        : sync.kind === 'offline' ? ['phone', sync.pending ? `${sync.pending} saved offline` : 'Offline']
+          : sync.kind === 'error' ? ['phone', 'Saved on phone']
+            : sync.pending ? ['cloud', `${sync.pending} to back up`] : ['cloudCheck', 'Backed up'];
+  return (
+    <button className="sync-chip" onClick={() => navigate('settings')} aria-label={`Backup status: ${text}. Open settings`}>
+      <Icon name={icon} size={16} /> <span>{text}</span>
+    </button>
+  );
+}
+
+function DemoChip() {
+  const { mode } = useJournal();
+  const { exitDemo } = useAuth();
+  const [open, setOpen] = useState(false);
+  if (mode !== 'demo') return null;
+  return (
+    <>
+      <button className="demo-chip" onClick={() => setOpen(true)}>Demo data</button>
+      {open ? (
+        <Sheet title="Demo data" onClose={() => setOpen(false)} actions={<button className="btn block" onClick={exitDemo}>Leave demo</button>}>
+          <p className="muted">Everything here is made up: meals, nutrition numbers, history and the workout plan. It stays on this device and never mixes with a real account. The coach is off in the demo.</p>
+        </Sheet>
+      ) : null}
+    </>
+  );
+}
+
+function Header({ title }: { title: string }) {
+  const { profile, today } = useJournal();
+  return (
+    <header className="page-header">
+      <div>
+        <h1>{title}</h1>
+        <p className="date">{formatLongDate(today)}</p>
+      </div>
+      <div className="header-actions">
+        <DemoChip />
+        <SyncChip />
+        <button className="avatar" aria-label={`Profile and settings for ${profile.nickname}`} onClick={() => navigate('settings')}>
+          {profile.nickname.slice(0, 1).toUpperCase()}
+        </button>
+      </div>
+    </header>
   );
 }
 
 function Shell() {
   const route = useRoute();
-  const { profile, today } = useJournal();
+  const { profile } = useJournal();
   useEffect(() => {
-    document.title = `${TITLES[route]} · Rozana`;
-    window.scrollTo({ top: 0 }); // also covers back/forward and typed URLs
-  }, [route]);
-  const Screen = { today: TodayScreen, meals: MealsScreen, train: TrainScreen, progress: ProgressScreen, settings: SettingsScreen }[route];
+    document.title = `${TITLES[route.name]} · Rozana`;
+    window.scrollTo({ top: 0 });
+  }, [route.name, route.param]);
+  const isTab = (TABS as readonly string[]).includes(route.name);
+  const focused = route.name === 'plan' || route.name === 'meal';
+  let screen: ReactNode;
+  switch (route.name) {
+    case 'food': screen = <FoodScreen />; break;
+    case 'workout': screen = <WorkoutScreen />; break;
+    case 'progress': screen = <ProgressScreen />; break;
+    case 'settings': screen = <SettingsScreen />; break;
+    case 'coach': screen = <CoachScreen />; break;
+    case 'plan': screen = <PlanEditor />; break;
+    case 'meal': screen = <MealEditor presetId={route.param} />; break;
+    default: screen = <TodayScreen />;
+  }
   return (
     <>
-      <main className="app" id="main">
-        <header className="topbar">
-          <div>
-            <h1>{TITLES[route]}</h1>
-            <p className="sub">{formatLongDate(today)}</p>
-          </div>
-          <button className="avatar-btn" onClick={() => navigate('settings')} aria-label={`Profile and settings for ${profile.nickname}`}>
-            <span className="dot" aria-hidden="true">{profile.nickname.split(' ').map((w) => w[0]).join('').slice(0, 2)}</span>
-            {profile.nickname}
-          </button>
-        </header>
-        {profile.synthetic ? (
-          <div className="demo-banner" role="note">
-            <strong>Demo</strong>
-            <span>Synthetic data only — placeholder nutrition numbers, fictional plan. Saved only on this device; no cloud, no AI.</span>
-          </div>
-        ) : null}
+      <main className={`app${focused ? ' no-nav' : ''}`} id="main">
+        {isTab ? <Header title={TITLES[route.name]} /> : <h1 className="sr-only">{TITLES[route.name]}</h1>}
         <UpdatePrompt />
-        <Screen key={`${profile.id}:${route}`} />
+        <div key={`${profile.id}:${route.name}:${route.param ?? ''}`}>{screen}</div>
       </main>
-      <RestTimerBar />
-      <nav className="bottom-nav" aria-label="Main">
-        <ul>
-          {NAV.map((r) => (
-            <li key={r}>
-              <a href={`#/${r}`} aria-current={route === r ? 'page' : undefined} onClick={() => window.scrollTo({ top: 0 })}>
-                <NavIcon name={r} />
-                {TITLES[r]}
-              </a>
-            </li>
-          ))}
-        </ul>
-      </nav>
+      {!focused ? <RestDock /> : null}
+      {!focused ? (
+        <nav className="bottom-nav" aria-label="Main">
+          <ul>
+            {TABS.map((t) => (
+              <li key={t}>
+                <a href={`#/${t}`} aria-current={route.name === t ? 'page' : undefined}>
+                  <span className="nav-pill"><Icon name={NAV_ICON[t]} size={24} /></span>
+                  {TITLES[t]}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      ) : null}
       <ToastView />
     </>
   );
 }
 
-export function App() {
+function Splash() {
   return (
-    <JournalProvider>
-      <Shell />
-    </JournalProvider>
+    <main className="welcome" aria-busy="true" aria-label="Loading">
+      <div className="hero" style={{ alignItems: 'center' }}>
+        <Mark size={56} />
+      </div>
+    </main>
+  );
+}
+
+function demoProfileId(): string {
+  try {
+    const id = localStorage.getItem('rozana.demoProfile');
+    return DEMO_PROFILES.some((p) => p.id === id) ? id! : 'demo-a';
+  } catch {
+    return 'demo-a';
+  }
+}
+
+function Root() {
+  const { status } = useAuth();
+  switch (status.kind) {
+    case 'loading':
+      return <Splash />;
+    case 'signed_out':
+      return <WelcomeScreen />;
+    case 'not_member':
+      return <AccessScreen kind="not_member" membership={status.membership} email={status.email} />;
+    case 'error':
+      return <AccessScreen kind="error" message={status.message} />;
+    case 'demo':
+      return (
+        <JournalProvider key="demo" ownerId={demoProfileId()} mode="demo" email={null} onboarding={<Splash />}>
+          <Shell />
+        </JournalProvider>
+      );
+    case 'member':
+      return (
+        <JournalProvider key={status.userId} ownerId={status.userId} mode="account" email={status.email} onboarding={<Onboarding />}>
+          <Shell />
+        </JournalProvider>
+      );
+  }
+}
+
+export function App() {
+  useEffect(() => watchSystemTheme(), []);
+  return (
+    <AuthProvider>
+      <Root />
+    </AuthProvider>
   );
 }

@@ -62,6 +62,7 @@ declare
   v_receipt private.sync_receipts;
   v_seq bigint;
   v_version bigint;
+  v_own_prior boolean;
 begin
   if uid is null or not private.is_active_member() then
     raise exception 'not authorized' using errcode = '42501';
@@ -98,7 +99,19 @@ begin
       where d.user_id = uid and d.collection = v_collection and d.doc_id = v_doc
       for update;
 
-    if found and v_existing.version <> v_base then
+    -- A version produced by one of this device's own earlier ops for the same document
+    -- (applied, but the acknowledgement was lost) is not a conflict.
+    v_own_prior := false;
+    if found and v_existing.version <> v_base and jsonb_typeof(op -> 'prior_op_ids') = 'array' then
+      select exists (
+        select 1 from private.sync_receipts r
+        where r.user_id = uid and r.doc_key = v_doc and r.table_name = v_collection
+          and r.result_version = v_existing.version
+          and r.op_id::text in (select jsonb_array_elements_text(op -> 'prior_op_ids'))
+      ) into v_own_prior;
+    end if;
+
+    if found and v_existing.version <> v_base and not v_own_prior then
       results := results || jsonb_build_object(
         'op_id', v_op_id, 'status', 'conflict', 'server_version', v_existing.version,
         'server_body', v_existing.body, 'server_deleted', v_existing.deleted_at is not null);

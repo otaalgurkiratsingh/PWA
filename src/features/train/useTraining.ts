@@ -4,6 +4,7 @@ import { useJournal } from '@/app/JournalContext';
 import { startSession } from '@/domain/training/session';
 import { startTimer } from '@/domain/training/timer';
 import { saveErrorMessage } from '@/features/meals/useMeals';
+import { newId } from '@/core/ids';
 
 export function useTraining() {
   const { journal, profile, today, refresh, notify, setTimer } = useJournal();
@@ -35,14 +36,14 @@ export function useTraining() {
       }
       const history = await journal.sessions();
       const s = startSession({
-        id: crypto.randomUUID(),
+        id: newId(),
         ownerId: journal.ownerId,
         program,
         day,
         localDate: today,
         timezone: profile.timezone,
         now: new Date().toISOString(),
-        newId: () => crypto.randomUUID(),
+        newId: () => newId(),
         history,
         unit: profile.units,
         synthetic: profile.synthetic,

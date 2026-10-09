@@ -5,6 +5,7 @@ import { dateRange, healthSeries, loggingConsistency, weightSeries, weightTrend 
 import { E1RM_FORMULA, comparableKey, convertLoad, estimateOneRepMax, workingSummary } from '@/domain/training/session';
 import { saveErrorMessage } from '@/features/meals/useMeals';
 import { DayChart } from './charts';
+import { newId } from '@/core/ids';
 
 const PERIODS = [7, 28, 90] as const;
 
@@ -16,7 +17,7 @@ function WeightForm() {
     if (!(v > 20 && v < 700)) return notify({ kind: 'error', message: `Enter a weight in ${profile.units}` });
     const nowIso = new Date().toISOString();
     const w: WeightEntry = {
-      id: crypto.randomUUID(), owner_id: journal.ownerId, local_version: 0, created_at: nowIso, updated_at: nowIso, deleted_at: null,
+      id: newId(), owner_id: journal.ownerId, local_version: 0, created_at: nowIso, updated_at: nowIso, deleted_at: null,
       synthetic: profile.synthetic, local_date: today, timezone: profile.timezone, measured_at: nowIso, value: v, unit: profile.units,
     };
     try {

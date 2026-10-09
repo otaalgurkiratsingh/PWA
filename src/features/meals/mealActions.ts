@@ -2,6 +2,7 @@ import { NUTRIENT_KEYS, type MealEntry, type MealItemSnapshot, type MealPreset, 
 import { roundNutrient, snapshotPreset, type NutritionLibrary } from '@/domain/nutrition/calc';
 import type { Journal } from '@/core/database/journal';
 import { localHourIn } from '@/core/time/localDate';
+import { newId } from '@/core/ids';
 
 export function slotForHour(h: number): MealSlot {
   if (h >= 4 && h < 11) return 'breakfast';
@@ -34,7 +35,7 @@ export function buildEntry(args: {
 }): MealEntry {
   const nowIso = args.now.toISOString();
   return {
-    id: crypto.randomUUID(),
+    id: newId(),
     owner_id: args.journal.ownerId,
     local_version: 0,
     created_at: nowIso,
@@ -75,7 +76,7 @@ export function copyEntries(entries: readonly MealEntry[], date: string, now: Da
   const nowIso = now.toISOString();
   return entries.map((e) => ({
     ...e,
-    id: crypto.randomUUID(),
+    id: newId(),
     owner_id: ownerId,
     local_version: 0,
     created_at: nowIso,

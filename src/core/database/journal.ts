@@ -15,6 +15,7 @@ import {
   type RecipeRevision,
 } from '@shared/contracts';
 import { openJournalDB, type JournalDB } from './db';
+import { newId } from '../ids';
 
 type AggregateRecord = {
   meal_entries: MealEntry;
@@ -59,7 +60,7 @@ export class Journal {
 
   private constructor(readonly db: JournalDB, readonly ownerId: string, opts: JournalOptions) {
     this.now = opts.now ?? (() => new Date());
-    this.newId = opts.newId ?? (() => crypto.randomUUID());
+    this.newId = opts.newId ?? (() => newId());
   }
 
   static async open(ownerId: string, opts: JournalOptions = {}): Promise<Journal> {

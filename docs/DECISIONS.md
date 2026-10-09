@@ -72,3 +72,8 @@ The newest stable versions compatible with each other on 2026-10-09: React 19.3.
 ## D12. AI deferred, but its contract is fixed now
 
 `shared/contracts/coach.ts` defines the coach output schema (period, completeness, observations with evidence refs, suggestions with uncertainty, questions, safety flags, model/prompt version). The schema is fixed now, but there is no AI code, no model call, and no key handling in this build.
+
+## D13. App name: Rozana (2026-10-09)
+
+"Rozana" means "daily" in Hindi, Urdu and Punjabi. The app is a daily habit for meals and workouts: short, personal, and not tied to only food or only the gym. It fits under a home-screen icon. The owner asked the builder to choose. It replaces the working name "AapnaFit". The original spec files in `docs/spec/` keep the old name because they are the owner's source documents. No trademark search was done; that is acceptable for a private, non-commercial app with no store listing.
+Storage keys were renamed too (`rozana-journal-*`, `rozana.theme`). Any demo data created under the old name stays in the browser's old database and is ignored. It was synthetic only.

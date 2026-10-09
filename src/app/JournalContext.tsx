@@ -28,7 +28,7 @@ interface Ctx {
 const JournalCtx = createContext<Ctx | null>(null);
 const ToastCtx = createContext<{ toast: Toast | null; dismiss: () => void }>({ toast: null, dismiss: () => {} });
 
-const PROFILE_KEY = 'aapnafit.activeProfile';
+const PROFILE_KEY = 'rozana.activeProfile';
 
 function readActiveProfile(): string {
   try {

@@ -1,9 +1,9 @@
-/* AapnaFit service worker — app shell and static assets ONLY.
+/* Rozana service worker — app shell and static assets ONLY.
  * Never caches API responses, health data, or photos. Personal data lives in IndexedDB.
  * The build id and precache list are injected at build time by vite.config.ts. */
 const BUILD_ID = '__BUILD_ID__';
 const PRECACHE = __PRECACHE__;
-const CACHE = `aapnafit-shell-${BUILD_ID}`;
+const CACHE = `rozana-shell-${BUILD_ID}`;
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE).then((c) => c.addAll(PRECACHE)));
@@ -14,7 +14,7 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches
       .keys()
-      .then((keys) => Promise.all(keys.filter((k) => k.startsWith('aapnafit-shell-') && k !== CACHE).map((k) => caches.delete(k))))
+      .then((keys) => Promise.all(keys.filter((k) => k.startsWith('rozana-shell-') && k !== CACHE).map((k) => caches.delete(k))))
       .then(() => self.clients.claim()),
   );
 });

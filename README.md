@@ -1,6 +1,6 @@
-# AapnaFit Private
+# Rozana
 
-A private, phone-first meal and workout journal for a few people. It is a personal hobby project. It is not a commercial product, and it has no sign-up page.
+**Rozana** (Hindi/Punjabi for "daily") is a private, phone-first meal and workout journal for a few people. It is a personal hobby project. It is not a commercial product, and it has no sign-up page.
 
 **Status:** Phase 0 (foundations plus a local demo). Everything runs in the browser on one device with **synthetic demo data**. There is no cloud sync, no login, and no AI yet. See [`docs/BUILD_STATUS.md`](docs/BUILD_STATUS.md) for what has actually been tested and what comes next.
 

@@ -211,7 +211,7 @@ export class Journal {
   async exportAll(): Promise<Record<string, unknown>> {
     const stores = ['foods', 'recipes', 'presets', 'programs', 'meal_entries', 'workout_sessions', 'weight_entries', 'daily_health', 'daily_log_status'] as const;
     const out: Record<string, unknown> = {
-      format: 'aapnafit-export',
+      format: 'rozana-export',
       format_version: 1,
       exported_at: this.now().toISOString(),
       owner_id: this.ownerId,

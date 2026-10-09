@@ -1,5 +1,5 @@
 export type Theme = 'system' | 'light' | 'dark';
-const KEY = 'aapnafit.theme';
+const KEY = 'rozana.theme';
 
 export function readTheme(): Theme {
   try {

@@ -20,6 +20,7 @@ supabase/.branches/
 # personal data that must never enter git
 exports/
 *.export.json
+rozana-export-*.json
 aapnafit-export-*.json
 photos/
 *.dump

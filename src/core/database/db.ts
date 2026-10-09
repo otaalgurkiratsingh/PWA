@@ -33,7 +33,7 @@ export type JournalDB = IDBPDatabase<JournalSchema>;
 
 /** One database per profile: switching profiles never mixes records, drafts, or outbox. */
 export function dbNameFor(profileId: string): string {
-  return `aapnafit-journal-${profileId}`;
+  return `rozana-journal-${profileId}`;
 }
 
 export async function openJournalDB(profileId: string): Promise<JournalDB> {

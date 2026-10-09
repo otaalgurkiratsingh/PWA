@@ -15,7 +15,7 @@ function serviceWorker(): Plugin {
       return f.startsWith('_') ? [] : [`${prefix}/${f}`];
     });
   return {
-    name: 'aapnafit-sw',
+    name: 'rozana-sw',
     apply: 'build',
     generateBundle(_opts, bundle) {
       const assets = Object.keys(bundle).map((f) => `/${f}`);

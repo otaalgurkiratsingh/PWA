@@ -58,7 +58,7 @@ export function SettingsScreen() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `aapnafit-export-${profile.id}-${new Date().toISOString().slice(0, 10)}.json`;
+    a.download = `rozana-export-${profile.id}-${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
     notify({ kind: 'info', message: 'Export downloaded. It contains health records — store it privately.' });

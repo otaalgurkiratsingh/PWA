@@ -1,4 +1,4 @@
--- AapnaFit Private — initial schema (Phase 0).
+-- Rozana — initial schema (Phase 0).
 -- Personal tables live in `public` (reachable through the Supabase Data API) and are protected by:
 --   1. explicit, minimal table grants to `authenticated` only (nothing for `anon`);
 --   2. RLS requiring auth.uid() ownership AND active approved membership;

@@ -53,7 +53,7 @@ function Shell() {
   const route = useRoute();
   const { profile, today } = useJournal();
   useEffect(() => {
-    document.title = `${TITLES[route]} · AapnaFit`;
+    document.title = `${TITLES[route]} · Rozana`;
     window.scrollTo({ top: 0 }); // also covers back/forward and typed URLs
   }, [route]);
   const Screen = { today: TodayScreen, meals: MealsScreen, train: TrainScreen, progress: ProgressScreen, settings: SettingsScreen }[route];

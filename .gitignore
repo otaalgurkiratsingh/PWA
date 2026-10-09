@@ -1,0 +1,41 @@
+# dependencies & build output
+node_modules/
+dist/
+dist-ssr/
+*.tsbuildinfo
+coverage/
+test-results/
+playwright-report/
+.vite/
+
+# secrets — never commit real credentials
+.env
+.env.*
+!.env.example
+*.local
+supabase/.temp/
+supabase/.branches/
+**/secrets/
+
+# personal data that must never enter git
+exports/
+*.export.json
+aapnafit-export-*.json
+photos/
+*.dump
+*.sql.gz
+*.backup
+
+# Android signing material (later phases)
+*.jks
+*.keystore
+keystore.properties
+
+# local test database
+.pgtest/
+
+# editor/OS
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json

@@ -66,7 +66,9 @@ export function weightTrend(series: readonly DayPoint<number>[], unit: LoadUnit)
       points: known.length,
       change: null,
       sparse: true,
-      message: `Only ${known.length} weigh-in${known.length === 1 ? '' : 's'} in this period — not enough comparable measurements for a trend.`,
+      message:
+        `${known.length} weigh-in${known.length === 1 ? '' : 's'} in this period, but a trend needs at least 3 in both the first week (have ${first.length}) ` +
+        `and the last week (have ${last.length}). No trend is shown rather than guessing.`,
     };
   }
   const mean = (a: number[]) => a.reduce((s, v) => s + v, 0) / a.length;

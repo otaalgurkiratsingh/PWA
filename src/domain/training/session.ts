@@ -37,7 +37,14 @@ export interface NewSessionArgs {
   newId: () => string;
   /** Last comparable finished sessions, newest first, used to prefill drafts. */
   history: readonly WorkoutSession[];
+  /** Unit the user enters loads in; drafts are converted into it. */
+  unit: LoadUnit;
   synthetic: boolean;
+}
+
+function roundLoad(v: number, unit: LoadUnit): number {
+  const step = unit === 'kg' ? 0.5 : 1;
+  return Math.round(v / step) * step;
 }
 
 /**
@@ -57,7 +64,11 @@ export function startSession(a: NewSessionArgs): WorkoutSession {
         planned: { ...ps },
         draft: {
           reps: p?.reps ?? ps.rep_max,
-          load: p ? p.load : ps.target_load,
+          load: p
+            ? roundLoad(convertLoad(p.load, p.unit, a.unit), a.unit)
+            : ps.target_load === null
+              ? null
+              : roundLoad(convertLoad(ps.target_load, ps.target_unit, a.unit), a.unit),
         },
         actual: null,
         status: 'pending',

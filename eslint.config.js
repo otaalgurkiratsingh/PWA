@@ -24,8 +24,8 @@ export default tseslint.config(
     },
   },
   {
-    files: ['public/**/*.js', 'scripts/**/*.mjs'],
+    files: ['src/sw/**/*.js', 'scripts/**/*.mjs'],
     extends: [js.configs.recommended],
-    languageOptions: { ecmaVersion: 2023, globals: { ...globals.serviceworker, ...globals.node } },
+    languageOptions: { ecmaVersion: 2023, globals: { ...globals.serviceworker, ...globals.node, __PRECACHE__: 'readonly' } },
   },
 );

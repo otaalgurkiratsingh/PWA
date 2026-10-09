@@ -2,7 +2,7 @@
   "compilerOptions": {
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
     "target": "ES2023",
-    "lib": ["ES2023"],
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "moduleResolution": "bundler",
     "types": ["node"],
@@ -13,10 +13,9 @@
     "allowImportingTsExtensions": true,
     "noEmit": true,
     "skipLibCheck": true,
-    "baseUrl": ".",
     "paths": {
-      "@shared/*": ["shared/*"],
-      "@/*": ["src/*"]
+      "@shared/*": ["./shared/*"],
+      "@/*": ["./src/*"]
     }
   },
   "include": ["vite.config.ts", "vitest.db.config.ts", "playwright.config.ts", "tests", "supabase/tests"]

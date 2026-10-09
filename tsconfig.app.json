@@ -18,10 +18,9 @@
     "allowImportingTsExtensions": true,
     "noEmit": true,
     "skipLibCheck": true,
-    "baseUrl": ".",
     "paths": {
-      "@shared/*": ["shared/*"],
-      "@/*": ["src/*"]
+      "@shared/*": ["./shared/*"],
+      "@/*": ["./src/*"]
     }
   },
   "include": ["src", "shared"]

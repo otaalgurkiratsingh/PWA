@@ -37,7 +37,7 @@ const program: ProgramVersion = {
 };
 const day = program.days[0]!;
 const start = (history: WorkoutSession[] = [], now = '2026-10-02T10:00:00Z') =>
-  startSession({ id: newId(), ownerId: 't', program, day, localDate: now.slice(0, 10), timezone: 'UTC', now, newId, history, synthetic: true });
+  startSession({ id: newId(), ownerId: 't', program, day, localDate: now.slice(0, 10), timezone: 'UTC', now, newId, history, unit: 'kg', synthetic: true });
 
 describe('planned vs actual', () => {
   it('snapshots the prescription and starts with nothing completed', () => {
@@ -104,6 +104,12 @@ describe('history and comparisons', () => {
     const s2 = start([s1]);
     expect(s2.exercises[1]!.sets[0]!.draft).toEqual({ reps: 12, load: 18 });
     expect(s2.exercises[1]!.sets[0]!.status).toBe('pending');
+  });
+
+  it('prefills drafts in the user\'s unit', () => {
+    const lb = startSession({ id: newId(), ownerId: 't', program, day, localDate: '2026-10-02', timezone: 'UTC', now: '2026-10-02T10:00:00Z', newId, history: [], unit: 'lb', synthetic: true });
+    expect(lb.exercises[0]!.sets[1]!.draft.load).toBe(110); // 50 kg target ≈ 110.2 lb, rounded to 1 lb
+    expect(lb.exercises[0]!.sets[1]!.planned.target_unit).toBe('kg'); // prescription itself untouched
   });
 
   it('active (unfinished) sessions are not used as history', () => {

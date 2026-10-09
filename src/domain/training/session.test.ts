@@ -20,17 +20,17 @@ let n = 0;
 const newId = () => `00000000-0000-4000-8000-${String(++n).padStart(12, '0')}`;
 const base = { owner_id: 't', local_version: 1, created_at: '2026-10-01T00:00:00Z', updated_at: '2026-10-01T00:00:00Z', deleted_at: null, synthetic: true };
 const program: ProgramVersion = {
-  ...base, id: newId(), program_id: newId(), version: 1, name: 'Demo',
+  ...base, id: newId(), program_id: newId(), version: 1, name: 'Demo', schedule: 'rotation',
   days: [{
-    id: newId(), name: 'Push', muscle_groups: ['chest'],
+    id: newId(), name: 'Push', muscle_groups: ['chest'], weekday: null,
     exercises: [
-      { id: newId(), exercise_key: 'bench_press', name: 'Bench press', variant: 'barbell', load_convention: 'total', unilateral: false, muscle_group: 'chest',
+      { id: newId(), exercise_key: 'bench_press', name: 'Bench press', variant: 'barbell', load_convention: 'total', unilateral: false, muscle_group: 'chest', measurement: 'weight_reps',
         sets: [
           { type: 'warmup', rep_min: 10, rep_max: 10, target_load: 20, target_unit: 'kg', rest_seconds: 60, rir_target: null },
           { type: 'working', rep_min: 6, rep_max: 8, target_load: 50, target_unit: 'kg', rest_seconds: 120, rir_target: 2 },
           { type: 'working', rep_min: 6, rep_max: 8, target_load: 50, target_unit: 'kg', rest_seconds: 120, rir_target: 2 },
         ] },
-      { id: newId(), exercise_key: 'bench_press', name: 'DB bench press', variant: 'dumbbell', load_convention: 'per_dumbbell', unilateral: false, muscle_group: 'chest',
+      { id: newId(), exercise_key: 'bench_press', name: 'DB bench press', variant: 'dumbbell', load_convention: 'per_dumbbell', unilateral: false, muscle_group: 'chest', measurement: 'weight_reps',
         sets: [{ type: 'working', rep_min: 10, rep_max: 12, target_load: 16, target_unit: 'kg', rest_seconds: 90, rir_target: null }] },
     ],
   }],

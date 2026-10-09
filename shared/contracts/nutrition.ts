@@ -92,7 +92,16 @@ export const PresetItem = z.discriminatedUnion('kind', [
 ]);
 export type PresetItem = z.infer<typeof PresetItem>;
 
-export const FoodIcon = z.enum(['roti', 'bowl', 'cup', 'egg', 'glass', 'plate', 'drumstick', 'cube', 'generic']);
+/**
+ * Illustration key for a meal. Food-specific art first; the older generic keys stay valid
+ * so records saved before the redesign still render.
+ */
+export const FoodIcon = z.enum([
+  'roti', 'dal', 'dahi', 'egg', 'chai', 'rice', 'curry', 'paneer', 'shake', 'sabzi', 'ghee',
+  'oats', 'fruit', 'salad', 'sandwich', 'coffee', 'plate',
+  // legacy generic keys
+  'bowl', 'cup', 'glass', 'drumstick', 'cube', 'generic',
+]);
 export type FoodIcon = z.infer<typeof FoodIcon>;
 
 export const MealPreset = AggregateBase.extend({
@@ -101,6 +110,12 @@ export const MealPreset = AggregateBase.extend({
   items: z.array(PresetItem).min(1),
   /** Allowed quantity steps for the tile stepper. */
   quantity_step: PositiveQty,
+  favorite: z.boolean().default(false),
+  /**
+   * Optional owner photo thumbnail (small JPEG data URL, re-encoded on device so metadata is dropped).
+   * Opt-in only; presentation, never evidence of nutrition.
+   */
+  photo: z.string().regex(/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/).max(140_000).nullable().default(null),
 });
 export type MealPreset = z.infer<typeof MealPreset>;
 

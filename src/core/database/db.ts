@@ -1,5 +1,8 @@
 import { deleteDB, openDB, type DBSchema, type IDBPDatabase } from 'idb';
+import { PROFILE_DOC_ID } from '@shared/contracts';
 import type {
+  ExerciseDefinition,
+  SettingsDoc,
   DailyHealthSummary,
   DailyLogStatus,
   FoodVersion,
@@ -13,7 +16,7 @@ import type {
 } from '@shared/contracts';
 
 /** Bump when the object-store layout changes; add an upgrade branch, never drop user stores. */
-export const DB_VERSION = 1;
+export const DB_VERSION = 2;
 
 export interface JournalSchema extends DBSchema {
   meta: { key: string; value: unknown };
@@ -27,6 +30,11 @@ export interface JournalSchema extends DBSchema {
   daily_health: { key: string; value: DailyHealthSummary; indexes: { by_date: string } };
   daily_log_status: { key: string; value: DailyLogStatus };
   outbox: { key: string; value: OutboxOp; indexes: { by_status: string; by_aggregate: string } };
+  // v2
+  exercises: { key: string; value: ExerciseDefinition };
+  settings: { key: string; value: SettingsDoc };
+  /** Last server-acknowledged version per document, the pull cursor, and conflict copies. */
+  sync_state: { key: string; value: unknown };
 }
 
 export type JournalDB = IDBPDatabase<JournalSchema>;
@@ -36,9 +44,10 @@ export function dbNameFor(profileId: string): string {
   return `rozana-journal-${profileId}`;
 }
 
+
 export async function openJournalDB(profileId: string): Promise<JournalDB> {
   return openDB<JournalSchema>(dbNameFor(profileId), DB_VERSION, {
-    upgrade(db, oldVersion) {
+    upgrade(db, oldVersion, _newVersion, tx) {
       if (oldVersion < 1) {
         db.createObjectStore('meta');
         db.createObjectStore('foods', { keyPath: 'id' });
@@ -55,6 +64,22 @@ export async function openJournalDB(profileId: string): Promise<JournalDB> {
         const ob = db.createObjectStore('outbox', { keyPath: 'op_id' });
         ob.createIndex('by_status', 'status');
         ob.createIndex('by_aggregate', 'aggregate_id');
+      }
+      if (oldVersion < 2) {
+        db.createObjectStore('exercises', { keyPath: 'id' });
+        db.createObjectStore('settings', { keyPath: 'id' });
+        db.createObjectStore('sync_state');
+        // Move the v1 device-only profile into a syncable settings document. Nothing is dropped.
+        const meta = tx.objectStore('meta');
+        void meta.get('profile').then((p) => {
+          if (!p || typeof p !== 'object') return;
+          const now = new Date().toISOString();
+          const prof = p as { id: string; synthetic?: boolean };
+          void tx.objectStore('settings').put({
+            id: PROFILE_DOC_ID, owner_id: prof.id, local_version: 1, created_at: now, updated_at: now,
+            deleted_at: null, synthetic: prof.synthetic ?? false, profile: p as SettingsDoc['profile'],
+          });
+        });
       }
     },
     blocked() {

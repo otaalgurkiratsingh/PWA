@@ -146,3 +146,86 @@ describe('demo seed', () => {
     demo.close();
   });
 });
+
+describe('v2 upgrade, restore and sync hooks', () => {
+  it('upgrading a v1 database keeps the profile and all records', async () => {
+    const { openDB } = await import('idb');
+    const { dbNameFor } = await import('./db');
+    await deleteJournalDB('legacy');
+    const v1 = await openDB(dbNameFor('legacy'), 1, {
+      upgrade(db) {
+        db.createObjectStore('meta');
+        db.createObjectStore('meal_entries', { keyPath: 'id' }).createIndex('by_date', 'local_date');
+        for (const s of ['foods', 'recipes', 'presets', 'programs']) db.createObjectStore(s, { keyPath: 'id' });
+        const ws = db.createObjectStore('workout_sessions', { keyPath: 'id' });
+        ws.createIndex('by_date', 'local_date');
+        ws.createIndex('by_status', 'status');
+        db.createObjectStore('weight_entries', { keyPath: 'id' }).createIndex('by_date', 'local_date');
+        db.createObjectStore('daily_health', { keyPath: 'id' }).createIndex('by_date', 'local_date');
+        db.createObjectStore('daily_log_status', { keyPath: 'local_date' });
+        const ob = db.createObjectStore('outbox', { keyPath: 'op_id' });
+        ob.createIndex('by_status', 'status');
+        ob.createIndex('by_aggregate', 'aggregate_id');
+      },
+    });
+    await v1.put('meta', { id: 'legacy', nickname: 'Old', units: 'kg', timezone: 'UTC', goal: 'strength', targets: null, synthetic: false }, 'profile');
+    await v1.put('meal_entries', meal({ owner_id: 'legacy' }));
+    v1.close();
+
+    const j2 = await Journal.open('legacy');
+    expect(j2.db.version).toBe(2);
+    expect((await j2.getProfile())!.nickname).toBe('Old');
+    expect(await j2.mealsOn('2026-10-09')).toHaveLength(1);
+    j2.close();
+  });
+
+  it('export → wipe → restore brings every record back and queues them for backup', async () => {
+    const m = meal();
+    await j.commit('meal_entries', m);
+    await j.setProfile({ id: OWNER, nickname: 'Me', units: 'kg', timezone: 'UTC', goal: 'consistency', targets: null, synthetic: false,
+      adult_confirmed: true, height_cm: null, consent: { cloud_backup: true, ai_processing: false, updated_at: null }, onboarded_at: null, updated_at: null });
+    const exported = JSON.parse(JSON.stringify(await j.exportAll()));
+    j.close();
+    await deleteJournalDB(OWNER);
+    j = await Journal.open(OWNER);
+    expect(await j.mealsOn('2026-10-09')).toHaveLength(0);
+
+    const res = await j.restore(exported);
+    expect(res.rejected).toEqual([]);
+    expect(res.written).toBe(2);
+    expect((await j.mealsOn('2026-10-09'))[0]!.id).toBe(m.id);
+    expect((await j.getProfile())!.nickname).toBe('Me');
+    expect((await j.pendingOps()).length).toBe(2);
+    // Restoring the same file again changes nothing.
+    expect((await j.restore(exported)).written).toBe(0);
+  });
+
+  it('refuses exports from another owner or a non-export file', async () => {
+    await expect(j.restore({ format: 'rozana-export', owner_id: 'someone-else' })).rejects.toThrow(/different account/);
+    await expect(j.restore({ hello: 1 })).rejects.toThrow(/not a Rozana export/);
+  });
+
+  it('acknowledged ops leave the outbox; cloud copies never overwrite a pending local edit', async () => {
+    const m = meal();
+    const { op_id } = await j.commit('meal_entries', m) as { op_id: string };
+    expect(await j.applyRemote('meal_entries', m.id, { ...m, name: 'From cloud' }, 3)).toBe('pending_local');
+    await j.acknowledge([{ op_id, aggregate: 'meal_entries', aggregate_id: m.id, server_version: 1 }]);
+    expect(await j.pendingOps()).toHaveLength(0);
+    expect(await j.serverVersion('meal_entries', m.id)).toBe(1);
+    expect(await j.applyRemote('meal_entries', m.id, { ...m, name: 'From cloud', local_version: 5 }, 2)).toBe('applied');
+    expect((await j.mealsOn('2026-10-09'))[0]!.name).toBe('From cloud');
+    expect(await j.applyRemote('meal_entries', m.id, { ...m, owner_id: 'intruder' }, 9)).toBe('invalid');
+  });
+
+  it('a conflict keeps the losing local copy and can restore it', async () => {
+    const m = meal();
+    const { op_id } = await j.commit('meal_entries', { ...m, name: 'Mine' }) as { op_id: string };
+    await j.recordConflict('meal_entries', m.id, op_id, { ...m, name: 'Theirs', local_version: 1 }, 4);
+    expect((await j.mealsOn('2026-10-09'))[0]!.name).toBe('Theirs');
+    expect((await j.conflicts())).toHaveLength(1);
+    await j.restoreConflict(0);
+    expect((await j.mealsOn('2026-10-09'))[0]!.name).toBe('Mine');
+    expect(await j.conflicts()).toHaveLength(0);
+    expect(await j.pendingOps()).toHaveLength(1);
+  });
+});

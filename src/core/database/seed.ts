@@ -1,4 +1,4 @@
-import type { DailyHealthSummary, DailyLogStatus, LocalProfile, MealEntry, WeightEntry, WorkoutSession } from '@shared/contracts';
+import { PROFILE_DOC_ID, type DailyHealthSummary, type DailyLogStatus, type LocalProfile, type MealEntry, type WeightEntry, type WorkoutSession } from '@shared/contracts';
 import { DEMO_DAY_PLAN, DEMO_PROFILES, demoFoods, demoPresets, demoProgram, demoRecipes } from '@shared/fixtures/demo';
 import { fixtureId } from '@shared/fixtures/ids';
 import { snapshotPreset } from '@/domain/nutrition/calc';
@@ -16,7 +16,8 @@ function mulberry32(seed: number) {
   };
 }
 
-const SEED_VERSION = 1;
+const SEED_VERSION = 2;
+const T_SEED = '2026-01-01T00:00:00.000Z';
 
 /**
  * Seed the synthetic demo profile, library, and ~5 weeks of synthetic history.
@@ -124,7 +125,7 @@ export async function seedDemoIfEmpty(journal: Journal, profileId: string, today
   }
 
   const tx = journal.db.transaction(
-    ['meta', 'foods', 'recipes', 'presets', 'programs', 'meal_entries', 'weight_entries', 'daily_health', 'daily_log_status', 'workout_sessions'],
+    ['meta', 'settings', 'foods', 'recipes', 'presets', 'programs', 'meal_entries', 'weight_entries', 'daily_health', 'daily_log_status', 'workout_sessions'],
     'readwrite',
   );
   await Promise.all([
@@ -137,7 +138,9 @@ export async function seedDemoIfEmpty(journal: Journal, profileId: string, today
     ...health.map((h) => tx.objectStore('daily_health').put(h)),
     ...statuses.map((s) => tx.objectStore('daily_log_status').put(s)),
     ...sessions.map((s) => tx.objectStore('workout_sessions').put(s)),
-    tx.objectStore('meta').put(profile, 'profile'),
+    tx.objectStore('settings').put({
+      id: PROFILE_DOC_ID, owner_id: owner, local_version: 1, created_at: T_SEED, updated_at: T_SEED, deleted_at: null, synthetic: true, profile,
+    }),
     tx.objectStore('meta').put(SEED_VERSION, 'seed_version'),
   ]);
   await tx.done;

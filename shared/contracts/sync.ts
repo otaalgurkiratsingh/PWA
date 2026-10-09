@@ -7,6 +7,12 @@ export const AggregateName = z.enum([
   'weight_entries',
   'daily_health',
   'daily_log_status',
+  'foods',
+  'recipes',
+  'presets',
+  'programs',
+  'exercises',
+  'settings',
 ]);
 export type AggregateName = z.infer<typeof AggregateName>;
 

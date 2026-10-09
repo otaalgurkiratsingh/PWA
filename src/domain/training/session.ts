@@ -73,6 +73,7 @@ export function startSession(a: NewSessionArgs): WorkoutSession {
         actual: null,
         status: 'pending',
         completed_at: null,
+        added: false,
       };
     });
     return {
@@ -83,6 +84,7 @@ export function startSession(a: NewSessionArgs): WorkoutSession {
       load_convention: pe.load_convention,
       unilateral: pe.unilateral,
       muscle_group: pe.muscle_group,
+      measurement: pe.measurement ?? 'weight_reps',
       sets,
     };
   });
@@ -225,4 +227,104 @@ export function describePrescription(sets: readonly SessionSet['planned'][]): st
   const reps = first.rep_min === first.rep_max ? `${first.rep_min}` : `${first.rep_min}–${first.rep_max}`;
   const load = first.target_load ? ` @ ${formatLoad(first.target_load, first.target_unit)}` : '';
   return `${warm ? `${warm} warm-up + ` : ''}${working.length} × ${reps}${load}`;
+}
+
+/** Add an extra set during the workout, copying the last set's target. Marked as added. */
+export function addSessionSet(s: WorkoutSession, plannedExerciseId: string, newId: () => string): WorkoutSession {
+  if (s.status !== 'active') throw new Error('Session is finished; reopen it to edit');
+  let found = false;
+  const exercises = s.exercises.map((e) => {
+    if (e.planned_exercise_id !== plannedExerciseId) return e;
+    found = true;
+    const last = e.sets[e.sets.length - 1]!;
+    const draft = last.actual ? { reps: last.actual.reps, load: last.actual.load } : { ...last.draft };
+    const set: SessionSet = {
+      id: newId(),
+      index: e.sets.length,
+      type: 'working',
+      planned: { ...last.planned, type: 'working' },
+      draft,
+      actual: null,
+      status: 'pending',
+      completed_at: null,
+      added: true,
+    };
+    return { ...e, sets: [...e.sets, set] };
+  });
+  if (!found) throw new Error('Exercise not in session');
+  return { ...s, exercises };
+}
+
+/** Remove a set that was added during the workout and never completed. Planned sets are skipped instead. */
+export function removeAddedSet(s: WorkoutSession, setId: string): WorkoutSession {
+  return {
+    ...s,
+    exercises: s.exercises.map((e) => ({
+      ...e,
+      sets: e.sets.filter((x) => !(x.id === setId && x.added && x.status !== 'completed')).map((x, i) => ({ ...x, index: i })),
+    })),
+  };
+}
+
+/** Flag (or clear) discomfort on a completed set without changing its performance. */
+export function setDiscomfort(s: WorkoutSession, setId: string, discomfort: boolean): WorkoutSession {
+  return mapSet(s, setId, (set) => (set.actual ? { ...set, actual: { ...set.actual, discomfort } } : set));
+}
+
+export interface ExerciseComparison {
+  name: string;
+  best: ActualSet | null;
+  previous: ActualSet | null;
+  /** Only computed for comparable variants with loads in the same convention. */
+  change: 'heavier' | 'more_reps' | 'same' | 'lower' | 'first_time' | 'not_comparable';
+}
+
+export interface SessionSummaryData {
+  durationMinutes: number | null;
+  exercisesDone: number;
+  exercisesTotal: number;
+  workingSets: number;
+  skipped: number;
+  discomfortFlags: number;
+  comparisons: ExerciseComparison[];
+}
+
+export function sessionSummary(s: WorkoutSession, history: readonly WorkoutSession[], unit: LoadUnit): SessionSummaryData {
+  const end = s.finished_at ?? s.updated_at;
+  const mins = Math.round((Date.parse(end) - Date.parse(s.started_at)) / 60000);
+  let workingSets = 0;
+  let exercisesDone = 0;
+  const comparisons: ExerciseComparison[] = [];
+  for (const e of s.exercises) {
+    const sum = workingSummary(e, unit);
+    workingSets += sum.completedWorkingSets;
+    if (e.sets.some((x) => x.status === 'completed')) exercisesDone++;
+    if (!sum.bestSet) continue;
+    const prev = lastComparable(history.filter((h) => h.id !== s.id), comparableKey(e));
+    const prevBest = prev ? workingSummary(prev, unit).bestSet : null;
+    let change: ExerciseComparison['change'] = 'first_time';
+    if (prevBest) {
+      const a = convertLoad(sum.bestSet.load, sum.bestSet.unit, unit);
+      const b = convertLoad(prevBest.load, prevBest.unit, unit);
+      if (Math.abs(a - b) < 0.01) change = sum.bestSet.reps > prevBest.reps ? 'more_reps' : sum.bestSet.reps === prevBest.reps ? 'same' : 'lower';
+      else change = a > b ? 'heavier' : 'lower';
+    }
+    comparisons.push({ name: e.name, best: sum.bestSet, previous: prevBest, change });
+  }
+  const all = s.exercises.flatMap((e) => e.sets);
+  return {
+    durationMinutes: Number.isFinite(mins) && mins >= 0 ? mins : null,
+    exercisesDone,
+    exercisesTotal: s.exercises.length,
+    workingSets,
+    skipped: all.filter((x) => x.status === 'skipped').length,
+    discomfortFlags: all.filter((x) => x.actual?.discomfort).length,
+    comparisons,
+  };
+}
+
+/** Index of the exercise to focus: the first with a pending set, else the last. */
+export function currentExerciseIndex(s: WorkoutSession): number {
+  const i = s.exercises.findIndex((e) => e.sets.some((x) => x.status === 'pending'));
+  return i === -1 ? s.exercises.length - 1 : i;
 }

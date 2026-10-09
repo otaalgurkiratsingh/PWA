@@ -95,7 +95,7 @@ describe('unknown values', () => {
   });
 
   it('a food with no known energy gives Unknown, not 0', () => {
-    const p = { ...base, id: ids.recipe, name: 'x', icon: 'generic' as const, quantity_step: 1,
+    const p = { ...base, id: ids.recipe, name: 'x', icon: 'generic' as const, quantity_step: 1, favorite: false, photo: null,
       items: [{ kind: 'food' as const, food_version_id: ids.mystery, unit_label: 'tsp', grams_per_unit: 5, default_quantity: 1 }] } satisfies MealPreset;
     const items = snapshotPreset(p, 1, { foods, recipes: new Map() });
     expect(items[0]!.nutrients.energy_kcal).toBeNull();
@@ -108,7 +108,7 @@ describe('unknown values', () => {
 describe('snapshots and revisions', () => {
   it('a logged snapshot is unaffected by a later recipe revision', () => {
     const preset: MealPreset = {
-      ...base, id: ids.recipe, name: 'Dal katori', icon: 'bowl', quantity_step: 0.5,
+      ...base, id: ids.recipe, name: 'Dal katori', icon: 'bowl', quantity_step: 0.5, favorite: false, photo: null,
       items: [{ kind: 'recipe', recipe_revision_id: ids.recipe, unit_label: 'katori', grams_per_unit: 200, default_quantity: 1 }],
     };
     const lib = { foods, recipes: new Map([[dal.id, dal]]) };
@@ -129,7 +129,7 @@ describe('snapshots and revisions', () => {
 
   it('quantity multiplier scales grams and nutrients linearly', () => {
     const preset: MealPreset = {
-      ...base, id: ids.recipe, name: 'Dal', icon: 'bowl', quantity_step: 0.5,
+      ...base, id: ids.recipe, name: 'Dal', icon: 'bowl', quantity_step: 0.5, favorite: false, photo: null,
       items: [{ kind: 'recipe', recipe_revision_id: ids.recipe, unit_label: 'katori', grams_per_unit: 200, default_quantity: 1 }],
     };
     const lib = { foods, recipes: new Map([[dal.id, dal]]) };

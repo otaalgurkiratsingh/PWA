@@ -17,6 +17,14 @@ export type LoadConvention = z.infer<typeof LoadConvention>;
 export const MuscleGroup = z.enum(['chest', 'back', 'legs', 'shoulders', 'arms', 'core', 'full']);
 export type MuscleGroup = z.infer<typeof MuscleGroup>;
 
+/** What a set records. Only strength-style measurements are supported in this release. */
+export const Measurement = z.enum(['weight_reps', 'reps', 'duration']);
+export type Measurement = z.infer<typeof Measurement>;
+
+/** Equipment drives the exercise illustration and sensible load increments. */
+export const Equipment = z.enum(['barbell', 'dumbbell', 'cable', 'machine', 'bodyweight', 'kettlebell', 'band', 'other']);
+export type Equipment = z.infer<typeof Equipment>;
+
 export const PrescribedSet = z
   .object({
     type: SetType,
@@ -39,6 +47,7 @@ export const PlannedExercise = z.object({
   load_convention: LoadConvention,
   unilateral: z.boolean(),
   muscle_group: MuscleGroup,
+  measurement: Measurement.default('weight_reps'),
   sets: z.array(PrescribedSet).min(1),
 });
 export type PlannedExercise = z.infer<typeof PlannedExercise>;
@@ -47,6 +56,8 @@ export const ProgramDay = z.object({
   id: Id,
   name: z.string().min(1).max(60),
   muscle_groups: z.array(MuscleGroup),
+  /** Optional weekday (0 = Sunday … 6 = Saturday) when the plan follows weekdays. */
+  weekday: z.number().int().min(0).max(6).nullable().default(null),
   exercises: z.array(PlannedExercise).min(1),
 });
 export type ProgramDay = z.infer<typeof ProgramDay>;
@@ -56,6 +67,8 @@ export const ProgramVersion = AggregateBase.extend({
   program_id: Id,
   version: z.number().int().positive(),
   name: z.string().min(1).max(60),
+  /** 'rotation' = next day in order after the last workout; 'weekdays' = by assigned weekday. */
+  schedule: z.enum(['rotation', 'weekdays']).default('rotation'),
   days: z.array(ProgramDay).min(1),
 });
 export type ProgramVersion = z.infer<typeof ProgramVersion>;
@@ -84,6 +97,8 @@ export const SessionSet = z.object({
   actual: ActualSet.nullable(),
   status: SetStatus,
   completed_at: Instant.nullable(),
+  /** True when the set was added during the workout (not part of the plan). */
+  added: z.boolean().default(false),
 });
 export type SessionSet = z.infer<typeof SessionSet>;
 
@@ -95,6 +110,7 @@ export const SessionExercise = z.object({
   load_convention: LoadConvention,
   unilateral: z.boolean(),
   muscle_group: MuscleGroup,
+  measurement: Measurement.default('weight_reps'),
   sets: z.array(SessionSet).min(1),
 });
 export type SessionExercise = z.infer<typeof SessionExercise>;
@@ -121,3 +137,15 @@ export const RestTimer = z.object({
   duration_seconds: z.number().int().positive(),
 });
 export type RestTimer = z.infer<typeof RestTimer>;
+
+/** Owner-created exercise definition (library entries are built in and not stored). */
+export const ExerciseDefinition = AggregateBase.extend({
+  key: z.string().min(1).max(60),
+  name: z.string().min(1).max(60),
+  equipment: Equipment,
+  muscle_group: MuscleGroup,
+  load_convention: LoadConvention,
+  unilateral: z.boolean(),
+  measurement: Measurement,
+});
+export type ExerciseDefinition = z.infer<typeof ExerciseDefinition>;

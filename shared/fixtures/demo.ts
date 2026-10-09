@@ -33,8 +33,13 @@ export const DEMO_PROFILES: readonly LocalProfile[] = [
     units: 'kg',
     timezone: 'UTC', // replaced at runtime with the device timezone
     goal: 'consistency',
-    targets: { energy_kcal: 2200, protein_g: 140, source: 'Synthetic demo target — replace with your own plan' },
+    targets: { energy_kcal: 2200, protein_g: 140, source: 'Demo target' },
     synthetic: true,
+    adult_confirmed: true,
+    height_cm: null,
+    consent: { cloud_backup: false, ai_processing: false, updated_at: null },
+    onboarded_at: '2026-01-01T00:00:00.000Z',
+    updated_at: null,
   },
   {
     id: 'demo-b',
@@ -44,6 +49,11 @@ export const DEMO_PROFILES: readonly LocalProfile[] = [
     goal: 'strength',
     targets: null, // demonstrates journaling without any target
     synthetic: true,
+    adult_confirmed: true,
+    height_cm: null,
+    consent: { cloud_backup: false, ai_processing: false, updated_at: null },
+    onboarded_at: '2026-01-01T00:00:00.000Z',
+    updated_at: null,
   },
 ];
 
@@ -127,25 +137,27 @@ export function demoRecipes(owner: string): RecipeRevision[] {
 const rid = (k: string) => fixtureId(`recipe:${k}:1`);
 
 export function demoPresets(owner: string): MealPreset[] {
-  const p = (key: string, name: string, icon: MealPreset['icon'], step: number, items: MealPreset['items']): MealPreset => ({
+  const p = (key: string, name: string, icon: MealPreset['icon'], step: number, items: MealPreset['items'], favorite = false): MealPreset => ({
     ...base(owner, fixtureId(`preset:${key}`)),
     name,
     icon,
     quantity_step: step,
     items,
+    favorite,
+    photo: null,
   });
   return [
-    p('roti', 'Roti', 'roti', 1, [{ kind: 'food', food_version_id: fid('roti'), unit_label: 'roti', grams_per_unit: 40, default_quantity: 2 }]),
-    p('dal', 'Dal katori', 'bowl', 0.5, [{ kind: 'recipe', recipe_revision_id: rid('dal'), unit_label: 'katori', grams_per_unit: 180, default_quantity: 1 }]),
-    p('chai', 'Chai', 'cup', 1, [{ kind: 'recipe', recipe_revision_id: rid('chai'), unit_label: 'cup', grams_per_unit: 150, default_quantity: 1 }]),
-    p('eggs', 'Boiled eggs', 'egg', 1, [{ kind: 'food', food_version_id: fid('egg'), unit_label: 'egg', grams_per_unit: 50, default_quantity: 2 }]),
-    p('dahi', 'Dahi katori', 'bowl', 0.5, [{ kind: 'food', food_version_id: fid('dahi'), unit_label: 'katori', grams_per_unit: 150, default_quantity: 1 }]),
-    p('rice', 'Rice katori', 'plate', 0.5, [{ kind: 'food', food_version_id: fid('rice'), unit_label: 'katori', grams_per_unit: 150, default_quantity: 1 }]),
-    p('paneer', 'Paneer bhurji', 'cube', 0.5, [{ kind: 'recipe', recipe_revision_id: rid('paneer_bhurji'), unit_label: 'serving', grams_per_unit: 150, default_quantity: 1 }]),
-    p('chicken', 'Chicken curry', 'drumstick', 0.5, [{ kind: 'recipe', recipe_revision_id: rid('chicken_curry'), unit_label: 'katori', grams_per_unit: 200, default_quantity: 1 }]),
-    p('whey', 'Whey shake', 'glass', 1, [{ kind: 'food', food_version_id: fid('whey'), unit_label: 'scoop', grams_per_unit: 30, default_quantity: 1 }]),
-    p('sabzi', 'Sabzi', 'bowl', 0.5, [{ kind: 'food', food_version_id: fid('sabzi_unknown'), unit_label: 'katori', grams_per_unit: 150, default_quantity: 1 }]),
-    p('ghee', 'Ghee on plate', 'generic', 1, [{ kind: 'food', food_version_id: fid('ghee'), unit_label: 'tsp', grams_per_unit: 5, default_quantity: 1 }]),
+    p('roti', 'Roti', 'roti', 1, [{ kind: 'food', food_version_id: fid('roti'), unit_label: 'roti', grams_per_unit: 40, default_quantity: 2 }], true),
+    p('dal', 'Dal', 'dal', 0.5, [{ kind: 'recipe', recipe_revision_id: rid('dal'), unit_label: 'bowl', grams_per_unit: 180, default_quantity: 1 }], true),
+    p('chai', 'Chai', 'chai', 1, [{ kind: 'recipe', recipe_revision_id: rid('chai'), unit_label: 'cup', grams_per_unit: 150, default_quantity: 1 }], true),
+    p('eggs', 'Boiled eggs', 'egg', 1, [{ kind: 'food', food_version_id: fid('egg'), unit_label: 'egg', grams_per_unit: 50, default_quantity: 2 }], true),
+    p('dahi', 'Dahi', 'dahi', 0.5, [{ kind: 'food', food_version_id: fid('dahi'), unit_label: 'bowl', grams_per_unit: 150, default_quantity: 1 }]),
+    p('rice', 'Rice', 'rice', 0.5, [{ kind: 'food', food_version_id: fid('rice'), unit_label: 'bowl', grams_per_unit: 150, default_quantity: 1 }]),
+    p('paneer', 'Paneer bhurji', 'paneer', 0.5, [{ kind: 'recipe', recipe_revision_id: rid('paneer_bhurji'), unit_label: 'serving', grams_per_unit: 150, default_quantity: 1 }]),
+    p('chicken', 'Chicken curry', 'curry', 0.5, [{ kind: 'recipe', recipe_revision_id: rid('chicken_curry'), unit_label: 'bowl', grams_per_unit: 200, default_quantity: 1 }]),
+    p('whey', 'Whey shake', 'shake', 1, [{ kind: 'food', food_version_id: fid('whey'), unit_label: 'scoop', grams_per_unit: 30, default_quantity: 1 }]),
+    p('sabzi', 'Sabzi', 'sabzi', 0.5, [{ kind: 'food', food_version_id: fid('sabzi_unknown'), unit_label: 'bowl', grams_per_unit: 150, default_quantity: 1 }]),
+    p('ghee', 'Ghee on roti', 'ghee', 1, [{ kind: 'food', food_version_id: fid('ghee'), unit_label: 'tsp', grams_per_unit: 5, default_quantity: 1 }]),
   ];
 }
 
@@ -171,6 +183,7 @@ export function demoProgram(owner: string): ProgramVersion {
     load_convention: conv,
     unilateral,
     muscle_group: group,
+    measurement: (conv === 'bodyweight' ? (key === 'plank' ? 'duration' : 'reps') : 'weight_reps') as 'weight_reps' | 'reps' | 'duration',
     sets: [
       ...(warm !== null ? [{ type: 'warmup' as const, rep_min: 10, rep_max: 10, target_load: warm || null, target_unit: 'kg' as const, rest_seconds: 60, rir_target: null }] : []),
       ...Array.from({ length: sets }, () => ({ type: 'working' as const, rep_min: repMin, rep_max: repMax, target_load: load, target_unit: 'kg' as const, rest_seconds: rest, rir_target: 2 })),
@@ -180,10 +193,11 @@ export function demoProgram(owner: string): ProgramVersion {
     ...base(owner, fixtureId('program:demo:v1')),
     program_id: fixtureId('program:demo'),
     version: 1,
-    name: 'Demo 3-day plan (synthetic)',
+    name: 'Demo plan',
+    schedule: 'rotation',
     days: [
       {
-        id: fixtureId('day:push'), name: 'Push', muscle_groups: ['chest', 'shoulders', 'arms'],
+        id: fixtureId('day:push'), name: 'Push', weekday: null, muscle_groups: ['chest', 'shoulders', 'arms'],
         exercises: [
           ex('bench_press', 'Bench press', 'barbell', 'total', 'chest', 20, 50, 6, 8, 3, 120),
           ex('overhead_press', 'Overhead press', 'dumbbell', 'per_dumbbell', 'shoulders', null, 14, 8, 10, 3, 90),
@@ -191,7 +205,7 @@ export function demoProgram(owner: string): ProgramVersion {
         ],
       },
       {
-        id: fixtureId('day:pull'), name: 'Pull', muscle_groups: ['back', 'arms'],
+        id: fixtureId('day:pull'), name: 'Pull', weekday: null, muscle_groups: ['back', 'arms'],
         exercises: [
           ex('pull_up', 'Pull-up', 'bodyweight', 'bodyweight', 'back', null, null, 5, 8, 3, 120),
           ex('row', 'Seated cable row', 'cable', 'total', 'back', null, 45, 8, 10, 3, 90),
@@ -199,11 +213,11 @@ export function demoProgram(owner: string): ProgramVersion {
         ],
       },
       {
-        id: fixtureId('day:legs'), name: 'Legs', muscle_groups: ['legs', 'core'],
+        id: fixtureId('day:legs'), name: 'Legs', weekday: null, muscle_groups: ['legs', 'core'],
         exercises: [
           ex('squat', 'Back squat', 'barbell', 'total', 'legs', 20, 70, 5, 8, 3, 150),
           ex('split_squat', 'Split squat', 'dumbbell', 'per_dumbbell', 'legs', null, 12, 8, 10, 2, 90, true),
-          ex('plank', 'Plank (reps = 10 s holds)', 'bodyweight', 'bodyweight', 'core', null, null, 3, 4, 2, 60),
+          ex('plank', 'Plank', 'bodyweight', 'bodyweight', 'core', null, null, 30, 45, 2, 60),
         ],
       },
     ],

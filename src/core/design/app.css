@@ -1772,3 +1772,49 @@ table.data td {
   display: grid;
   place-items: center;
 }
+
+/* ---------- "How you're doing" (Today) ---------- */
+.card.momentum {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.momentum .mo-badge {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: var(--train);
+  color: var(--train-ink);
+}
+.momentum.win .mo-badge {
+  background: var(--train-ink);
+  color: var(--card);
+}
+.momentum .mo-title {
+  display: block;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+.momentum .mo-detail {
+  display: block;
+  color: var(--text-2);
+  margin-top: 2px;
+}
+.momentum .mo-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+  font-size: var(--fs-label);
+  color: var(--text-2);
+}
+.momentum .mo-stats b {
+  color: var(--text);
+  font-weight: 700;
+  margin-right: 2px;
+}

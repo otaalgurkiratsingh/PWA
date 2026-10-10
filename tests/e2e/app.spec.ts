@@ -456,3 +456,14 @@ test.describe('layout and accessibility', () => {
     expect(parseFloat(d)).toBeLessThan(0.01);
   });
 });
+
+test.describe('Today motivation', () => {
+  test('“How you’re doing” shows the person’s own recent workouts and logging', async ({ page }) => {
+    await enterDemo(page);
+    const card = page.getByRole('region', { name: /./ }).filter({ hasText: 'How you’re doing' });
+    await expect(card).toBeVisible();
+    await expect(card.getByText(/workouts · 7 days/)).toBeVisible();
+    await expect(card.getByText(/days? logging/)).toBeVisible();
+    await page.screenshot({ path: 'docs/screenshots/37-today-motivation.png', fullPage: false });
+  });
+});

@@ -7,6 +7,7 @@ import { Icon } from '@/core/design/icons';
 import { Section } from '@/core/design/ui';
 import { formatShortDate, formatTime, localHourIn } from '@/core/time/localDate';
 import { addDays } from '@/domain/metrics/metrics';
+import { momentum } from '@/domain/metrics/momentum';
 import { formatTotal, totalsOfItems } from '@/domain/nutrition/calc';
 import { suggestedDay } from '@/domain/training/plan';
 import { sessionProgress } from '@/domain/training/session';
@@ -26,6 +27,7 @@ export function TodayScreen() {
   const status = useQuery((j) => j.db.get('daily_log_status', today), [today]);
   const program = useQuery((j) => j.currentProgram(), []);
   const sessions = useQuery((j) => j.sessions(), []);
+  const mealsTwoMonths = useQuery((j) => j.mealsBetween(addDays(today, -60), today), [today]);
   const steps = useQuery((j) => j.db.get('daily_health', `steps:${today}`), [today]);
   const weights = useQuery((j) => j.weightsBetween(addDays(today, -13), today), [today]);
   const [adding, setAdding] = useState<MealPreset | null>(null);
@@ -37,7 +39,9 @@ export function TodayScreen() {
   const doneToday = finished.find((s) => s.local_date === today);
   const weekday = new Date(`${today}T12:00:00Z`).getUTCDay();
   const next = program ? suggestedDay(program, finished, weekday) : null;
-  const weekCount = finished.filter((s) => s.local_date >= addDays(today, -6)).length;
+  const planned = program?.schedule === 'weekdays' ? program.days.filter((d) => d.weekday !== null).length : 0;
+  const target = profile.training?.sessions_per_week ?? (planned || null);
+  const mood = sessions && mealsTwoMonths ? momentum({ today, sessions, meals: mealsTwoMonths, target }) : null;
   const latestWeight = weights?.sort((a, b) => b.measured_at.localeCompare(a.measured_at))[0];
 
   const hour = localHourIn(profile.timezone);
@@ -73,6 +77,24 @@ export function TodayScreen() {
         <button className="btn block" style={{ marginTop: 14 }} onClick={feature.go}>{feature.action}</button>
       </div>
 
+      {mood ? (
+        <section className={`card momentum ${mood.tone}`} aria-labelledby="momentum-title">
+          <span className="eyebrow">How you’re doing</span>
+          <div className="row" style={{ gap: 12, alignItems: 'flex-start' }}>
+            <span className="mo-badge" aria-hidden="true"><Icon name={mood.tone === 'win' ? 'star' : mood.tone === 'steady' ? 'progress' : 'heart'} size={20} /></span>
+            <span className="grow">
+              <strong id="momentum-title" className="mo-title">{mood.headline}</strong>
+              <span className="small mo-detail">{mood.detail}</span>
+            </span>
+          </div>
+          <div className="mo-stats">
+            <span><b className="num">{mood.workouts7}{mood.target ? `/${mood.target}` : ''}</b> workouts · 7 days</span>
+            <span><b className="num">{mood.sets7}</b> sets</span>
+            <span><b className="num">{mood.logStreak}</b> day{mood.logStreak === 1 ? '' : 's'} logging</span>
+          </div>
+        </section>
+      ) : null}
+
       <Section title="Food today" action={<button className="link" onClick={() => navigate('food')}>Open <Icon name="chevronRight" size={16} /></button>}>
         <div className="card">
           {meals ? <NutritionSummary entries={meals} targets={profile.targets} dayComplete={status?.intake_complete ?? false} compact /> : <div className="skeleton" />}
@@ -102,9 +124,8 @@ export function TodayScreen() {
         ) : null}
       </Section>
 
-      {steps || latestWeight || weekCount ? (
+      {steps || latestWeight ? (
         <div className="metrics">
-          {weekCount ? <div className="metric"><span className="m-label">This week</span><span className="m-value">{weekCount}<small>workout{weekCount === 1 ? '' : 's'}</small></span><span className="m-sub">last 7 days</span></div> : null}
           {latestWeight ? <div className="metric"><span className="m-label">Weight</span><span className="m-value">{latestWeight.value}<small>{latestWeight.unit}</small></span><span className="m-sub">{latestWeight.local_date === today ? 'Today' : formatShortDate(latestWeight.local_date)}</span></div> : null}
           {steps ? <div className="metric"><span className="m-label">Steps</span><span className="m-value">{steps.value.toLocaleString('en-US')}</span><span className="m-sub">Manual · {formatTime(steps.recorded_at, profile.timezone)}</span></div> : null}
         </div>

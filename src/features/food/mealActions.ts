@@ -63,6 +63,7 @@ export function buildEntry(args: {
     logged_at: nowIso,
     quantity: args.multiplier,
     items: snapshotPreset(args.preset, args.multiplier, args.lib),
+    catalogue_id: args.preset.catalogue_id ?? null,
   };
 }
 
@@ -75,7 +76,7 @@ export function rescaleEntry(entry: MealEntry, newMultiplier: number): MealEntry
   const items: MealItemSnapshot[] = entry.items.map((it) => ({
     ...it,
     quantity: Math.round(it.quantity * f * 100) / 100,
-    grams: Math.round(it.grams * f * 10) / 10,
+    grams: it.grams === null ? null : Math.round(it.grams * f * 10) / 10,
     nutrients: Object.fromEntries(
       NUTRIENT_KEYS.map((k) => [k, it.nutrients[k] === null ? null : roundNutrient(k, it.nutrients[k]! * f)]),
     ) as Nutrients,

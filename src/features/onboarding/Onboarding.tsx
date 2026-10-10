@@ -78,9 +78,12 @@ export function Onboarding() {
         synthetic: false,
         adult_confirmed: true,
         height_cm: Number(height) > 0 ? Number(height) : null,
-        consent: { cloud_backup: backup, ai_processing: ai, updated_at: now },
+        consent: { cloud_backup: backup, ai_processing: ai, photo_storage: false, ai_images: false, updated_at: now },
         onboarded_at: now,
         updated_at: now,
+        food_prefs: { pattern: 'unspecified', meatless_weekdays: [], allergies: [] },
+        training: null,
+        profile_version: 0,
       };
       await complete(profile);
     } catch (err) {

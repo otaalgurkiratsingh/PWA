@@ -183,7 +183,8 @@ describe('v2 upgrade, restore and sync hooks', () => {
     const m = meal();
     await j.commit('meal_entries', m);
     await j.setProfile({ id: OWNER, nickname: 'Me', units: 'kg', timezone: 'UTC', goal: 'consistency', targets: null, synthetic: false,
-      adult_confirmed: true, height_cm: null, consent: { cloud_backup: true, ai_processing: false, updated_at: null }, onboarded_at: null, updated_at: null });
+      adult_confirmed: true, height_cm: null, consent: { cloud_backup: true, ai_processing: false, photo_storage: false, ai_images: false, updated_at: null }, onboarded_at: null, updated_at: null,
+      food_prefs: { pattern: 'unspecified', meatless_weekdays: [], allergies: [] }, training: null, profile_version: 0 });
     const exported = JSON.parse(JSON.stringify(await j.exportAll()));
     j.close();
     await deleteJournalDB(OWNER);

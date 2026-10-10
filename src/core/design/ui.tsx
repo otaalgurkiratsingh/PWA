@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, type ReactNode } from 'react';
 import { Icon, type IconName } from './icons';
+import { dateParts } from '../time/localDate';
 
 /** Bottom sheet: focus moves in, Escape/backdrop closes, focus returns to the opener. */
 export function Sheet({ title, onClose, children, actions, full = false, labelledBy }: {
@@ -155,5 +156,16 @@ export function EmptyState({ icon, tone = 'train', title, children, action }: {
       {children ? <div className="small">{children}</div> : null}
       {action}
     </div>
+  );
+}
+
+/** Month over day in a mint tile. Decorative: the row that holds it carries the full date. */
+export function DateBadge({ date }: { date: string }) {
+  const { month, day } = dateParts(date);
+  return (
+    <span className="date-badge" aria-hidden="true">
+      <span className="db-month">{month}</span>
+      <span className="db-day">{day}</span>
+    </span>
   );
 }

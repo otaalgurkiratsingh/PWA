@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import type { FoodIcon } from '@shared/contracts';
+import { CatalogueArt, hasCatalogueArt } from './catalogueArt';
 
 /**
  * Original flat food illustrations (drawn for this app; no third-party assets).
@@ -225,8 +226,13 @@ export const ART_CHOICES: { key: FoodIcon; label: string }[] = [
   { key: 'plate', label: 'Other' },
 ];
 
-export function FoodArt({ icon, size = 96, photo, label }: { icon: FoodIcon; size?: number; photo?: string | null; label?: string }) {
+/**
+ * Picture for a meal: the person's own photo if they chose one, else the catalogue dish art when
+ * the meal came from the catalogue, else the original icon art. Pictures never imply nutrition.
+ */
+export function FoodArt({ icon, size = 96, photo, label, catalogueId }: { icon: FoodIcon; size?: number; photo?: string | null; label?: string; catalogueId?: string | null }) {
   if (photo) return <img src={photo} alt={label ? `${label} (your photo)` : ''} width={size} height={size} />;
+  if (catalogueId && hasCatalogueArt(catalogueId)) return <CatalogueArt id={catalogueId} size={size} />;
   const draw = ART[icon] ?? ART.plate;
   return (
     <svg width={size} height={size} viewBox="0 0 96 96" aria-hidden="true" focusable="false">

@@ -694,6 +694,59 @@ p {
   color: var(--text-2);
 }
 
+/* ---------- date badge (recent workouts) ---------- */
+.date-badge {
+  flex: none;
+  box-sizing: border-box;
+  /* Minimums, not fixed sizes: at large text the tile grows instead of clipping. */
+  min-width: 3.25rem;
+  min-height: 3.25rem;
+  padding: 0.375rem 0.25rem;
+  border-radius: var(--r-md);
+  background: var(--train);
+  color: var(--train-ink);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  white-space: nowrap;
+}
+.date-badge .db-month {
+  font-size: 0.6875rem;
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.date-badge .db-day {
+  font-size: 1.25rem;
+  line-height: 1.1;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+  margin-top: 0.125rem;
+}
+.history-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  color: inherit;
+}
+.history-row .er-name {
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+.history-row .er-sub {
+  font-size: var(--fs-label);
+  color: var(--text-2);
+}
+
 /* ---------- exercise rows ---------- */
 .ex-row {
   display: flex;
@@ -1552,4 +1605,18 @@ table.data td {
   font-size: 1.25rem;
   font-weight: 700;
   letter-spacing: -0.01em;
+}
+
+/* ---------- food picker ---------- */
+.picker-head {
+  font-size: var(--fs-small);
+  font-weight: 700;
+  color: var(--text-2);
+  text-transform: none;
+  margin: 0;
+}
+/* Long lists (All foods) skip layout/paint for rows that are off screen. */
+.lazy-row {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 76px;
 }

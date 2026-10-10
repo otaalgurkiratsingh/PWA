@@ -24,6 +24,11 @@ export type NutrientTotals = Record<NutrientKey, NutrientTotal>;
 
 export class NutritionError extends Error {}
 
+/** Every nutrient unknown (used for servings that were never weighed). */
+export function unknownTotals(): NutrientTotals {
+  return Object.fromEntries(NUTRIENT_KEYS.map((k) => [k, { value: null, complete: false }])) as NutrientTotals;
+}
+
 export function emptyTotals(): NutrientTotals {
   return Object.fromEntries(NUTRIENT_KEYS.map((k) => [k, { value: null, complete: true }])) as NutrientTotals;
 }
@@ -93,7 +98,8 @@ const ESTIMATED_KINDS: ReadonlySet<SourceKind> = new Set(['generic_assumption', 
 /** Snapshot one preset item at a given quantity. The snapshot is stored and never recomputed. */
 export function snapshotPresetItem(item: PresetItem, quantity: number, lib: NutritionLibrary): MealItemSnapshot {
   if (!(quantity > 0)) throw new NutritionError('Quantity must be positive');
-  const grams = item.grams_per_unit * quantity;
+  // Not weighed yet: the entry is still a journal record, but every nutrient is unknown.
+  const grams = item.grams_per_unit === null ? null : item.grams_per_unit * quantity;
   let totals: NutrientTotals;
   let label: string;
   let sourceKinds: SourceKind[];
@@ -101,14 +107,14 @@ export function snapshotPresetItem(item: PresetItem, quantity: number, lib: Nutr
   if (item.kind === 'food') {
     const food = lib.foods.get(item.food_version_id);
     if (!food) throw new NutritionError(`Missing food version ${item.food_version_id}`);
-    totals = foodPortion(food, grams);
+    totals = grams === null ? unknownTotals() : foodPortion(food, grams);
     label = food.name;
     sourceKinds = [food.source.kind];
     ref = { kind: 'food', id: food.id, revision: food.revision };
   } else {
     const recipe = lib.recipes.get(item.recipe_revision_id);
     if (!recipe) throw new NutritionError(`Missing recipe revision ${item.recipe_revision_id}`);
-    totals = portionNutrients(batchNutrients(recipe, lib.foods), grams, recipe.batch_cooked_edible_yield_g);
+    totals = grams === null ? unknownTotals() : portionNutrients(batchNutrients(recipe, lib.foods), grams, recipe.batch_cooked_edible_yield_g);
     label = recipe.name;
     sourceKinds = sourceKindsForRecipe(recipe, lib.foods);
     ref = { kind: 'recipe', id: recipe.id, revision: recipe.revision };
@@ -119,7 +125,7 @@ export function snapshotPresetItem(item: PresetItem, quantity: number, lib: Nutr
     label,
     quantity,
     unit_label: item.unit_label,
-    grams: round(grams, 1),
+    grams: grams === null ? null : round(grams, 1),
     nutrients,
     complete,
     source_kinds: sourceKinds,

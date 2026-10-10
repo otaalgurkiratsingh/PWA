@@ -41,3 +41,4 @@ keystore.properties
 .vscode/*
 !.vscode/extensions.json
 dist-e2e-auth/
+pw-tmp.config.ts

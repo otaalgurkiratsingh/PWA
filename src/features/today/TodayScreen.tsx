@@ -92,7 +92,7 @@ export function TodayScreen() {
               const t = totalsOfItems(e.items);
               return (
                 <div key={e.id} className="meal-row">
-                  <span className="mini-thumb"><FoodArt icon={e.icon} photo={lib?.presets.find((p) => p.id === e.preset_id)?.photo} size={48} label={e.name} /></span>
+                  <span className="mini-thumb"><FoodArt icon={e.icon} photo={lib?.presets.find((p) => p.id === e.preset_id)?.photo} catalogueId={e.catalogue_id} size={48} label={e.name} /></span>
                   <span className="grow"><span className="mr-name">{e.name}</span><br /><span className="mr-sub">{e.items.map((i) => describeAmount(i.unit_label, i.quantity)).join(' + ')} · {formatTime(e.logged_at, e.timezone)}</span></span>
                   <span className="small muted num">{t.energy_kcal.value === null ? '' : formatTotal(t.energy_kcal, 'kcal')}</span>
                 </div>

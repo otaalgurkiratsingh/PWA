@@ -4,6 +4,7 @@ import { useJournal } from '@/app/JournalContext';
 import { goBack } from '@/app/router';
 import { newId } from '@/core/ids';
 import { ART_CHOICES, FoodArt } from '@/core/design/foodArt';
+import { hasCatalogueArt } from '@/core/design/catalogueArt';
 import { Icon } from '@/core/design/icons';
 import { PhotoCropper } from '@/core/design/PhotoCropper';
 import { Section, Segmented, Sheet, Toggle } from '@/core/design/ui';
@@ -153,7 +154,7 @@ function MealEditorForm({ existing, initial }: { existing: MealPreset | null; in
 
       <div className="row" style={{ gap: 16 }}>
         <span style={{ width: 96, height: 96, borderRadius: 22, background: 'var(--food)', display: 'grid', placeItems: 'center', overflow: 'hidden', flex: 'none' }}>
-          <FoodArt icon={form.icon} photo={form.photo} size={96} label={form.name} />
+          <FoodArt icon={form.icon} photo={form.photo} catalogueId={form.catalogue_id} size={96} label={form.name} />
         </span>
         <div className="grow stack-sm">
           <label className="field">
@@ -164,13 +165,17 @@ function MealEditorForm({ existing, initial }: { existing: MealPreset | null; in
       </div>
 
       <Section title="Picture">
-        <div className="chips" role="group" aria-label="Choose an illustration">
-          {ART_CHOICES.map((a) => (
-            <button key={a.key} className="chip" aria-pressed={!form.photo && form.icon === a.key} onClick={() => set({ icon: a.key, photo: null })} style={{ paddingLeft: 6 }}>
-              <FoodArt icon={a.key} size={30} /> {a.label}
-            </button>
-          ))}
-        </div>
+        {form.catalogue_id && hasCatalogueArt(form.catalogue_id) ? (
+          <p className="small muted">Uses the dish picture from the food list{form.photo ? ' (your photo is shown instead)' : ''}.</p>
+        ) : (
+          <div className="chips" role="group" aria-label="Choose an illustration">
+            {ART_CHOICES.map((a) => (
+              <button key={a.key} className="chip" aria-pressed={!form.photo && form.icon === a.key} onClick={() => set({ icon: a.key, photo: null })} style={{ paddingLeft: 6 }}>
+                <FoodArt icon={a.key} size={30} /> {a.label}
+              </button>
+            ))}
+          </div>
+        )}
         <div className="row wrap">
           <button className="btn secondary sm" onClick={() => setPhotoOpen(true)}><Icon name="camera" size={18} /> {form.photo ? 'Change my photo' : 'Use my own photo'}</button>
           {form.photo ? <button className="btn ghost sm" onClick={() => set({ photo: null })}>Remove photo</button> : null}
@@ -188,7 +193,7 @@ function MealEditorForm({ existing, initial }: { existing: MealPreset | null; in
           </label>
           <label className="field">
             1 {form.unit_label} weighs (g)
-            <input className="input num" inputMode="decimal" value={form.grams_per_unit} onChange={(e) => set({ grams_per_unit: e.target.value })} placeholder="e.g. 180" />
+            <input className="input num" inputMode="decimal" value={form.grams_per_unit} onChange={(e) => set({ grams_per_unit: e.target.value })} placeholder="Not weighed yet" />
           </label>
           <label className="field">
             Usual amount
@@ -205,6 +210,9 @@ function MealEditorForm({ existing, initial }: { existing: MealPreset | null; in
       </Section>
 
       <Section title="Nutrition">
+        {form.catalogue_id ? (
+          <p className="small muted">This food came from the food list, which has no verified numbers. Add your own recipe or a package label to see estimates; until then it’s logged with nutrition unknown.</p>
+        ) : null}
         <Segmented label="Nutrition comes from" value={form.kind} full onChange={(kind) => set({ kind })} options={[{ value: 'food', label: 'A label or food' }, { value: 'recipe', label: 'My recipe' }]} />
         {form.kind === 'food' ? (
           <div className="stack-sm">

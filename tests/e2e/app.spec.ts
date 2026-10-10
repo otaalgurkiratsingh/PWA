@@ -276,6 +276,144 @@ test.describe('data safety', () => {
   });
 });
 
+test.describe('food list (catalogue)', () => {
+  test('search by alias → add a list food → logged with unknown nutrition → appears in usual meals; existing meals untouched', async ({ page }) => {
+    await enterDemo(page, 'food');
+    const before = await page.evaluate(async () => new Promise<number>((resolve) => {
+      const req = indexedDB.open('rozana-journal-demo-a');
+      req.onsuccess = () => { const c = req.result.transaction('presets').objectStore('presets').count(); c.onsuccess = () => { resolve(c.result); req.result.close(); }; };
+    }));
+    await page.getByRole('button', { name: 'Add food' }).click();
+    await page.getByRole('button', { name: /Choose food/ }).click();
+    const dialog = page.getByRole('dialog', { name: 'Choose food' });
+    await expect(dialog.getByRole('button', { name: 'Popular' })).toHaveAttribute('aria-pressed', 'true');
+    // Aliases and spellings
+    await dialog.getByLabel('Search foods').fill('chapati');
+    await expect(dialog.getByRole('button', { name: 'Whole-wheat roti' })).toBeVisible();
+    await dialog.getByLabel('Search foods').fill('sabji');
+    await expect(dialog.getByRole('button', { name: 'Mixed vegetable sabzi' })).toBeVisible();
+    await dialog.getByLabel('Search foods').fill('daal makhani');
+    await dialog.getByRole('button', { name: 'Dal makhani' }).click();
+    const add = page.getByRole('dialog', { name: 'Dal makhani' });
+    await expect(add.getByText(/Nutrition not set yet/)).toBeVisible();
+    await add.getByRole('button', { name: 'Breakfast' }).click();
+    await add.getByRole('button', { name: 'Add 1 bowl' }).click();
+    await expect(page.getByText(/Added Dal makhani/)).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Edit Dal makhani' })).toBeVisible();
+    await page.getByRole('button', { name: 'Edit Dal makhani' }).click();
+    const entry = page.getByRole('dialog', { name: 'Dal makhani' });
+    await entry.getByText('Details').click();
+    await expect(entry.getByText(/not weighed · Unknown · Unknown/)).toBeVisible();
+    await page.keyboard.press('Escape');
+    // Now it is one of the person's meals, with the catalogue picture.
+    await expect(page.getByRole('button', { name: /^Dal makhani, 1 bowl/ })).toBeVisible();
+    await expect(page.locator('svg[data-art="dal-makhani"]').first()).toBeVisible();
+    const after = await page.evaluate(async () => new Promise<number>((resolve) => {
+      const req = indexedDB.open('rozana-journal-demo-a');
+      req.onsuccess = () => { const c = req.result.transaction('presets').objectStore('presets').count(); c.onsuccess = () => { resolve(c.result); req.result.close(); }; };
+    }));
+    expect(after).toBe(before + 1); // one personal meal, not 293 copies
+    // Picking it again from the list reuses the same meal.
+    await page.getByRole('button', { name: 'Add food' }).click();
+    await page.getByRole('button', { name: /Choose food/ }).click();
+    await page.getByLabel('Search foods').fill('makhani');
+    await page.getByRole('dialog', { name: 'Choose food' }).getByRole('button', { name: 'Dal makhani, in your meals' }).click();
+    await expect(page.getByRole('dialog', { name: 'Dal makhani' }).getByText(/Usual: 1 bowl/)).toBeVisible();
+  });
+
+  test('categories, All foods and empty search', async ({ page }) => {
+    await enterDemo(page, 'food');
+    await page.getByRole('button', { name: 'Add food' }).click();
+    await page.getByRole('button', { name: /Choose food/ }).click();
+    const dialog = page.getByRole('dialog', { name: 'Choose food' });
+    await dialog.getByRole('button', { name: 'Chai & drinks' }).click();
+    await expect(dialog.getByRole('button', { name: 'Masala chai' })).toBeVisible();
+    await dialog.getByRole('button', { name: 'All foods' }).click();
+    await expect(dialog.locator('.lazy-row')).toHaveCount(293);
+    await dialog.getByLabel('Search foods').fill('zzqx');
+    await expect(dialog.getByText(/No foods match/)).toBeVisible();
+    await expect(dialog.getByRole('button', { name: 'Create a meal' })).toBeVisible();
+  });
+});
+
+test.describe('recent workout date badges', () => {
+  const PASSES = [
+    ['2026-09-29', '2026-09-27', '2026-09-25', '2026-01-01', '2026-02-28', '2026-03-09', '2026-04-30', '2026-05-15'],
+    ['2026-06-02', '2026-07-21', '2026-08-31', '2026-10-10', '2026-11-11', '2026-12-25', '2025-12-01', '2026-09-09'],
+  ];
+  const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+  for (const scheme of ['light', 'dark'] as const) {
+    for (const width of [360, 390]) {
+      test(`every month fits its tile at ${width}px, ${scheme}, 100% and 200% text (device locale en-GB)`, async ({ browser }) => {
+        // en-GB/en-IN phones format September as "Sept", which used to wrap out of the tile.
+        const ctx = await browser.newContext({ viewport: { width, height: 900 }, locale: 'en-GB', colorScheme: scheme, deviceScaleFactor: 2 });
+        await ctx.addInitScript((t) => localStorage.setItem('rozana.theme', t), scheme);
+        const page = await ctx.newPage();
+        await enterDemo(page);
+        await expect(page.locator('html')).toHaveAttribute('data-theme', scheme);
+        for (const [pass, dates] of PASSES.entries()) {
+          await page.evaluate(async (ds) => new Promise<void>((resolve, reject) => {
+            const req = indexedDB.open('rozana-journal-demo-a');
+            req.onsuccess = () => {
+              const tx = req.result.transaction('workout_sessions', 'readwrite');
+              const store = tx.objectStore('workout_sessions');
+              const all = store.getAll();
+              all.onsuccess = () => {
+                const done = (all.result as { status: string; started_at: string }[]).filter((x) => x.status === 'finished')
+                  .sort((a, b) => b.started_at.localeCompare(a.started_at));
+                done.slice(0, ds.length).forEach((x, i) => store.put({ ...x, local_date: ds[i] }));
+              };
+              tx.oncomplete = () => { req.result.close(); resolve(); };
+              tx.onerror = () => reject(tx.error);
+            };
+            req.onerror = () => reject(req.error);
+          }), dates);
+          for (const zoom of ['100%', '200%']) {
+            await page.goto('/#/workout');
+            await page.reload();
+            await expect(page.getByRole('heading', { name: 'Recent workouts' })).toBeVisible();
+            await page.addStyleTag({ content: `html{font-size:${zoom}}` });
+            const badges = await page.locator('.date-badge').evaluateAll((els) => els.map((el) => {
+              const box = el.getBoundingClientRect();
+              const parts = [...el.children].map((c) => {
+                const r = c.getBoundingClientRect();
+                const range = document.createRange();
+                range.selectNodeContents(c);
+                return { text: c.textContent, lines: range.getClientRects().length, inside: r.left >= box.left - 0.5 && r.right <= box.right + 0.5 && r.top >= box.top - 0.5 && r.bottom <= box.bottom + 0.5 };
+              });
+              return { parts, overflowX: el.scrollWidth - el.clientWidth, overflowY: el.scrollHeight - el.clientHeight, w: box.width, fs: parseFloat(getComputedStyle(el.children[0]!).fontSize) };
+            }));
+            expect(badges.length).toBe(8);
+            for (const b of badges) {
+              const label = `${b.parts.map((p) => p.text).join(' ')} @ ${width}/${scheme}/${zoom}`;
+              expect(b.parts.every((p) => p.lines === 1 && p.inside), label).toBe(true);
+              expect(b.overflowX, label).toBeLessThanOrEqual(0);
+              expect(b.overflowY, label).toBeLessThanOrEqual(0);
+              expect(b.fs, label).toBeGreaterThanOrEqual(10);
+              expect(MONTHS, label).toContain(b.parts[0]!.text);
+            }
+            const shown = badges.map((b) => `${b.parts[0]!.text} ${b.parts[1]!.text}`);
+            for (const d of dates) {
+              const [, m, day] = d.split('-');
+              expect(shown).toContain(`${MONTHS[Number(m) - 1]} ${Number(day)}`);
+            }
+            const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+            expect(overflow).toBeLessThanOrEqual(0);
+            // The row keeps the full date for screen readers.
+            await expect(page.getByRole('button', { name: /, (Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)/ }).first()).toBeVisible();
+            if (process.env.SHOTS) {
+              await page.locator('.history-row').first().scrollIntoViewIfNeeded();
+              await page.locator('.card:has(.history-row)').screenshot({ path: `docs/screenshots/badges-${width}-${scheme}-${zoom === '100%' ? '1x' : '2x'}-pass${pass + 1}.png` });
+            }
+          }
+        }
+        await ctx.close();
+      });
+    }
+  }
+});
+
 test.describe('layout and accessibility', () => {
   for (const width of [320, 360, 390]) {
     test(`no horizontal overflow at ${width}px, 100% and 200% text`, async ({ page }) => {

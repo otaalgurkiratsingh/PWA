@@ -3,8 +3,8 @@ import type { WorkoutSession } from '@shared/contracts';
 import { useJournal, useQuery } from '@/app/JournalContext';
 import { navigate } from '@/app/router';
 import { EquipmentArt, Icon } from '@/core/design/icons';
-import { EmptyState, Section } from '@/core/design/ui';
-import { formatShortDate } from '@/core/time/localDate';
+import { DateBadge, EmptyState, Section } from '@/core/design/ui';
+import { formatLongDate, formatShortDate } from '@/core/time/localDate';
 import { WEEKDAY_SHORT, suggestedDay } from '@/domain/training/plan';
 import { reopenSession, sessionProgress } from '@/domain/training/session';
 import { ActiveWorkout, FinishSummary } from './ActiveWorkout';
@@ -95,9 +95,10 @@ export function WorkoutScreen() {
             {finished.slice(0, 8).map((s) => {
               const p = sessionProgress(s);
               return (
-                <button key={s.id} className="ex-row" onClick={() => setViewing(s)}>
-                  <span className="day-badge" style={{ width: 44, height: 44, fontSize: '0.8125rem' }} aria-hidden="true">{formatShortDate(s.local_date).split(' ').reverse().join(' ')}</span>
-                  <span className="grow"><span className="er-name">{s.day_name}</span><br /><span className="er-sub">{formatShortDate(s.local_date)} · {p.done} sets{p.skipped ? ` · ${p.skipped} skipped` : ''}</span></span>
+                <button key={s.id} className="history-row" onClick={() => setViewing(s)}
+                  aria-label={`${s.day_name}, ${formatLongDate(s.local_date)}, ${p.done} sets${p.skipped ? `, ${p.skipped} skipped` : ''}`}>
+                  <DateBadge date={s.local_date} />
+                  <span><span className="er-name">{s.day_name}</span><br /><span className="er-sub">{p.done} sets{p.skipped ? ` · ${p.skipped} skipped` : ''}</span></span>
                   <Icon name="chevronRight" />
                 </button>
               );

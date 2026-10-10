@@ -77,16 +77,16 @@ export const PresetItem = z.discriminatedUnion('kind', [
     kind: z.literal('food'),
     food_version_id: Id,
     unit_label: z.string().min(1).max(30),
-    /** Calibrated grams per unit (e.g. one of my rotis = 40 g). */
-    grams_per_unit: PositiveQty,
+    /** Calibrated grams per unit (e.g. one of my rotis = 40 g); null = not weighed yet (nutrition unknown). */
+    grams_per_unit: PositiveQty.nullable(),
     default_quantity: PositiveQty,
   }),
   z.object({
     kind: z.literal('recipe'),
     recipe_revision_id: Id,
     unit_label: z.string().min(1).max(30),
-    /** Calibrated cooked grams per unit (e.g. my katori = 180 g dal). */
-    grams_per_unit: PositiveQty,
+    /** Calibrated cooked grams per unit (e.g. my katori = 180 g dal); null = not weighed yet. */
+    grams_per_unit: PositiveQty.nullable(),
     default_quantity: PositiveQty,
   }),
 ]);
@@ -104,6 +104,9 @@ export const FoodIcon = z.enum([
 ]);
 export type FoodIcon = z.infer<typeof FoodIcon>;
 
+/** Stable catalogue id (see shared/catalogue). Optional on every record; old records have none. */
+export const CatalogueRef = z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).max(60).nullable().optional();
+
 export const MealPreset = AggregateBase.extend({
   name: z.string().min(1).max(60),
   icon: FoodIcon,
@@ -116,6 +119,10 @@ export const MealPreset = AggregateBase.extend({
    * Opt-in only; presentation, never evidence of nutrition.
    */
   photo: z.string().regex(/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/).max(140_000).nullable().default(null),
+  /** Catalogue identity this personal meal was created from (discovery + artwork only, never nutrition). */
+  catalogue_id: CatalogueRef,
+  /** Seed version at creation, e.g. "punjabi-canadian-starter@2026-10-09-v2". */
+  catalogue_version: z.string().max(80).nullable().optional(),
 });
 export type MealPreset = z.infer<typeof MealPreset>;
 
@@ -127,7 +134,8 @@ export const MealItemSnapshot = z.object({
   label: z.string(),
   quantity: PositiveQty,
   unit_label: z.string(),
-  grams: PositiveQty,
+  /** null when the serving was never weighed: nutrients are then unknown, not zero. */
+  grams: PositiveQty.nullable(),
   nutrients: Nutrients,
   /** For each nutrient, whether every contributing input was known. */
   complete: z.record(z.string(), z.boolean()),
@@ -148,6 +156,8 @@ export const MealEntry = AggregateBase.extend({
   /** Multiplier relative to preset default quantity. */
   quantity: PositiveQty,
   items: z.array(MealItemSnapshot).min(1),
+  /** Copied from the meal at logging time so the picture survives later edits. */
+  catalogue_id: CatalogueRef,
 });
 export type MealEntry = z.infer<typeof MealEntry>;
 

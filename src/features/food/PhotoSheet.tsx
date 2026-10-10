@@ -56,7 +56,7 @@ export function PhotoSheet({ presets, onClose, onPickPreset }: { presets: MealPr
         <div className="list-divided">
           {presets.map((p) => (
             <button key={p.id} className="ex-row" onClick={() => void attachTo(p)}>
-              <span className="ex-art" style={{ background: 'var(--food)', overflow: 'hidden' }}><FoodArt icon={p.icon} photo={p.photo} size={52} label={p.name} /></span>
+              <span className="ex-art" style={{ background: 'var(--food)', overflow: 'hidden' }}><FoodArt icon={p.icon} photo={p.photo} catalogueId={p.catalogue_id} size={52} label={p.name} /></span>
               <span className="grow er-name">{p.name}</span>
             </button>
           ))}

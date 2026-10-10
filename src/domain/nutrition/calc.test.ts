@@ -105,6 +105,20 @@ describe('unknown values', () => {
   });
 });
 
+describe('servings that were never weighed', () => {
+  it('can be logged, but every nutrient is unknown and totals become partial', () => {
+    const p = { ...base, id: ids.recipe, name: 'Aloo paratha', icon: 'roti' as const, quantity_step: 1, favorite: true, photo: null, catalogue_id: 'aloo-paratha',
+      items: [{ kind: 'recipe' as const, recipe_revision_id: ids.recipe, unit_label: 'piece', grams_per_unit: null, default_quantity: 1 }] } satisfies MealPreset;
+    const items = snapshotPreset(p, 2, { foods, recipes: new Map([[dal.id, dal]]) });
+    expect(items[0]!.grams).toBeNull();
+    expect(Object.values(items[0]!.nutrients).every((v) => v === null)).toBe(true);
+    const known = snapshotPreset({ ...p, items: [{ ...p.items[0]!, grams_per_unit: 200 }] }, 1, { foods, recipes: new Map([[dal.id, dal]]) });
+    const t = totalsOfItems([...known, ...items]);
+    expect(t.energy_kcal.complete).toBe(false);
+    expect(formatTotal(t.energy_kcal, 'kcal')).toMatch(/^≥ /);
+  });
+});
+
 describe('snapshots and revisions', () => {
   it('a logged snapshot is unaffected by a later recipe revision', () => {
     const preset: MealPreset = {

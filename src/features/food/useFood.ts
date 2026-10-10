@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from 'react';
-import type { MealEntry, MealPreset, MealSlot } from '@shared/contracts';
+import type { FoodVersion, MealEntry, MealPreset, MealSlot } from '@shared/contracts';
 import { useJournal, useQuery } from '@/app/JournalContext';
 import { StorageWriteError } from '@/core/database/journal';
 import type { NutritionLibrary } from '@/domain/nutrition/calc';
@@ -48,11 +48,15 @@ export function useMealLogging() {
   );
 
   const logPreset = useCallback(
-    async (preset: MealPreset, multiplier = 1, opts: { slot?: MealSlot; date?: string } = {}) => {
+    async (preset: MealPreset, multiplier = 1, opts: { slot?: MealSlot; date?: string; newFoods?: readonly FoodVersion[] } = {}) => {
       if (!nutrition) return null;
       try {
+        // Foods saved a moment ago (e.g. picked from the food list) are not in the loaded library yet.
+        const lib: NutritionLibrary = opts.newFoods?.length
+          ? { foods: new Map([...nutrition.foods, ...opts.newFoods.map((f) => [f.id, f] as const)]), recipes: nutrition.recipes }
+          : nutrition;
         const entry = buildEntry({
-          journal, preset, multiplier, lib: nutrition, date: opts.date ?? today, timezone: profile.timezone, now: new Date(),
+          journal, preset, multiplier, lib, date: opts.date ?? today, timezone: profile.timezone, now: new Date(),
           synthetic: profile.synthetic, slot: opts.slot,
         });
         await journal.commit('meal_entries', entry);

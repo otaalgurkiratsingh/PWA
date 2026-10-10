@@ -51,6 +51,9 @@ export interface MealForm {
   ingredients: IngredientForm[];
   cooked_yield_g: string;
   notes: string;
+  /** Catalogue identity (kept through edits; never supplies nutrition). */
+  catalogue_id: string | null;
+  catalogue_version: string | null;
 }
 
 export const UNIT_OPTIONS = ['bowl', 'roti', 'cup', 'piece', 'egg', 'scoop', 'slice', 'glass', 'serving', 'tbsp', 'tsp', 'g'];
@@ -61,7 +64,7 @@ export function emptyMealForm(): MealForm {
   return {
     name: '', icon: 'plate', photo: null, favorite: false, kind: 'food', unit_label: 'serving', grams_per_unit: '', default_quantity: '1',
     quantity_step: '1', preparation_state: 'cooked', per100: emptyNutrients(), source_kind: 'label', source_ref: '',
-    ingredients: [], cooked_yield_g: '', notes: '',
+    ingredients: [], cooked_yield_g: '', notes: '', catalogue_id: null, catalogue_version: null,
   };
 }
 
@@ -90,8 +93,9 @@ export function nutrientsToForm(n: Nutrients): NutrientForm {
 export function validateMealForm(f: MealForm): string[] {
   const errors: string[] = [];
   if (!f.name.trim()) errors.push('Give the meal a name.');
+  // Blank = not weighed yet: allowed, and nutrition then stays unknown for this meal.
   const g = parseNum(f.grams_per_unit);
-  if (g === null || Number.isNaN(g) || g <= 0) errors.push(`Enter how many grams 1 ${f.unit_label || 'serving'} weighs.`);
+  if (g !== null && (Number.isNaN(g) || g <= 0)) errors.push(`The weight of 1 ${f.unit_label || 'serving'} must be a number of grams (or leave it blank).`);
   const q = parseNum(f.default_quantity);
   if (q === null || Number.isNaN(q) || q <= 0) errors.push('Usual amount must be more than 0.');
   const st = parseNum(f.quantity_step);
@@ -144,7 +148,7 @@ export function buildMeal(a: BuildArgs): BuildResult {
   let newRevision = false;
   const serving = {
     unit_label: f.unit_label.trim() || 'serving',
-    grams_per_unit: parseNum(f.grams_per_unit)!,
+    grams_per_unit: parseNum(f.grams_per_unit),
     default_quantity: parseNum(f.default_quantity)!,
   };
   const prevItem = a.existing?.items[0];
@@ -227,6 +231,8 @@ export function buildMeal(a: BuildArgs): BuildResult {
     favorite: f.favorite,
     quantity_step: parseNum(f.quantity_step)!,
     items: [item],
+    catalogue_id: f.catalogue_id,
+    catalogue_version: f.catalogue_version,
   };
   return { foods: outFoods, recipes: outRecipes, preset, newRevision };
 }
@@ -238,7 +244,8 @@ export function formFromPreset(p: MealPreset, foods: ReadonlyMap<string, FoodVer
   const common = {
     ...f,
     name: p.name, icon: p.icon, photo: p.photo ?? null, favorite: p.favorite ?? false,
-    unit_label: it.unit_label, grams_per_unit: String(it.grams_per_unit), default_quantity: String(it.default_quantity), quantity_step: String(p.quantity_step),
+    catalogue_id: p.catalogue_id ?? null, catalogue_version: p.catalogue_version ?? null,
+    unit_label: it.unit_label, grams_per_unit: it.grams_per_unit === null ? '' : String(it.grams_per_unit), default_quantity: String(it.default_quantity), quantity_step: String(p.quantity_step),
   };
   if (it.kind === 'food') {
     const fv = foods.get(it.food_version_id);

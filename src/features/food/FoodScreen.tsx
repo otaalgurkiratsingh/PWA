@@ -9,6 +9,7 @@ import { formatShortDate, formatTime } from '@/core/time/localDate';
 import { addDays } from '@/domain/metrics/metrics';
 import { snapshotPreset, totalsOfItems, formatTotal } from '@/domain/nutrition/calc';
 import { NutritionSummary } from './NutritionSummary';
+import { FoodPicker } from './FoodPicker';
 import { PhotoSheet } from './PhotoSheet';
 import { SLOT_LABEL, copyEntries, describeAmount, describeQuantity, rescaleEntry, slotForHour } from './mealActions';
 import { saveErrorMessage, sortPresets, useLibrary, useMealLogging } from './useFood';
@@ -28,7 +29,7 @@ export function MealCard({ preset, onOpen, onQuickAdd }: { preset: MealPreset; o
     <div className="meal-card-wrap">
       <button className="meal-card" onClick={onOpen} aria-label={`${preset.name}, ${describeQuantity(preset, 1)}. Choose amount`}>
         <span className="thumb">
-          <FoodArt icon={preset.icon} photo={preset.photo} size={104} label={preset.name} />
+          <FoodArt icon={preset.icon} photo={preset.photo} catalogueId={preset.catalogue_id} size={104} label={preset.name} />
         </span>
         <span className="mc-name">{preset.name}</span>
         <span className="mc-sub">{describeQuantity(preset, 1)}</span>
@@ -70,12 +71,12 @@ export function AddMealSheet({ preset, date, slot, onClose }: { preset: MealPres
       <div className="stack">
         <div className="row" style={{ gap: 16 }}>
           <span className="thumb" style={{ width: 88, height: 88, borderRadius: 18, background: 'var(--food)', display: 'grid', placeItems: 'center', overflow: 'hidden', flex: 'none' }}>
-            <FoodArt icon={preset.icon} photo={preset.photo} size={88} label={preset.name} />
+            <FoodArt icon={preset.icon} photo={preset.photo} catalogueId={preset.catalogue_id} size={88} label={preset.name} />
           </span>
           <div className="grow">
             <div className="small muted">Usual: {describeQuantity(preset, 1)}</div>
             <div className="small muted">
-              {item.unit_label === 'g' ? '' : `1 ${item.unit_label} ≈ ${item.grams_per_unit} g · `}
+              {item.unit_label === 'g' ? '' : item.grams_per_unit === null ? `1 ${item.unit_label} not weighed yet · ` : `1 ${item.unit_label} ≈ ${item.grams_per_unit} g · `}
               {preview && preview.energy_kcal.value !== null
                 ? `${formatTotal(preview.energy_kcal, 'kcal')} · ${formatTotal(preview.protein_g, 'g protein')} (estimate)`
                 : 'Nutrition not set yet'}
@@ -153,7 +154,7 @@ function EntrySheet({ entry, onClose }: { entry: MealEntry; onClose: () => void 
           <div className="small muted stack-sm">
             {entry.items.map((i, k) => (
               <div key={k}>
-                {i.label}: {i.grams} g · {formatTotal({ value: i.nutrients.energy_kcal, complete: i.complete.energy_kcal !== false }, 'kcal')} · {formatTotal({ value: i.nutrients.protein_g, complete: i.complete.protein_g !== false }, 'g protein')}
+                {i.label}: {i.grams === null ? 'not weighed' : `${i.grams} g`} · {formatTotal({ value: i.nutrients.energy_kcal, complete: i.complete.energy_kcal !== false }, 'kcal')} · {formatTotal({ value: i.nutrients.protein_g, complete: i.complete.protein_g !== false }, 'g protein')}
                 {i.estimated ? ' · estimate' : ''}
               </div>
             ))}
@@ -165,28 +166,6 @@ function EntrySheet({ entry, onClose }: { entry: MealEntry; onClose: () => void 
   );
 }
 
-function AllMealsSheet({ presets, onPick, onClose }: { presets: MealPreset[]; onPick: (p: MealPreset) => void; onClose: () => void }) {
-  const [q, setQ] = useState('');
-  const shown = presets.filter((p) => p.name.toLowerCase().includes(q.trim().toLowerCase()));
-  return (
-    <Sheet title="Your meals" onClose={onClose}>
-      <div className="stack">
-        <input className="input" type="search" placeholder="Search your meals" aria-label="Search your meals" value={q} onChange={(e) => setQ(e.target.value)} />
-        <div className="list-divided">
-          {shown.map((p) => (
-            <button key={p.id} className="ex-row" onClick={() => onPick(p)}>
-              <span className="ex-art" style={{ background: 'var(--food)', overflow: 'hidden' }}><FoodArt icon={p.icon} photo={p.photo} size={52} label={p.name} /></span>
-              <span className="grow"><span className="er-name">{p.name}</span><br /><span className="er-sub">{describeQuantity(p, 1)}</span></span>
-              <Icon name="chevronRight" />
-            </button>
-          ))}
-          {shown.length === 0 ? <p className="muted small" style={{ padding: 12 }}>No meals match “{q}”.</p> : null}
-        </div>
-        <button className="btn secondary" onClick={() => { onClose(); navigate('meal', 'new'); }}><Icon name="plus" size={18} /> Create a meal</button>
-      </div>
-    </Sheet>
-  );
-}
 
 export function FoodScreen() {
   const { journal, profile, today, refresh, notify, mode } = useJournal();
@@ -249,8 +228,8 @@ export function FoodScreen() {
       <Section title="Your usual meals" action={presets && presets.length > 6 ? <button className="link" onClick={() => setAll(defaultSlot)}>See all</button> : undefined}>
         {presets === null ? <div className="skeleton" /> : presets.length === 0 ? (
           <div className="card flat">
-            <EmptyState icon="food" tone="food" title="Save the meals you eat often" action={<button className="btn" onClick={() => navigate('meal', 'new')}>Create a meal</button>}>
-              Then logging them is one tap.
+            <EmptyState icon="food" tone="food" title="Pick the foods you eat often" action={<button className="btn" onClick={() => setAll(defaultSlot)}>Choose foods</button>}>
+              Roti, dal, chai, eggs, shakes… Then logging them is one tap.
             </EmptyState>
           </div>
         ) : (
@@ -279,7 +258,7 @@ export function FoodScreen() {
                   const t = totalsOfItems(e.items);
                   return (
                     <button key={e.id} className="meal-row" style={{ width: '100%', background: 'none', border: 'none', textAlign: 'left', color: 'inherit' }} onClick={() => setEditing(e)} aria-label={`Edit ${e.name}`}>
-                      <span className="mini-thumb"><FoodArt icon={e.icon} photo={lib?.presets.find((p) => p.id === e.preset_id)?.photo} size={48} label={e.name} /></span>
+                      <span className="mini-thumb"><FoodArt icon={e.icon} photo={lib?.presets.find((p) => p.id === e.preset_id)?.photo} catalogueId={e.catalogue_id} size={48} label={e.name} /></span>
                       <span className="grow">
                         <span className="mr-name">{e.name}</span><br />
                         <span className="mr-sub">{e.items.map((i) => describeAmount(i.unit_label, i.quantity)).join(' + ')} · {formatTime(e.logged_at, e.timezone)}</span>
@@ -301,7 +280,7 @@ export function FoodScreen() {
         <Sheet title="Add food" onClose={() => setMenu(false)}>
           <div className="stack-sm">
             <button className="choice" onClick={() => { setMenu(false); setAll(defaultSlot); }}>
-              <Icon name="star" /> <span className="grow"><strong>Usual meal</strong><br /><span className="small muted">Pick from your saved meals</span></span>
+              <Icon name="search" /> <span className="grow"><strong>Choose food</strong><br /><span className="small muted">Your meals and the full food list</span></span>
             </button>
             <button className="choice" onClick={() => { setMenu(false); navigate('meal', 'new'); }}>
               <Icon name="edit" /> <span className="grow"><strong>Create meal</strong><br /><span className="small muted">From a label or your own recipe</span></span>
@@ -317,7 +296,7 @@ export function FoodScreen() {
           </div>
         </Sheet>
       ) : null}
-      {all && presets ? <AllMealsSheet presets={presets} onClose={() => setAll(null)} onPick={(p) => { const s = all; setAll(null); setAdding({ preset: p, slot: s }); }} /> : null}
+      {all && presets ? <FoodPicker presets={presets} date={date} slot={all} onClose={() => setAll(null)} onPickPreset={(p) => { const s = all; setAll(null); setAdding({ preset: p, slot: s }); }} /> : null}
       {adding ? <AddMealSheet preset={adding.preset} slot={adding.slot} date={date} onClose={() => setAdding(null)} /> : null}
       {editing ? <EntrySheet entry={editing} onClose={() => setEditing(null)} /> : null}
       {photo && presets ? <PhotoSheet presets={presets} onClose={() => setPhoto(false)} onPickPreset={(p) => { setPhoto(false); setAdding({ preset: p, slot: defaultSlot }); }} /> : null}

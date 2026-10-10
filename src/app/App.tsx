@@ -132,7 +132,7 @@ function Shell() {
   return (
     <>
       <main className={`app${focused ? ' no-nav' : ''}`} id="main">
-        {isTab ? <Header title={TITLES[route.name]} /> : <h1 className="sr-only">{TITLES[route.name]}</h1>}
+        {isTab ? <Header title={TITLES[route.name]} /> : focused ? <h1 className="sr-only">{TITLES[route.name]}</h1> : null}
         <UpdatePrompt />
         <div key={`${profile.id}:${route.name}:${route.param ?? ''}`}>{screen}</div>
       </main>

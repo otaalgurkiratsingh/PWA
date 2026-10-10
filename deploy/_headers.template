@@ -1,0 +1,13 @@
+# Security headers for static hosting (Netlify format). Template: the build fills in connect-src
+# with 'self' plus the exact Supabase project origin from VITE_SUPABASE_URL (if set).
+# The browser never talks to the AI provider, so no Google API origin is allowed here.
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src __CONNECT_SRC__; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: no-referrer
+  Permissions-Policy: camera=(self), microphone=(), geolocation=(), payment=()
+  X-Robots-Tag: noindex, nofollow
+/sw.js
+  Cache-Control: no-cache
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable

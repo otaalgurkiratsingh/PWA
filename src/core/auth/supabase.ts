@@ -1,4 +1,4 @@
-import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 /**
  * Browser Supabase client. Only the public project URL and the PUBLISHABLE key are used here;
@@ -14,13 +14,16 @@ export function backendConfigured(): boolean {
   return Boolean(url && key && /^https:\/\/[a-z0-9-]+\.supabase\.co$/.test(url.replace(/\/$/, '')) && !key.includes('replace_me'));
 }
 
-let client: SupabaseClient | null = null;
+let client: Promise<SupabaseClient> | null = null;
 
-export function supabase(): SupabaseClient {
-  if (!backendConfigured()) throw new Error('Sign-in is not set up yet.');
-  client ??= createClient(url!, key!, {
-    auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false, storageKey: AUTH_STORAGE_KEY, flowType: 'pkce' },
-  });
+/** The SDK is loaded on demand, so the demo and offline logging never download it. */
+export function supabase(): Promise<SupabaseClient> {
+  if (!backendConfigured()) return Promise.reject(new Error('Sign-in is not set up yet.'));
+  client ??= import('@supabase/supabase-js').then(({ createClient }) =>
+    createClient(url!, key!, {
+      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false, storageKey: AUTH_STORAGE_KEY, flowType: 'pkce' },
+    }),
+  );
   return client;
 }
 

@@ -7,7 +7,7 @@ import { Sheet } from '@/core/design/ui';
 import { formatShortDate } from '@/core/time/localDate';
 import {
   addSessionSet, comparableKey, completeSet, currentExerciseIndex, finishSession, lastComparable, removeAddedSet,
-  reopenSession, sessionProgress, sessionSummary, setDiscomfort, skipSet, undoSet, updateDraft,
+  sessionProgress, sessionSummary, setDiscomfort, skipSet, undoSet, updateDraft,
 } from '@/domain/training/session';
 import { useWorkout } from './useWorkout';
 
@@ -125,7 +125,8 @@ function ExerciseCard({ session, ex, history, expanded, onToggle, unit, editable
           <br />
           <span className="label">{done} of {ex.sets.length} sets{ex.unilateral ? ' · each side' : ''}{ex.load_convention === 'per_dumbbell' ? ' · weight per dumbbell' : ''}</span>
         </span>
-        {allDone ? <span className="tag train"><Icon name="check" size={14} /> Done</span> : <Icon name={expanded ? 'chevronUp' : 'chevronDown'} />}
+        {allDone ? <span className="tag train"><Icon name="check" size={14} /> {done === ex.sets.length ? 'Done' : 'Ended'}</span> : null}
+        <Icon name={expanded ? 'chevronUp' : 'chevronDown'} />
       </button>
       {expanded ? (
         <div className="ex-body">
@@ -278,12 +279,11 @@ export function FinishSummary({ session, history, onClose, onReopen }: { session
   );
 }
 
-export function ActiveWorkout({ session, history }: { session: WorkoutSession; history: WorkoutSession[] }) {
+export function ActiveWorkout({ session, history, onFinished }: { session: WorkoutSession; history: WorkoutSession[]; onFinished: (s: WorkoutSession) => void }) {
   const { profile, setTimer } = useJournal();
   const { mutate } = useWorkout();
   const [expanded, setExpanded] = useState<string | null>(null);
   const [confirm, setConfirm] = useState(false);
-  const [summary, setSummary] = useState<WorkoutSession | null>(null);
   const prog = sessionProgress(session);
   const current = session.exercises[currentExerciseIndex(session)]?.planned_exercise_id;
   const openId = expanded ?? current;
@@ -317,16 +317,12 @@ export function ActiveWorkout({ session, history }: { session: WorkoutSession; h
               setConfirm(false);
               const done = await mutate(session.id, (s) => finishSession(s, new Date().toISOString()));
               await setTimer(null);
-              if (done) setSummary(done);
+              if (done) onFinished(done);
             }}>Finish</button>
           </>
         }>
           <p>{prog.done} of {prog.total} sets done.{pending > 0 ? ` ${pending} not done will stay as not done.` : ''}</p>
         </Sheet>
-      ) : null}
-      {summary ? (
-        <FinishSummary session={summary} history={history} onClose={() => setSummary(null)}
-          onReopen={async () => { await mutate(summary.id, reopenSession); setSummary(null); }} />
       ) : null}
     </div>
   );

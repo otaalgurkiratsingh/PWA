@@ -42,9 +42,6 @@ export function SettingsScreen() {
   const { signOut, exitDemo } = useAuth();
   const conflicts = useQuery((j) => j.conflicts(), [conflictsCount]);
   const [theme, setTheme] = useState<Theme>(readTheme);
-  const [name, setName] = useState(profile.nickname);
-  const [energy, setEnergy] = useState(profile.targets?.energy_kcal ? String(profile.targets.energy_kcal) : '');
-  const [protein, setProtein] = useState(profile.targets?.protein_g ? String(profile.targets.protein_g) : '');
   const [sheet, setSheet] = useState<'signout' | 'delete' | 'restore' | null>(null);
   const [pending, setPending] = useState(0);
   const [confirmText, setConfirmText] = useState('');
@@ -64,16 +61,6 @@ export function SettingsScreen() {
   const save = (patch: Partial<typeof profile>) => updateProfile({ ...profile, ...patch }).catch((e) => notify({ kind: 'error', message: saveErrorMessage(e) }));
   const setT = (t: Theme) => { applyTheme(t); setTheme(t); };
   const dark = document.documentElement.getAttribute('data-theme') === 'dark';
-
-  const saveTargets = () => {
-    const e = Number(energy);
-    const p = Number(protein);
-    const targets = energy.trim() || protein.trim()
-      ? { energy_kcal: energy.trim() && e > 0 ? e : null, protein_g: protein.trim() && p > 0 ? p : null, source: 'Set by you' }
-      : null;
-    void save({ targets });
-    notify({ kind: 'info', message: targets ? 'Targets saved' : 'Targets cleared — journaling works without them' });
-  };
 
   const exportData = async () => {
     const data = await journal.exportAll();
@@ -114,8 +101,9 @@ export function SettingsScreen() {
 
   return (
     <div className="stack" style={{ gap: 24 }}>
-      <div className="row between">
-        <button className="btn ghost" onClick={() => goBack('today')}><Icon name="chevronLeft" size={18} /> Back</button>
+      <div className="row" style={{ gap: 4 }}>
+        <button className="icon-btn plain" aria-label="Back" onClick={() => goBack('today')}><Icon name="chevronLeft" /></button>
+        <h1 className="sub-title grow">Settings</h1>
         <div className="row" role="group" aria-label="Theme">
           <button className="icon-btn" aria-label="Light theme" aria-pressed={!dark} onClick={() => setT('light')}><Icon name="sun" /></button>
           <button className="icon-btn" aria-label="Dark theme" aria-pressed={dark} onClick={() => setT('dark')}><Icon name="moon" /></button>
@@ -138,25 +126,7 @@ export function SettingsScreen() {
       </Section>
 
       <Section title="You">
-        <div className="card stack">
-          <label className="field">Name
-            <input className="input" value={name} maxLength={40} onChange={(e) => setName(e.target.value)} onBlur={() => name.trim() && name !== profile.nickname && void save({ nickname: name.trim() })} />
-          </label>
-          <div className="stack-sm">
-            <span className="label" style={{ fontWeight: 600 }}>Weight units</span>
-            <Segmented label="Weight units" full value={profile.units} onChange={(u: LoadUnit) => void save({ units: u })} options={[{ value: 'kg', label: 'kg' }, { value: 'lb', label: 'lb' }]} />
-            <span className="label">Sets you already logged keep the unit they were recorded in.</span>
-          </div>
-          <label className="field">Main goal
-            <select className="select" value={profile.goal} onChange={(e) => void save({ goal: e.target.value as Goal })}>{GOALS.map((g) => <option key={g.value} value={g.value}>{g.label}</option>)}</select>
-          </label>
-          <div className="metrics">
-            <label className="field">Daily energy target (kcal)<input className="input num" inputMode="numeric" placeholder="None" value={energy} onChange={(e) => setEnergy(e.target.value)} /></label>
-            <label className="field">Daily protein target (g)<input className="input num" inputMode="numeric" placeholder="None" value={protein} onChange={(e) => setProtein(e.target.value)} /></label>
-          </div>
-          <button className="btn secondary" onClick={saveTargets}>Save targets</button>
-          <span className="label">Optional. Use targets from your own plan or a qualified professional. {profile.targets ? `Current source: ${profile.targets.source}.` : ''}</span>
-        </div>
+        <YouForm key={`${profile.nickname}|${JSON.stringify(profile.targets)}`} />
       </Section>
 
       <Section title="Backup">
@@ -255,13 +225,52 @@ export function SettingsScreen() {
             <p className="small muted">Backups kept by the hosting provider expire on their own schedule; the owner re-applies your deletion if one is ever restored. Export first if you want a copy.</p>
             <label className="field">Type DELETE to confirm<input className="input" value={confirmText} onChange={(e) => setConfirmText(e.target.value)} autoCapitalize="characters" /></label>
             <button className="btn danger" disabled={confirmText.trim().toUpperCase() !== 'DELETE'} onClick={async () => {
-              const { error } = await supabase().rpc('request_account_deletion');
+              const { error } = await (await supabase()).rpc('request_account_deletion');
               if (error) return notify({ kind: 'error', message: 'Couldn’t delete right now. Check your connection and try again.' });
               await finishSignOut(true);
             }}>Delete my account</button>
           </div>
         </Sheet>
       ) : null}
+    </div>
+  );
+}
+
+/** Keyed by the saved values, so changes from sync or an accepted proposal show up immediately. */
+function YouForm() {
+  const { profile, updateProfile, notify } = useJournal();
+  const [name, setName] = useState(profile.nickname);
+  const [energy, setEnergy] = useState(profile.targets?.energy_kcal ? String(profile.targets.energy_kcal) : '');
+  const [protein, setProtein] = useState(profile.targets?.protein_g ? String(profile.targets.protein_g) : '');
+  const save = (patch: Partial<typeof profile>) => updateProfile({ ...profile, ...patch }).catch((e) => notify({ kind: 'error', message: saveErrorMessage(e) }));
+  const saveTargets = () => {
+    const e = Number(energy);
+    const p = Number(protein);
+    const targets = energy.trim() || protein.trim()
+      ? { energy_kcal: energy.trim() && e > 0 ? e : null, protein_g: protein.trim() && p > 0 ? p : null, source: 'Set by you' }
+      : null;
+    void save({ targets });
+    notify({ kind: 'info', message: targets ? 'Targets saved' : 'Targets cleared — journaling works without them' });
+  };
+  return (
+    <div className="card stack">
+      <label className="field">Name
+        <input className="input" value={name} maxLength={40} onChange={(e) => setName(e.target.value)} onBlur={() => name.trim() && name !== profile.nickname && void save({ nickname: name.trim() })} />
+      </label>
+      <div className="stack-sm">
+        <span className="label" style={{ fontWeight: 600 }}>Weight units</span>
+        <Segmented label="Weight units" full value={profile.units} onChange={(u: LoadUnit) => void save({ units: u })} options={[{ value: 'kg', label: 'kg' }, { value: 'lb', label: 'lb' }]} />
+        <span className="label">Sets you already logged keep the unit they were recorded in.</span>
+      </div>
+      <label className="field">Main goal
+        <select className="select" value={profile.goal} onChange={(e) => void save({ goal: e.target.value as Goal })}>{GOALS.map((g) => <option key={g.value} value={g.value}>{g.label}</option>)}</select>
+      </label>
+      <div className="metrics">
+        <label className="field">Daily energy target (kcal)<input className="input num" inputMode="numeric" placeholder="None" value={energy} onChange={(e) => setEnergy(e.target.value)} /></label>
+        <label className="field">Daily protein target (g)<input className="input num" inputMode="numeric" placeholder="None" value={protein} onChange={(e) => setProtein(e.target.value)} /></label>
+      </div>
+      <button className="btn secondary" onClick={saveTargets}>Save targets</button>
+      <span className="label">Optional. Use targets from your own plan or a qualified professional. {profile.targets ? `Current source: ${profile.targets.source}.` : ''}</span>
     </div>
   );
 }

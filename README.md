@@ -1,75 +1,58 @@
 # Rozana
 
-**Rozana** (Hindi/Punjabi for "daily") is a private, phone-first meal and workout journal for a few people. It is a personal hobby project. It is not a commercial product, and it has no sign-up page.
+**Rozana** (Hindi/Punjabi for "daily") is a private, phone-first meal and workout journal for a few invited adults. It is a hobby project, not a commercial product, and has no public sign-up.
 
-**Status:** Phase 0 (foundations plus a local demo). Everything runs in the browser on one device with **synthetic demo data**. There is no cloud sync, no login, and no AI yet. See [`docs/BUILD_STATUS.md`](docs/BUILD_STATUS.md) for what has actually been tested and what comes next.
+**Status:** The redesign is complete and runs locally. It has a light, calm interface, editable workout plans, natural meal logging, email-code sign-in with approved membership, cloud backup/sync, and an AI coach behind an authenticated backend. Live sign-in, backup and AI need the owner's one-time setup (Supabase, email sender, paid Gemini key). Until then the app offers a clearly labelled demo. See [`docs/BUILD_STATUS.md`](docs/BUILD_STATUS.md) for exactly what has been tested.
 
-| Today | Meals | Train | Progress |
-|---|---|---|---|
-| ![Today](docs/screenshots/today-light.png) | ![Meals](docs/screenshots/meals-light.png) | ![Train](docs/screenshots/train-active-light.png) | ![Progress](docs/screenshots/progress-light.png) |
+| Welcome | Today | Food | Workout | Progress | Coach |
+|---|---|---|---|---|---|
+| ![](docs/screenshots/390-01-welcome.png) | ![](docs/screenshots/390-03-today.png) | ![](docs/screenshots/390-04-food.png) | ![](docs/screenshots/390-10-active-workout.png) | ![](docs/screenshots/390-11-progress.png) | ![](docs/screenshots/390-23-coach-review.png) |
 
 ## Requirements
-
-- Node.js **22.12 or newer** (LTS; tested with 22.22.0) and npm 10 (tested with 10.9.4). `.nvmrc` pins 22.
-- Optional, for database tests: PostgreSQL **15+** binaries (tested with 16.15). Set `PG_BIN` if they are not in `/usr/lib/postgresql/16/bin`.
-- Optional, for browser tests: Playwright 1.56.1 with Chromium (`npx playwright install chromium` once on your own machine).
-
-All dependency versions are pinned exactly in `package.json`, and `package-lock.json` is committed.
+- Node.js **22.12+** (tested with 22.22.0) and npm 10. `.nvmrc` pins 22. All dependency versions are pinned and `package-lock.json` is committed.
+- Optional: PostgreSQL 15+ binaries for the database tests (tested with 16.15; set `PG_BIN` if needed).
+- Optional: Playwright 1.56.1 with Chromium for browser tests.
+- Optional: Deno 2.x for the Edge Function smoke test (tested with 2.9.6), or the Supabase CLI for deployment.
 
 ## Run it
-
 ```bash
-npm ci                 # install exactly the locked versions
-npm run dev            # open http://localhost:5173 (use your browser's phone/device mode)
+npm ci
+npm run dev                         # http://localhost:5173 — demo works with no setup
+npm run build && npm run preview    # production build with offline support on :4173
 ```
-
-To test the installable/offline build:
-
-```bash
-npm run build && npm run preview   # http://localhost:4173 — includes the service worker
-```
-
-The demo starts as **Demo A** with five weeks of synthetic history. Today starts empty so you can try logging. Switch to **Demo B** (lb units, no targets) under the profile button. *Settings → Reset demo data* regenerates a profile.
+To use real sign-in, copy `.env.example` to `.env.local` and fill in the **publishable** values only (see the owner guide).
 
 ## Checks
-
 | Command | What it runs |
 |---|---|
-| `npm run check` | typecheck + lint + unit tests + production build + secret scan |
-| `npm test` | unit/persistence tests (Vitest, in-memory IndexedDB) |
-| `npm run test:db` | starts a throwaway local PostgreSQL, applies the migration, and runs the member-isolation tests |
-| `npm run test:e2e` | builds, serves, and drives the app in Chromium at phone size |
-| `npm run scan:secrets` | scans tracked files, git history and `dist/` for credentials and source maps |
+| `npm run check` | typecheck + lint + unit tests + build + secret scan |
+| `npm test` | domain, storage, sync, meal/plan builder and AI-handler tests (Vitest) |
+| `npm run test:db` | throwaway PostgreSQL + both migrations + isolation/sync/quota tests |
+| `npm run test:e2e` | Playwright on two builds: demo, and an auth harness with a scripted fake Supabase |
+| `DENO=… npm run smoke:ai` | the real `ai` Edge Function in Deno against a mock Supabase |
+| `npm run scan:secrets` | tracked files, git history and `dist/` scanned for credentials and source maps |
+| `npm run screenshots` | renders the review screenshots (needs `npm run preview` running) |
 
 ## Layout
-
 ```
-src/app/                 shell, routing, journal context, service-worker registration
-src/core/database/       IndexedDB schema, Journal (record + outbox in one transaction), demo seed
-src/core/design/         design tokens, styles, original SVG icons, theme
-src/core/time/           local-date / timezone helpers
-src/domain/nutrition/    deterministic nutrient maths (batch/portion, unknown = null, snapshots)
-src/domain/training/     sessions, planned vs actual, comparable history, e1RM estimate, rest timer
-src/domain/metrics/      series with missing days kept missing, weight trend, logging consistency
-src/features/            today, meals, train, progress, coach (placeholder), settings
-src/sw/sw.js             app-shell-only service worker (precache list injected at build)
-shared/contracts/        zod schemas shared by client and future backend
-shared/fixtures/         clearly labelled synthetic demo data
-supabase/migrations/     PostgreSQL schema, grants, RLS, RPC (not yet applied to any project)
-supabase/tests/          isolation tests + local stand-in for Supabase's auth schema
-tests/e2e/               Playwright browser tests
-docs/                    status, decisions, wireframes, security/data-flow, owner guide, spec
+src/app/              boot (auth → journal → onboarding/shell), routing, journal context, service worker
+src/core/auth/        Supabase client (lazy), session/membership state, friendly auth errors
+src/core/sync/        foreground sync engine (push/pull, idempotent, conflict copies) + transport
+src/core/ai/          AI client (session token only) and on-device photo cropping/re-encoding
+src/core/database/    IndexedDB v2, Journal (record + outbox in one transaction), demo seed, restore
+src/core/design/      tokens, styles, components, food illustrations, icons, theme
+src/domain/           nutrition maths, training sessions and plan editing, metrics
+src/features/         today, food, workout, progress, coach, settings, auth, onboarding
+shared/               contracts (zod) and fixtures (demo data, exercise library)
+supabase/migrations/  0001 schema/RLS, 0002 sync + membership + deletion + AI accounting
+supabase/functions/   ai Edge Function (wiring) + _shared (tested logic)
+supabase/admin/       owner SQL for approving members and setting AI limits
+tests/e2e/            Playwright specs + mock Supabase
+docs/                 build status, owner guide, security/data flow, design, decisions, screenshots
 ```
 
 ## Secrets
-
-Phase 0 needs **no** environment variables. `.env.example` only holds placeholders. Only `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` may ever reach the browser. The Gemini key and the Supabase secret/service-role keys belong only in Supabase backend secrets, and the owner enters them in the dashboard. Never paste them into chat or commit them. See [`docs/SECURITY_AND_DATA_FLOW.md`](docs/SECURITY_AND_DATA_FLOW.md).
+Only `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` may reach the browser. `GEMINI_API_KEY` and Supabase secret keys live only in Supabase Edge Function secrets, entered by the owner. The build's CSP allows the browser to reach only this site and your Supabase project.
 
 ## Documents
-
-- [`docs/BUILD_STATUS.md`](docs/BUILD_STATUS.md): phase, checks actually run, open issues, next action
-- [`docs/DECISIONS.md`](docs/DECISIONS.md): decision record and scope
-- [`docs/WIREFRAMES.md`](docs/WIREFRAMES.md): design tokens and the four main screens
-- [`docs/SECURITY_AND_DATA_FLOW.md`](docs/SECURITY_AND_DATA_FLOW.md): threat and data-flow notes
-- [`docs/OWNER_GUIDE.md`](docs/OWNER_GUIDE.md): how to try it, backup/export, deletion, what is stored where
-- [`docs/spec/`](docs/spec/): the system specification and the owner checklist this build follows
+[Build status](docs/BUILD_STATUS.md) · [Owner guide](docs/OWNER_GUIDE.md) · [Security & data flow](docs/SECURITY_AND_DATA_FLOW.md) · [Design & screens](docs/WIREFRAMES.md) · [Decisions](docs/DECISIONS.md) · [Redesign gap list](docs/REDESIGN_GAPS.md) · [Specs](docs/spec/)

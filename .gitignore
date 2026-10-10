@@ -40,3 +40,4 @@ keystore.properties
 .idea/
 .vscode/*
 !.vscode/extensions.json
+dist-e2e-auth/

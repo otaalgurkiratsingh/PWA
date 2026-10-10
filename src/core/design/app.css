@@ -156,7 +156,7 @@ p {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  min-height: 32px;
+  min-height: 44px;
   padding: 0 12px;
   border-radius: var(--r-pill);
   border: 1px solid var(--border);
@@ -169,7 +169,7 @@ p {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  min-height: 32px;
+  min-height: 44px;
   padding: 0 10px;
   border-radius: var(--r-pill);
   font-size: var(--fs-label);
@@ -1534,4 +1534,22 @@ table.data td {
 :root[data-theme='dark'] .rest-inner .btn {
   background: var(--card-2);
   color: var(--text);
+}
+
+.set-edit-grid {
+  display: grid;
+  gap: 8px;
+  align-items: end;
+}
+.set-edit-grid .field {
+  min-width: 0;
+}
+.chips.wrap {
+  flex-wrap: wrap;
+  overflow: visible;
+}
+.sub-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
 }

@@ -1,104 +1,79 @@
 # Build status
 
-**Phase:** 0, foundations plus a local visual meal-and-workout journal. **Data:** synthetic only. **Credentials used:** none.
-**Last updated:** 2026-10-09 · Branch `claude/meal-workout-journal-phase-0-pepxc3`
+**Phase:** redesign and completion (CLAUDE_CODE_REDESIGN_AND_COMPLETION_PROMPT.md), built on Phase 0.
+**Last updated:** 2026-10-10 · Branch `claude/meal-workout-journal-phase-0-pepxc3`
+**Live credentials used:** none. Nothing was published, billed or shared, and nobody was invited.
 
-> "Implemented" is not the same as "tested", and "tested by automation" is not the same as "tried by you on your phone". Every result below says which kind it is.
+> "Implemented" is not "tested", and "tested here" is not "tested on your phone or your live Supabase project". Each row below says which.
 
-## What changed in Phase 0
+## What changed
 
-- Project scaffold: React 19 + TypeScript 6 + Vite 8, pinned versions, lockfile, `.nvmrc`, `.gitignore`, and an `.env.example` with placeholders only.
-- Decision record and updated private scope ([DECISIONS.md](DECISIONS.md)), design tokens and four screen wireframes ([WIREFRAMES.md](WIREFRAMES.md)).
-- Typed zod contracts shared by client and future backend (`shared/contracts`), plus clearly labelled synthetic fixtures (`shared/fixtures`).
-- Deterministic domain logic: nutrition batch/portion maths, training sessions, metrics.
-- Local-first storage: IndexedDB with an atomic record + outbox write, tombstones, idempotent op ids, and a separate database per profile.
-- Usable local slice: Today, Meals, Train, Progress and Settings screens. Includes an app-shell service worker, manifest and icons.
-- Supabase schema: tables, constraints, grants, RLS, membership gate, immutable revisions, approval RPC, private operational schema. Isolation tests run against local PostgreSQL.
-- Secret scanner. Security/data-flow notes, owner guide, README.
+- **Look and feel:** a predominantly white design system, light on first launch, with a sun/moon toggle and a Light/Dark/System setting and no theme flash. Blue primary; food peach, training mint, coach lavender. Original dish-specific illustrations and equipment art. Plain language, with details behind Info/More. A compact "Demo data" chip replaces the banner.
+- **Navigation:** Today · Food · Workout · Progress. Coach opens from Today and Settings; the profile opens Settings.
+- **Food:** day switcher; usual-meal carousel with one-tap add and Undo; portion sheet (amount + meal type); Add food (Usual / Create / Photo); meals grouped by type, with edit, add again and delete+Undo; "I've logged everything". There is a meal and recipe editor with measured servings ("1 bowl weighs … g"), raw/dry/cooked state, oil counted once, favourites, optional own photo (cropped and re-encoded on the phone) and an edit entry point. Editing nutrition creates a new revision, so old logs keep their values.
+- **Workout:** My plan, plus a full editor. Add, rename, reorder, duplicate and remove days. Choose in order or by weekday. Use the searchable library or create your own exercise (equipment, muscle, weight+reps / reps / seconds, one side at a time). Edit, reorder, duplicate, replace and remove exercises, and add, duplicate and remove sets (warmup/working, rep range, optional weight, rest). Saving shows a change preview and creates a new version; past and in-progress workouts keep their plan. Notebook-photo import uses AI and requires confirmation.
+- **Active workout:** the current exercise is expanded; set rows read Set / Target / Weight / Reps / ✓; "Warmup" is spelled out. You can add a set mid-workout. Effort and "something hurt" sit behind the set number. **Something hurts** skips the rest of that exercise and notes it. The finish summary shows time, working sets and comparable progress, with Reopen. A compact rest dock sits above the nav.
+- **Progress:** 7 days / 4 weeks / 3 months; four metric tiles; a large weight chart with touch readout and a one-line takeaway (method behind Info); a workout calendar with legend; an exercise picker with best-set chart and e1RM behind details; nutrition and steps when data exists; Log weight / Add steps sheets.
+- **Sign-in and accounts:** a welcome screen with email one-time code (`shouldCreateUser:false`), resend countdown, edit email, and specific error, offline and rate-limit messages. Uninvited emails get the same neutral message. Session restore checks membership before showing anything. There are unapproved/revoked/deleting screens, a short skippable onboarding (name, adult, units, goal, optional targets, usual meals, workout setup, separate backup and AI consent), safe sign-out and account deletion.
+- **Cloud:** a sync engine (push the outbox, pull changes, idempotent op ids, conflict copies you can restore, tombstones) over new RPCs. Migration `0002` adds documents, sync, membership status, deletion, and AI quota/budget accounting.
+- **AI now:** an `ai` Edge Function with three operations. It verifies the JWT, checks membership and consent as the caller, makes a transactional reservation with limits and budget, sends minimal context, uses a stateless Gemini adapter, validates output, filters ungrounded and unsafe content, and bounds proposals. The Coach screen has the review (Evidence / Suggested next step / Missing information), starter questions, Accept / Keep current for proposals, memory you can view/edit/delete, and every unavailable state.
+- **Also:** restore from export (exercised); CSP generated per build with your exact Supabase origin; Supabase SDK loaded only when configured; two real bugs fixed (described below).
 
-## Checks actually run (2026-10-09, in the build container)
+## Checks actually run (2026-10-10, build container)
 
-Environment: Linux, Node 22.22.0, npm 10.9.4, PostgreSQL 16.15, Chromium via Playwright 1.56.1.
+Environment: Linux · Node 22.22.0 · npm 10.9.4 · PostgreSQL 16.15 · Chromium (Playwright 1.56.1) · Deno 2.9.6.
 
 | Check | Command | Result |
 |---|---|---|
-| Typecheck | `npm run typecheck` | **pass**, 0 errors |
-| Lint (incl. no-HTML-injection rules, React hooks rules) | `npm run lint` | **pass**, 0 problems |
-| Unit + persistence tests | `npm test` | **pass**, 42/42 (7 files) |
-| Production build | `npm run build` | **pass**. JS 399 kB (≈120 kB gzip), CSS 16 kB, no source maps |
-| Secret scan (tracked files + git history + `dist/`) | `npm run scan:secrets` | **pass**. A self-test with a planted fake key **fails as intended** |
-| Database isolation (local PostgreSQL 16 + Supabase auth stand-in) | `npm run test:db` | **pass**, 26/26 |
-| Mutation check of DB controls | ad hoc, migration edited then restored | removing the membership check → 2 tests fail; keeping default grants → 4 fail; single-column child FK → 2 fail |
-| Mutation check of atomic save | ad hoc, `tx.abort()` removed then restored | the "outbox write fails → record not saved" test fails as intended |
-| Browser end-to-end at phone size (Pixel 7 profile, Chromium) | `npm run test:e2e` | **pass**, 11/11 |
-| Plain-HTTP LAN access (insecure context, no `crypto.randomUUID`) | ad hoc Playwright script | **pass**: meal and set saved and restored after reload, no page errors. This found and fixed a real bug |
-| Visual review of all screens, light and dark | screenshots in `docs/screenshots/` | reviewed. Fixed: weight-trend wording, e1RM wrongly shown for a bodyweight move, preset ordering, scroll position on navigation |
+| Typecheck (app + tests) | `npm run typecheck` | **pass** |
+| Lint (incl. React Compiler hooks rules, no HTML injection) | `npm run lint` | **pass**, 0 problems |
+| Unit/integration tests | `npm test` | **91/91 pass** (12 files): nutrition, training, plan editor, metrics, storage + v1→v2 upgrade, export/restore, sync engine, meal builder, auth messages, AI handler/adapter/image/summary |
+| Production build | `npm run build` | **pass**. Main JS 159 kB gzip; Supabase SDK in a separate 55 kB chunk; CSS 6 kB; no source maps |
+| Secret scan (files + history + dist) | `npm run scan:secrets` | **pass** (168 files) |
+| Database (both migrations) | `npm run test:db` | **40/40 pass**: isolation, grants, immutability, approval RPC, sync rules, forged owners, size limits, deletion with old token, per-user memory, 10 concurrent AI reservations → exactly 5, replay, budget/disable |
+| Mutation checks (new) | migration edited, run, restored | advisory locks removed → 2 failures; `sync_push` owner check removed → 1 failure |
+| Edge Function typecheck | `deno check` | **pass** |
+| Edge Function runtime (real `index.ts`) | `npm run smoke:ai` | **7/7 pass**: no/bad/rejected token → 401 with no backend call; foreign origin → 403; unconfigured → 503 without reservation; membership read with the caller's token |
+| Browser, demo build | `npm run test:e2e` (demo) | **14/14 pass**: light first launch + persisted theme; no network on unconfigured sign-in; create meal → log → change → add again → delete/Undo → edit nutrition (old log unchanged, new log uses new value); one-tap/Undo; unknown nutrition never zero; create day → custom exercise → sets → save → reload → start → log → finish summary → history; duplicate/reorder/edit without altering the old session (checked in IndexedDB); set + timer survive reload; set table fits its card; Something hurts; offline shell + set survives reload; export → reset → restore; demo people separated; no overflow at 320/360/390 px at 100% and 200% text; names and ≥40 px targets; reduced motion |
+| Browser, auth harness | `npm run test:e2e` (auth-harness, scripted fake Supabase) | **5/5 pass**: wrong code → error; correct code → onboarding (no demo data) → backup via `sync_push` with only this user as owner → consent recorded → "Backed up" → reload restores the session without showing the welcome screen → sign out → sign in again; unapproved account refused with no sync; uninvited address gets the neutral message; Coach sends only the session token (no key) and renders the review; Accept proposal → decision RPC → targets updated; AI not configured → truthful message |
+| Visual review | `npm run screenshots` + `SHOTS=1` auth run | 41 screenshots at 360 and 390 px, light and dark, empty/error states (`docs/screenshots/`). Inspected; fixed: clipped carousel start, ambiguous day badges, heavy editor buttons, set table overflow at 360 px, chart ticks not covering the data, fragmented weight line, chip touch targets, missing sub-page titles, clipped starter questions, bright rest dock in dark mode |
 
-### What the browser tests cover
+### Real bugs found by these checks (fixed)
+1. **First visit reloaded the page:** the service worker's first `clients.claim` triggered the update reload, wiping what you'd typed. It now reloads only after you tap Update.
+2. **Finish summary never appeared:** it was lost when the screen switched back to My plan. It is now owned by the Workout screen.
+3. **Uninvited email showed "code expired":** fixed; it now shows the neutral invite-only message.
+4. **Settings showed stale targets after an accepted proposal or sync:** the form now refreshes from saved values.
+5. **The set table overflowed its card at 360 px:** it now uses a fixed layout and fits at 320–390 px.
+6. **Build-time placeholders were replaced in a comment instead of the code** (CSP and service worker): fixed, with build assertions.
 
-- One tap logs a calibrated preset. "Saved on this device" appears **62–83 ms** after the tap (automated; this is not a human timing). Undo removes it.
-- An unknown-recipe item makes totals "Unknown" or "≥ N kcal", never 0.
-- The Amount sheet logs 3 rotis. Edit shows the logged recipe revision. Delete works.
-- Workout: a completed set, its typed reps/kg, and the rest timer all survive a page reload. The timer keeps counting down. There is exactly one active session after reload. Planned "6–8 reps @ 50 kg" stays visible next to the actual values. Skip shows "Skipped". Finish works.
-- Offline: after the first visit the service worker controls the page. With the network off, the app reloads, logs a meal, keeps it after another reload, and shows "1 change waiting in the local outbox".
-- Switching from Demo A to Demo B shows none of A's meals.
-- Missing steps and sleep show "Not entered" / "Not tracked".
-- No horizontal overflow at 320 px and 360 px widths, at 100% and 200% text size.
-- Every visible control has an accessible name and is at least 40 px. Primary controls are 48 px.
-- A set can be completed with the keyboard only.
+## External setup still required (owner actions)
 
-### What the unit tests cover
+Step-by-step in [OWNER_GUIDE.md §2](OWNER_GUIDE.md):
 
-- Nutrition: batch = Σ(g/100 × per-100 g); portion = batch × portion g / yield; batch oil counted once; dry/cooked mismatch rejected; unknown stays null and makes totals partial; old snapshots are unchanged by a new recipe revision; quantity scaling.
-- Training: prescription snapshotted; actual separate from planned; undo; skip ≠ zero; finished sessions locked until reopened; warm-ups excluded from summaries; previous performance only from the same variant and load convention; copy-last drafts converted to the user's unit; exact lb↔kg; e1RM only for 1–10 reps; timer derived from an end timestamp.
-- Metrics: missing days are null; weight trend refuses sparse data; unit conversion.
-- Storage: record + outbox atomic (including a simulated quota failure); persistence across close/reopen; idempotent retry; owner and validation checks; version/base-version tracking; tombstones; profile separation; timer persistence; demo seed runs once and queues nothing for sync.
+1. **Supabase project** (free tier): apply the two migrations; disable sign-ups; set the email template to send `{{ .Token }}`; connect SMTP with a verified domain; set rate limits, Site URL and redirect URL.
+2. **Members:** create your user, then approve it with `supabase/admin/members.sql`.
+3. **Netlify:** add `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`, then redeploy.
+4. **Gemini:** paid, billing-linked Google project and API key; check `gemini-3.8-flash` availability and current prices; `supabase functions deploy ai`; set `GEMINI_API_KEY`, `GEMINI_MODEL`, `AI_PRICE_INPUT_PER_MTOK`, `AI_PRICE_OUTPUT_PER_MTOK` and `ALLOWED_ORIGINS` in Edge Function secrets.
 
-## Checklist progress (sections 2–3 of the owner checklist)
+**Blocker noted during the build:** this environment could not reach Google's or Supabase's documentation sites (DNS/proxy refused). The Gemini adapter therefore uses the long-stable `generateContent` shape by default. The Interactions API (`store=false`) option follows Google's published examples but is **unverified**. Both must be confirmed by one live call after setup.
 
-| Item | State |
-|---|---|
-| Inspect folder/instructions before modifying | done. The repository was empty |
-| Compatible versions and exact commands in README; lockfile committed | done |
-| Ignore secrets, exports, photos, dumps, signing material | done (`.gitignore`) |
-| `.env.example` with placeholders only; scan before pushing | done. Scan passed before push |
-| `docs/BUILD_STATUS.md` | this file |
-| Gate: starts locally with synthetic data and no credentials | **met (automated)** |
-| Today/Meals/Train/Progress with readable labels, large targets, phone layout | built, browser-tested |
-| Planned vs actual, loads, skipped sets | built, tested |
-| Usual-meal tiles, portion controls, undo/edit, clear estimates | built, tested |
-| Deterministic nutrients; unknown kept unknown | built, tested. Numbers are synthetic until you supply real sources |
-| Dry/cooked distinction, serving conventions, oil counted once | built, tested |
-| Save locally immediately; works without AI | built, tested |
-| Workout offline → close/reopen → sets, timer and pending changes intact | **automated pass in Chromium**. **Not yet done on your phone** |
-| Refresh, storage failure, reconnection, duplicate retries, conflicting edits | refresh, simulated storage failure and duplicate retries tested. **Reconnection/conflict handling needs the Phase 1 sync server, not built** |
-| Owner times a usual-meal entry (target 10–15 s) | **not run.** Needs you on your phone |
-| Reduced motion, large text, labels, narrow screens | built; large text, labels and narrow screens tested; reduced motion implemented but not automatically tested |
-| Owner tries it on the Samsung phone | **not run** |
-| Gate: one full meal-and-workout day logged and recovered | **automated pieces pass; owner trial pending** |
+## Not yet verified (do not treat as passed)
+- **Live Supabase:** JWT signature/issuer/audience/expiry, disabled sign-ups, email code delivery, SMTP, rate limits, the migrations under Supabase's real roles (re-run the isolation suite there), and Edge Function limits with real photos.
+- **Live Gemini:** response and usage fields, cost accounting against the real price list, answer quality, safety behaviour on real data, provider retention terms for your account.
+- **Two real people on two phones:** account separation and an old-token denial after deletion, end to end.
+- **Your Samsung phone:** install, screen lock during a workout, timing a usual-meal log (target 10–15 s), iPhone if anyone uses one.
+- **Backup restore from Supabase's own backups** (plan-dependent). App-level export/restore is tested.
+- The Notion reference screenshot was not among the attachments received; the design used the other references.
 
-## Known limitations and open issues
-
-1. **No cloud, login, sync, backup or restore yet.** The outbox only accumulates locally. Export (JSON) exists. Import/restore is not built, so export is not yet a tested backup.
-2. **All nutrition numbers are synthetic placeholders.** Replace them with label data, USDA FoodData Central records or your confirmed recipes before relying on any total.
-3. **Setup screens are missing:** no UI yet to create your own presets, recipes, portion calibrations, program or targets. The demo library comes from fixtures. *This is the biggest gap before real daily use.*
-4. Offline mode and installing to the home screen need HTTPS. Over a plain-HTTP Wi-Fi address the app works but cannot install or work offline.
-5. JWT verification, signup settings and Edge Functions can only be tested on a real Supabase project (see SECURITY_AND_DATA_FLOW.md "Not yet tested").
-6. Draft edits (typing reps/kg without ticking) each create an outbox entry when the field loses focus. Outbox compaction belongs with the sync work.
-7. Progression suggestions, notebook-photo plan import, screenshot steps import, and the AI coach are not started (Phase 1–2 by design).
-8. The bundle includes all of zod (~120 kB gzip in total). This is acceptable for now; it could switch to `zod/mini` later.
-9. Physical-device checks are **not done**: Samsung phone use, screen lock during a real workout, iPhone.
+## Known limitations
+- No native Health Connect/Samsung import. Steps are manual and labelled "Manual".
+- The weekly review has no scheduled trigger; you request it (1 per week).
+- Coach chat history lives only in the open screen; it is not stored. Confirmed memory is stored.
+- The demo's nutrition numbers are placeholders. Starter meals created at onboarding have names and portions but no nutrition until you add label or recipe values.
+- A member verified on a device can use local data offline for up to 14 days. The server still enforces access on every sync.
 
 ## Your next action (plain language)
 
-**Spend about 15 minutes trying the demo, ideally on your Samsung phone, and judge one thing: does logging feel easier than your notebook?**
-
-1. On your computer, in this project folder: `npm ci`, then `npm run dev -- --host`.
-2. On your phone (same Wi-Fi), open the "Network" address it prints. [OWNER_GUIDE.md](OWNER_GUIDE.md) has step-by-step instructions and a short list of things to try. Time one usual-meal tap from opening the app to "Saved".
-3. Write down your three biggest annoyances. Separately, and outside this project folder, list your 10–20 real usual meals with portions and your current notebook workout plan.
-
-Do not enter real health data yet, and do not create cloud accounts or keys yet. When you reply with your feedback (and whether you're ready to set up Supabase), the next build step is:
-- **Phase 1a (no accounts needed):** setup screens for your own meals, recipes, portions, program and targets, plus JSON import so export becomes a real backup.
-- **Phase 1b (needs you):** you create a private Supabase project with MFA. Then the builder adds login, sync, and the isolation tests against that project.
-
-Nothing has been published, deployed, billed, or shared with anyone.
+1. **Look first, no accounts needed:** open your Netlify site after this branch deploys (or `npm run dev`), tap **Explore the demo**, and try Food, Workout (Edit plan → Start) and Progress on your Samsung phone. Tell me what still feels heavy or slow.
+2. **When you're happy with how it feels,** do the one-time setup in [OWNER_GUIDE.md §2](OWNER_GUIDE.md): Supabase, then email, then Netlify variables, then Gemini. Start by inviting only yourself.
+3. Then we run the **15-minute live check** together (§2e). Only after it passes should you enter real records or invite your wife.

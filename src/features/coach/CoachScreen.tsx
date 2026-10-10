@@ -93,7 +93,7 @@ export function CoachScreen() {
 
   const load = useCallback(async () => {
     if (mode !== 'account' || !consent || !navigator.onLine) return;
-    const db = supabase();
+    const db = await supabase();
     const [r, u, m] = await Promise.all([
       db.from('coach_reviews').select('id, created_at, period_from, period_to, review, model_id, prompt_version').order('created_at', { ascending: false }).limit(1),
       db.rpc('my_ai_usage'),
@@ -139,7 +139,7 @@ export function CoachScreen() {
 
   const decide = async (accept: boolean) => {
     if (!proposal) return;
-    const { error } = await supabase().rpc('decide_change_proposal', { p_proposal_id: proposal.id, p_decision: accept ? 'accepted' : 'rejected' });
+    const { error } = await (await supabase()).rpc('decide_change_proposal', { p_proposal_id: proposal.id, p_decision: accept ? 'accepted' : 'rejected' });
     if (error) return notify({ kind: 'error', message: 'Couldn’t record your decision. Try again.' });
     if (accept) {
       await updateProfile({ ...profile, targets: { energy_kcal: proposal.after_value.energy_kcal, protein_g: proposal.after_value.protein_g, source: `Accepted from coach review ${formatShortDate(today)}` } });
@@ -151,7 +151,7 @@ export function CoachScreen() {
   const saveMemory = async () => {
     const fact = memoryText.trim().slice(0, 500);
     if (!fact) return;
-    const db = supabase();
+    const db = await supabase();
     const res = memoryEdit === 'new'
       ? await db.from('user_confirmed_memory').insert({ fact })
       : await db.from('user_confirmed_memory').update({ fact }).eq('id', (memoryEdit as Memory).id);
@@ -161,14 +161,15 @@ export function CoachScreen() {
   };
 
   const deleteMemory = async (m: Memory) => {
-    const { error } = await supabase().from('user_confirmed_memory').delete().eq('id', m.id);
+    const { error } = await (await supabase()).from('user_confirmed_memory').delete().eq('id', m.id);
     if (error) return notify({ kind: 'error', message: 'Couldn’t delete that note.' });
     void load();
   };
 
   const header = (
-    <div className="row between">
-      <button className="btn ghost" onClick={() => goBack('today')}><Icon name="chevronLeft" size={18} /> Back</button>
+    <div className="row" style={{ gap: 4 }}>
+      <button className="icon-btn plain" aria-label="Back" onClick={() => goBack('today')}><Icon name="chevronLeft" /></button>
+      <h1 className="sub-title grow">Coach</h1>
     </div>
   );
 
@@ -223,7 +224,7 @@ export function CoachScreen() {
       <Section title="Ask the coach">
         <div className="card stack">
           {thread.length === 0 ? (
-            <div className="chips">{STARTERS.map((s) => <button key={s} className="chip" onClick={() => void ask(s)} disabled={busy !== null || !online}>{s}</button>)}</div>
+            <div className="chips wrap">{STARTERS.map((s) => <button key={s} className="chip" onClick={() => void ask(s)} disabled={busy !== null || !online}>{s}</button>)}</div>
           ) : (
             <div className="stack-sm" aria-live="polite">
               {thread.map((t, i) => (

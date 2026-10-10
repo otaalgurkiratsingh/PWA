@@ -14,7 +14,7 @@ type AiBody =
   | { operation: 'photo_suggest'; kind: 'food' | 'notebook'; image_base64: string; presets: { id: string; name: string }[] };
 
 export async function callAi(body: AiBody, operationId: string = newId()): Promise<AiResponse> {
-  const { data } = await supabase().auth.getSession();
+  const { data } = await (await supabase()).auth.getSession();
   const token = data.session?.access_token;
   if (!token) return { status: 'error', error: 'unauthenticated', message: 'Please sign in again.' };
   try {

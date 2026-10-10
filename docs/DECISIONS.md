@@ -77,3 +77,24 @@ The newest stable versions compatible with each other on 2026-10-09: React 19.3.
 
 "Rozana" means "daily" in Hindi, Urdu and Punjabi. The app is a daily habit for meals and workouts: short, personal, and not tied to only food or only the gym. It fits under a home-screen icon. The owner asked the builder to choose. It replaces the working name "AapnaFit". The original spec files in `docs/spec/` keep the old name because they are the owner's source documents. No trademark search was done; that is acceptable for a private, non-commercial app with no store listing.
 Storage keys were renamed too (`rozana-journal-*`, `rozana.theme`). Any demo data created under the old name stays in the browser's old database and is ignored. It was synthetic only.
+
+## D14. Redesign direction (2026-10-09)
+
+The owner found the Phase 0 look heavy, technical and dark. The new system is predominantly white and light by default, with dark mode opt-in or following the system. It uses one blue primary action and three role colours: peach for food, mint for training and lavender for the coach. Language is plain, with technical detail behind Info/More. The demo is a compact chip, not a banner. See WIREFRAMES.md.
+
+## D15. Journal sync uses owner-scoped JSON documents
+
+The app's aggregates (meal entries with snapshots, sessions with nested sets, plan versions, presets, recipes, custom exercises, profile settings) sync as whole documents in `public.journal_documents`. Writes go only through `sync_push`, which checks owner, size, idempotency and version. Pulls use a per-user server sequence. This keeps local and cloud shapes identical, makes conflicts per document, and avoids a large set of per-table writers. The normalised tables from migration 0001 stay defined and protected for future server-side use. `consent_events`, `coach_reviews`, `change_proposals` and `user_confirmed_memory` are used directly.
+*Revisit if:* server-side queries across many documents become slow (add generated columns or a projection then).
+
+## D16. AI request style
+
+`generateContent` is the default because the build environment couldn't reach Google's documentation to confirm the Interactions API fields; `generateContent` is stateless by nature. The Interactions API is available with `store=false` and no chaining or background mode via `GEMINI_API_STYLE=interactions`, after a live smoke test. The model ID is configurable (`GEMINI_MODEL`, default `gemini-3.8-flash`). Prices must be set as secrets, otherwise the coach stays off.
+
+## D17. Auth: email one-time code, invite-only
+
+Sign-in uses Supabase email OTP with `shouldCreateUser:false`, sign-ups disabled in the dashboard, and approved membership in `private.approved_members`. Uninvited addresses get the same neutral message as invited ones. Session restoration validates membership before showing any journal. A previously verified member can use local data offline for up to 14 days.
+
+## D18. Supabase SDK loaded on demand
+
+`@supabase/supabase-js` is a separate chunk (≈55 kB gzip), downloaded only when sign-in is configured. The demo and offline logging never need it.

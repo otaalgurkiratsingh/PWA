@@ -117,16 +117,22 @@ function SetEditor({ ex, onChange, onAdd, onDuplicate, onRemove, unit }: {
         const name = s.type === 'warmup' ? 'Warmup' : `Set ${n}`;
         return (
           <div key={i} className="card tight flat stack-sm">
-            <div className="row between">
+            <div className="row between" style={{ gap: 4 }}>
               <Segmented label={`${name} type`} value={s.type} onChange={(v) => onChange(i, { type: v })} options={[{ value: 'warmup', label: 'Warmup' }, { value: 'working', label: 'Working' }]} />
-              <div className="row" style={{ gap: 2 }}>
+              <div className="row" style={{ gap: 0 }}>
                 <button className="icon-btn plain" aria-label={`Duplicate ${name}`} onClick={() => onDuplicate(i)}><Icon name="copy" size={18} /></button>
                 <button className="icon-btn plain" aria-label={`Remove ${name}`} onClick={() => onRemove(i)} disabled={ex.sets.length <= 1}><Icon name="trash" size={18} /></button>
               </div>
             </div>
-            <div className="metrics" style={{ gridTemplateColumns: ex.measurement === 'weight_reps' ? 'repeat(4, minmax(0,1fr))' : 'repeat(3, minmax(0,1fr))', gap: 8 }}>
-              <label className="field">{repWord} min<input className="num-input" inputMode="numeric" aria-label={`${name} ${repWord.toLowerCase()} minimum`} value={s.rep_min} onChange={(e) => { const v = parseInt(e.target.value, 10); if (v > 0) onChange(i, { rep_min: v }); }} /></label>
-              <label className="field">max<input className="num-input" inputMode="numeric" aria-label={`${name} ${repWord.toLowerCase()} maximum`} value={s.rep_max} onChange={(e) => { const v = parseInt(e.target.value, 10); if (v > 0) onChange(i, { rep_max: v }); }} /></label>
+            <div className="set-edit-grid" style={{ gridTemplateColumns: ex.measurement === 'weight_reps' ? '1.7fr 1fr 1fr' : '1.7fr 1fr' }}>
+              <div className="field">
+                <span>{repWord}</span>
+                <div className="row" style={{ gap: 4 }}>
+                  <input className="num-input" inputMode="numeric" aria-label={`${name} ${repWord.toLowerCase()} minimum`} value={s.rep_min} onChange={(e) => { const v = parseInt(e.target.value, 10); if (v > 0) onChange(i, { rep_min: v }); }} />
+                  <span aria-hidden="true">–</span>
+                  <input className="num-input" inputMode="numeric" aria-label={`${name} ${repWord.toLowerCase()} maximum`} value={s.rep_max} onChange={(e) => { const v = parseInt(e.target.value, 10); if (v > 0) onChange(i, { rep_max: v }); }} />
+                </div>
+              </div>
               {ex.measurement === 'weight_reps' ? (
                 <label className="field">{unit}<input className="num-input" inputMode="decimal" aria-label={`${name} target weight (optional)`} placeholder="—" value={s.target_load ?? ''} onChange={(e) => { const v = Number(e.target.value.replace(',', '.')); onChange(i, { target_load: e.target.value.trim() === '' || !(v > 0) ? null : v, target_unit: unit as PrescribedSet['target_unit'] }); }} /></label>
               ) : null}

@@ -90,6 +90,9 @@ export function AddMealSheet({ preset, date, slot, onClose }: { preset: MealPres
           disabledDec={mult <= step}
         />
         <Segmented label="Meal" value={s} onChange={setS} full options={SLOTS.map((x) => ({ value: x, label: SLOT_LABEL[x] }))} />
+        <button className="link" style={{ alignSelf: 'flex-start' }} onClick={() => { onClose(); navigate('meal', preset.id); }}>
+          <Icon name="edit" size={16} /> Edit meal, portion or nutrition
+        </button>
       </div>
     </Sheet>
   );

@@ -47,7 +47,7 @@ function writeLocal(key: string, value: string | null) {
 async function resolveMember(session: Session): Promise<AuthStatus> {
   const email = session.user.email ?? null;
   try {
-    const { data, error } = await supabase().rpc('my_membership');
+    const { data, error } = await (await supabase()).rpc('my_membership');
     if (error) throw error;
     const m = String(data);
     if (m === 'active') {
@@ -81,35 +81,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     (async () => {
       if (readMode() === 'demo') return done({ kind: 'demo' });
       if (!configured) return done({ kind: 'signed_out' });
-      const { data } = await supabase().auth.getSession();
+      const { data } = await (await supabase()).auth.getSession();
       if (!data.session) return done({ kind: 'signed_out' });
       done(await resolveMember(data.session));
     })().catch(() => done({ kind: 'signed_out' }));
     if (!configured) return () => void (live = false);
-    const { data: sub } = supabase().auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_OUT') done(readMode() === 'demo' ? { kind: 'demo' } : { kind: 'signed_out' });
-      if (event === 'SIGNED_IN' && session) void resolveMember(session).then(done);
+    let unsubscribe: (() => void) | null = null;
+    void supabase().then((sb) => {
+      const { data: sub } = sb.auth.onAuthStateChange((event, session) => {
+        if (event === 'SIGNED_OUT') done(readMode() === 'demo' ? { kind: 'demo' } : { kind: 'signed_out' });
+        if (event === 'SIGNED_IN' && session) void resolveMember(session).then(done);
+      });
+      if (live) unsubscribe = () => sub.subscription.unsubscribe();
+      else sub.subscription.unsubscribe();
     });
     return () => {
       live = false;
-      sub.subscription.unsubscribe();
+      unsubscribe?.();
     };
   }, [configured, tick]);
 
   const sendCode = useCallback(async (email: string) => {
-    const { error } = await supabase().auth.signInWithOtp({ email, options: { shouldCreateUser: false } });
+    const { error } = await (await supabase()).auth.signInWithOtp({ email, options: { shouldCreateUser: false } });
     if (error) throw error;
   }, []);
 
   const verifyCode = useCallback(async (email: string, code: string) => {
-    const { data, error } = await supabase().auth.verifyOtp({ email, token: code, type: 'email' });
+    const { data, error } = await (await supabase()).auth.verifyOtp({ email, token: code, type: 'email' });
     if (error) throw error;
     if (data.session) setStatus(await resolveMember(data.session));
   }, []);
 
   const signOut = useCallback(async () => {
     writeLocal(VERIFIED_KEY, null);
-    if (configured) await supabase().auth.signOut({ scope: 'local' }).catch(() => undefined);
+    if (configured) await (await supabase()).auth.signOut({ scope: 'local' }).catch(() => undefined);
     setStatus({ kind: 'signed_out' });
   }, [configured]);
 

@@ -6,7 +6,7 @@ import { EquipmentArt, Icon } from '@/core/design/icons';
 import { EmptyState, Section } from '@/core/design/ui';
 import { formatShortDate } from '@/core/time/localDate';
 import { WEEKDAY_SHORT, suggestedDay } from '@/domain/training/plan';
-import { sessionProgress } from '@/domain/training/session';
+import { reopenSession, sessionProgress } from '@/domain/training/session';
 import { ActiveWorkout, FinishSummary } from './ActiveWorkout';
 import { useWorkout } from './useWorkout';
 
@@ -18,11 +18,13 @@ export function WorkoutScreen() {
   const sessions = useQuery((j) => j.sessions(), []);
   const { start } = useWorkout();
   const [viewing, setViewing] = useState<WorkoutSession | null>(null);
+  const [justFinished, setJustFinished] = useState<WorkoutSession | null>(null);
+  const { mutate } = useWorkout();
 
   if (program === undefined || !sessions) return <div className="skeleton" style={{ minHeight: 240 }} />;
   const active = sessions.find((s) => s.status === 'active');
   const finished = sessions.filter((s) => s.status === 'finished');
-  if (active) return <ActiveWorkout session={active} history={finished} />;
+  if (active) return <ActiveWorkout session={active} history={finished} onFinished={setJustFinished} />;
 
   const weekday = new Date(`${today}T12:00:00Z`).getUTCDay();
   const next = program ? suggestedDay(program, finished, weekday) : null;
@@ -104,6 +106,10 @@ export function WorkoutScreen() {
         )}
       </Section>
       {viewing ? <FinishSummary session={viewing} history={finished.filter((x) => x.id !== viewing.id)} onClose={() => setViewing(null)} /> : null}
+      {justFinished ? (
+        <FinishSummary session={justFinished} history={finished.filter((x) => x.id !== justFinished.id)} onClose={() => setJustFinished(null)}
+          onReopen={async () => { await mutate(justFinished.id, reopenSession); setJustFinished(null); }} />
+      ) : null}
     </div>
   );
 }

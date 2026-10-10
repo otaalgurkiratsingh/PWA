@@ -3,6 +3,7 @@
  * New versions wait until the user taps Update (never mid-workout).
  */
 let waiting: ServiceWorker | null = null;
+let userAskedForUpdate = false;
 const listeners = new Set<() => void>();
 
 export function registerServiceWorker() {
@@ -22,7 +23,9 @@ export function registerServiceWorker() {
       });
       let reloaded = false;
       navigator.serviceWorker.addEventListener('controllerchange', () => {
-        if (!reloaded) {
+        // The first install also changes the controller (clients.claim). Only reload when the
+        // person tapped Update — never in the middle of typing or a workout.
+        if (userAskedForUpdate && !reloaded) {
           reloaded = true;
           location.reload();
         }
@@ -40,5 +43,6 @@ export function onUpdateReady(fn: () => void): () => void {
 }
 
 export function applyUpdate() {
+  userAskedForUpdate = true;
   waiting?.postMessage({ type: 'SKIP_WAITING' });
 }

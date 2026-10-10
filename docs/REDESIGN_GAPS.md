@@ -1,4 +1,4 @@
-# Redesign gap list (pass A, 2026-10-09)
+# Redesign gap list (pass A, 2026-10-09) — all rows addressed; see BUILD_STATUS.md for evidence
 
 This list compares what the Phase 0 build does with what CLAUDE_CODE_REDESIGN_AND_COMPLETION_PROMPT.md asks for. It is based on the code, a fresh run of the tests, and the owner's phone screenshots: the Progress, meal-card/portion-sheet and workout screens, plus the Spotify and Headspace references. The Notion reference was not among the attachments received.
 

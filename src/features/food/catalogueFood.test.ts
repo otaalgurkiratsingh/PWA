@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import raw from '../../../shared/catalogue/punjabi-canadian-v2.json';
+import raw from '../../../supabase/functions/_shared/data/punjabi-canadian-v2.json';
 import { parseCatalogue } from '@shared/catalogue/catalogue';
 import { FoodVersion, MealPreset } from '@shared/contracts';
 import { snapshotPreset, totalsOfItems } from '@/domain/nutrition/calc';

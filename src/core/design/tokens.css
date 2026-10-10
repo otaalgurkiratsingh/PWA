@@ -1,4 +1,4 @@
-/* Rozana design tokens. Light is the default on first launch; dark is opt-in (or "System").
+/* TrainLuma design tokens. Light is the default on first launch; dark is opt-in (or "System").
    The theme attribute is set before first paint by /theme-init.js, so there is no flash. */
 :root,
 :root[data-theme='light'] {

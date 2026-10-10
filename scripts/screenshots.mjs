@@ -50,6 +50,21 @@ for (const width of [360, 390]) {
   await page.getByRole('button', { name: /Create meal/ }).click();
   await shot(page, `${width}-07-meal-editor`);
 
+  // Food list (catalogue): picker, alias search, category, first-time add sheet.
+  await page.goto(`${base}/#/food`);
+  await page.getByRole('button', { name: 'Add food' }).click();
+  await page.getByRole('button', { name: /Choose food/ }).click();
+  await page.getByRole('dialog').evaluate((d) => d.scrollTo(0, 820));
+  await shot(page, `${width}-26-food-picker`);
+  await page.getByLabel('Search foods').fill('daal');
+  await shot(page, `${width}-27-food-search-alias`);
+  await page.getByLabel('Search foods').fill('');
+  await page.getByRole('button', { name: 'Chai & drinks' }).click();
+  await shot(page, `${width}-28-food-category`);
+  await page.getByRole('button', { name: 'Masala chai' }).click();
+  await shot(page, `${width}-29-list-food-add`);
+  await page.getByRole('button', { name: 'Close' }).click();
+
   await page.goto(`${base}/#/workout`);
   await shot(page, `${width}-08-my-plan`);
   await page.goto(`${base}/#/plan`);

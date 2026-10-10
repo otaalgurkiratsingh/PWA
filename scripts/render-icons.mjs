@@ -1,21 +1,22 @@
-// Render PNG install icons from public/icons/icon.svg using the local Chromium (Playwright).
+// Render PNG install icons from the owner's TrainLuma logo artwork (public/icons/logo-source.png)
+// using the local Chromium (Playwright). The artwork is full-bleed with the TL mark inside the
+// maskable safe zone, so the same picture serves "any" and "maskable" icons.
 // Usage: node scripts/render-icons.mjs
 import { readFileSync } from 'node:fs';
 import { chromium } from '@playwright/test';
 
-const svg = readFileSync(new URL('../public/icons/icon.svg', import.meta.url), 'utf8');
+const src = `data:image/png;base64,${readFileSync(new URL('../public/icons/logo-source.png', import.meta.url)).toString('base64')}`;
 const browser = await chromium.launch();
 const page = await browser.newPage();
-async function render(size, file, maskable = false) {
+async function render(size, file, rounded = false) {
   await page.setViewportSize({ width: size, height: size });
-  const inner = maskable
-    ? `<div style="width:${size}px;height:${size}px;background:#1d7a48;display:grid;place-items:center"><div style="width:${size * 0.8}px;height:${size * 0.8}px">${svg.replace('rx="112"', 'rx="0"')}</div></div>`
-    : `<div style="width:${size}px;height:${size}px">${svg}</div>`;
-  await page.setContent(`<html><body style="margin:0;background:transparent">${inner}</body></html>`);
+  await page.setContent(`<html><body style="margin:0;background:transparent"><img src="${src}" style="display:block;width:${size}px;height:${size}px;${rounded ? `border-radius:${size * 0.22}px` : ''}"></body></html>`);
+  await page.waitForFunction(() => globalThis.document.images[0].complete);
   await page.screenshot({ path: new URL(`../public/icons/${file}`, import.meta.url).pathname, omitBackground: true });
 }
 await render(192, 'icon-192.png');
 await render(512, 'icon-512.png');
-await render(512, 'icon-maskable-512.png', true);
+await render(512, 'icon-maskable-512.png');
+await render(180, 'apple-touch-icon.png');
 await browser.close();
 console.log('icons rendered');

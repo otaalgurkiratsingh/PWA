@@ -3,7 +3,7 @@ import type { MealPreset } from '@shared/contracts';
 import { useJournal } from '@/app/JournalContext';
 import { navigate } from '@/app/router';
 import { base64Of } from '@/core/ai/photo';
-import { callAi, type FoodPhotoOutput } from '@/core/ai/client';
+import { callAi, type CoachOutput } from '@/core/ai/client';
 import { FoodArt } from '@/core/design/foodArt';
 import { Icon } from '@/core/design/icons';
 import { PhotoCropper, type CroppedPhoto } from '@/core/design/PhotoCropper';
@@ -20,17 +20,17 @@ export function stashMealDraft(d: { name?: string; photo?: string | null }) {
   }
 }
 
-export function PhotoSheet({ presets, onClose, onPickPreset }: { presets: MealPreset[]; onClose: () => void; onPickPreset: (p: MealPreset) => void }) {
+export function PhotoSheet({ presets, onClose, onPickPreset, onPickListFood }: { presets: MealPreset[]; onClose: () => void; onPickPreset: (p: MealPreset) => void; onPickListFood: (name: string) => void }) {
   const { mode, profile, journal, refresh, notify } = useJournal();
   const [photo, setPhoto] = useState<CroppedPhoto | null>(null);
-  const [state, setState] = useState<{ kind: 'idle' } | { kind: 'loading' } | { kind: 'result'; r: FoodPhotoOutput } | { kind: 'error'; message: string }>({ kind: 'idle' });
+  const [state, setState] = useState<{ kind: 'idle' } | { kind: 'loading' } | { kind: 'result'; r: CoachOutput } | { kind: 'error'; message: string }>({ kind: 'idle' });
   const [pickFor, setPickFor] = useState(false);
   const aiReady = mode === 'account' && profile.consent.ai_processing;
 
   const suggest = async () => {
     if (!photo) return;
     setState({ kind: 'loading' });
-    const res = await callAi({ operation: 'photo_suggest', kind: 'food', image_base64: base64Of(photo.analysis), presets: presets.slice(0, 60).map((p) => ({ id: p.id, name: p.name })) });
+    const res = await callAi({ operation: 'photo_suggest', kind: 'food', image_base64: base64Of(photo.analysis) });
     if (res.status === 'ok' && res.operation === 'photo_suggest' && res.kind === 'food') setState({ kind: 'result', r: res.result });
     else setState({ kind: 'error', message: 'message' in res ? res.message : 'No suggestions right now.' });
   };
@@ -75,31 +75,33 @@ export function PhotoSheet({ presets, onClose, onPickPreset }: { presets: MealPr
               <div className="row muted"><span className="spinner" /> Looking at your photo…</div>
             ) : state.kind === 'error' ? (
               <div className="notice warn" role="alert">{state.message}</div>
-            ) : !state.r.is_food ? (
-              <div className="notice">This doesn’t look like food. Try framing just the plate.</div>
+            ) : state.r.food_candidates.length === 0 ? (
+              <div className="notice">{state.r.assistant_message || 'No dish suggestions for this photo. Try framing just the plate.'}</div>
             ) : (
               <div className="stack-sm">
                 <div className="label">Is it one of these? Nothing is added until you confirm.</div>
-                {state.r.candidates.map((c, i) => {
-                  const match = presets.find((p) => p.id === c.matched_preset_id);
+                {state.r.food_candidates.map((c, i) => {
+                  const match = presets.find((p) => p.id === c.preset_id || (c.catalogue_id && p.catalogue_id === c.catalogue_id));
                   return (
                     <button key={i} className="choice" onClick={() => {
                       if (match) onPickPreset(match);
+                      else if (c.catalogue_id) onPickListFood(c.name);
                       else { stashMealDraft({ name: c.name, photo: photo.thumb }); onClose(); navigate('meal', 'new'); }
                     }}>
                       <span className="grow">
                         <strong>{match ? match.name : c.name}</strong>
                         <br />
                         <span className="small muted">
-                          {match ? 'Your saved meal' : 'New — you’ll set the nutrition'}
-                          {c.portion_hint ? ` · looks like ${c.portion_hint}` : ''} · {c.confidence} confidence
+                          {match ? 'Your saved meal' : c.catalogue_id ? 'From the food list' : 'New — you’ll set the nutrition'}
+                          {` · ${c.match_uncertainty === 'low' ? 'likely' : c.match_uncertainty === 'medium' ? 'possible' : 'unsure'} match`}
                         </span>
+                        {c.questions.length ? <><br /><span className="small">{c.questions.join(' ')}</span></> : null}
                       </span>
                       <Icon name="chevronRight" />
                     </button>
                   );
                 })}
-                {state.r.questions.length ? <div className="notice">{state.r.questions.join(' ')}</div> : null}
+                {state.r.questions.length ? <div className="notice">{state.r.questions.map((q) => q.text).join(' ')}</div> : null}
               </div>
             )
           ) : (

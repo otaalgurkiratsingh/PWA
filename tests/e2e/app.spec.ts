@@ -74,9 +74,9 @@ test.describe('food', () => {
 
     // Log via Add food → Usual meal → search.
     await page.getByRole('button', { name: 'Add food' }).click();
-    await page.getByRole('button', { name: /Usual meal/ }).click();
-    await page.getByLabel('Search your meals').fill('Test oats');
-    await page.getByRole('dialog').getByRole('button', { name: /^Test oats/ }).click();
+    await page.getByRole('button', { name: /Choose food/ }).click();
+    await page.getByLabel('Search foods').fill('Test oats');
+    await page.getByRole('dialog').getByRole('button', { name: /^Test oats/ }).first().click();
     await page.getByRole('button', { name: 'Add 1 bowl' }).click();
     const row = page.getByRole('button', { name: 'Edit Test oats' });
     await expect(row).toContainText('800 kcal');
@@ -103,18 +103,18 @@ test.describe('food', () => {
 
     // Change the recipe's nutrition: the logged meal keeps its value; a new log uses the new one.
     await page.getByRole('button', { name: 'Add food' }).click();
-    await page.getByRole('button', { name: /Usual meal/ }).click();
-    await page.getByLabel('Search your meals').fill('Test oats');
-    await page.getByRole('dialog').getByRole('button', { name: /^Test oats/ }).click();
+    await page.getByRole('button', { name: /Choose food/ }).click();
+    await page.getByLabel('Search foods').fill('Test oats');
+    await page.getByRole('dialog').getByRole('button', { name: /^Test oats/ }).first().click();
     await page.getByRole('button', { name: /Edit meal, portion or nutrition/ }).click();
     await page.getByLabel(/^Energy/).fill('500');
     await page.getByRole('button', { name: 'Save meal' }).first().click();
     await expect(page.getByText(/Meals you logged before keep their old values/)).toBeVisible();
     await expect(page.getByRole('button', { name: 'Edit Test oats' })).toContainText('1,200 kcal');
     await page.getByRole('button', { name: 'Add food' }).click();
-    await page.getByRole('button', { name: /Usual meal/ }).click();
-    await page.getByLabel('Search your meals').fill('Test oats');
-    await page.getByRole('dialog').getByRole('button', { name: /^Test oats/ }).click();
+    await page.getByRole('button', { name: /Choose food/ }).click();
+    await page.getByLabel('Search foods').fill('Test oats');
+    await page.getByRole('dialog').getByRole('button', { name: /^Test oats/ }).first().click();
     await page.getByRole('button', { name: 'Add 1 bowl' }).click();
     await expect(page.getByRole('button', { name: 'Edit Test oats' }).last()).toContainText('1,000 kcal');
     await expect(page.getByRole('button', { name: 'Edit Test oats' }).first()).toContainText('1,200 kcal');
@@ -128,9 +128,9 @@ test.describe('food', () => {
     await page.getByRole('button', { name: 'Undo' }).click();
     await expect(page.getByRole('button', { name: 'Edit Roti' })).toHaveCount(0);
     await page.getByRole('button', { name: 'Add food' }).click();
-    await page.getByRole('button', { name: /Usual meal/ }).click();
-    await page.getByLabel('Search your meals').fill('Sabzi');
-    await page.getByRole('dialog').getByRole('button', { name: /^Sabzi/ }).click();
+    await page.getByRole('button', { name: /Choose food/ }).click();
+    await page.getByLabel('Search foods').fill('Sabzi');
+    await page.getByRole('dialog').getByRole('button', { name: /^Sabzi/ }).first().click();
     await expect(page.getByText('Nutrition not set yet')).toBeVisible();
     await page.getByRole('button', { name: /^Add 1 bowl/ }).click();
     await expect(page.locator('.bm-value').first()).toHaveText('Not logged');

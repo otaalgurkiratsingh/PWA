@@ -16,7 +16,9 @@ on conflict (user_id) do update set status = 'active', updated_at = now();
 
 -- 4) AI limits and monthly application budget (US$). Billing alerts are notifications, not caps;
 --    these are the app's own hard limits.
--- update private.ai_limits set photo_per_day = 3, question_per_day = 5, review_per_week = 1;
+--    Defaults: 3 food photos/day, 20 chat messages/day (per person's local day), 1 review/week,
+--    first plan + 2 plan regenerations/week, one AI request in flight per person.
+-- update private.ai_limits set photo_per_day = 3, question_per_day = 20, review_per_week = 1, plan_regen_per_week = 2;
 -- insert into private.ai_budget (month, limit_usd, max_calls) values (date_trunc('month', now())::date, 10, 600)
 --   on conflict (month) do update set limit_usd = excluded.limit_usd, max_calls = excluded.max_calls;
 -- Pause AI for the month: update private.ai_budget set disabled = true where month = date_trunc('month', now())::date;
@@ -29,3 +31,18 @@ on conflict (user_id) do update set status = 'active', updated_at = now();
 --    (Authentication → Users → delete). Their journal rows are already gone; the deletion ledger keeps
 --    only the user id and date so the deletion can be re-applied after any restore.
 -- select * from private.privacy_jobs where status = 'queued';
+
+-- 7) After an account deletion, any progress photos the phone couldn't remove are listed in the
+--    deletion ledger note ("Purge any remaining progress-photos objects under <user id>/").
+--    Delete that folder in Storage → progress-photos (the dashboard), then mark the job done:
+-- select user_id, backup_expiry_note from private.deletion_ledger order by deleted_at desc;
+-- update private.privacy_jobs set status = 'done' where user_id = '<user id>' and kind = 'delete_account';
+
+-- 8) Chat retention: chats expire 90 days after their last message (hidden at once by RLS, removed
+--    daily by the pg_cron job "trainluma-coach-expire"). Check the job and run it by hand if needed:
+-- select jobname, schedule, active from cron.job;
+-- select private.coach_expire();
+
+-- 9) Plan drafts and chats waiting (counts only, no content):
+-- select status, count(*) from public.plan_drafts group by 1;
+-- select count(*) as chats from public.coach_threads;

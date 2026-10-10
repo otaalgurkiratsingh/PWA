@@ -14,10 +14,12 @@ export const supabaseTransport: SyncTransport = {
   },
 };
 
-export const NOTICE_VERSION = '2026-10-09';
+export const NOTICE_VERSION = '2026-10-10';
 
 /** Append a consent decision to the cloud ledger (owner-only insert via RLS). */
-export async function recordConsent(type: 'cloud_backup' | 'ai_processing', granted: boolean): Promise<void> {
+export type ConsentType = 'cloud_backup' | 'ai_processing' | 'photo_storage' | 'ai_images';
+
+export async function recordConsent(type: ConsentType, granted: boolean): Promise<void> {
   const { error } = await (await supabase()).from('consent_events').insert({ consent_type: type, granted, notice_version: NOTICE_VERSION });
   if (error) throw new Error(error.message);
 }

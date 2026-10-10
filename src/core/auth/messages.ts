@@ -11,7 +11,7 @@ export function authMessage(e: unknown): string {
   }
   if (msg.includes('signups not allowed') || msg.includes('signup') || code.includes('signup') || code === 'otp_disabled' || err?.status === 422) {
     // Same wording whether or not the address exists, so the screen doesn't reveal who is invited.
-    return 'If this email is on the invite list, a code is on its way. Rozana is invite-only — ask the owner to add you.';
+    return 'If this email is on the invite list, a code is on its way. TrainLuma is invite-only — ask the owner to add you.';
   }
   if (code === 'otp_expired' || msg.includes('expired') || msg.includes('invalid') || code.includes('otp')) {
     return 'That code didn’t work or has expired. Check it, or send a new one.';

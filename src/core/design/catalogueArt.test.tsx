@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
-import raw from '../../../shared/catalogue/punjabi-canadian-v2.json';
+import raw from '../../../supabase/functions/_shared/data/punjabi-canadian-v2.json';
 import { parseCatalogue } from '@shared/catalogue/catalogue';
 import { CATALOGUE_ART, CatalogueArt } from './catalogueArt';
 

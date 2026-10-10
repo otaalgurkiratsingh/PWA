@@ -143,11 +143,19 @@ describe('membership status and account deletion', () => {
 });
 
 describe('AI reservations (service role only)', () => {
-  const reserve = (user: string, opId: string, operation: string, usd = 0.01, client: pg.Client = db) =>
-    as<{ r: { status: string; request_id?: string } }>('service_role', null, `select public.ai_reserve($1, $2, $3, $4) as r`, [user, opId, operation, usd], client).then((x) => x.rows[0]!.r);
+  const reserve = (user: string, opId: string, operation: string, usd = 0.01, client: pg.Client = db, tz = 'America/Toronto') =>
+    as<{ r: { status: string; request_id?: string } }>('service_role', null, `select public.ai_reserve($1, $2, $3, $4, $5) as r`, [user, opId, operation, usd, tz], client).then((x) => x.rows[0]!.r);
+  const finish = (requestId: string, user: string, status = 'succeeded') =>
+    as('service_role', null, `select public.ai_finish($1, $2, $3, 0.001, '{"ok":true}', null, null)`, [requestId, user, status]);
+  const fresh = async () => {
+    const u = randomUUID();
+    await db.query(`insert into auth.users (id) values ($1)`, [u]);
+    await db.query(`insert into private.approved_members (user_id, status) values ($1,'active')`, [u]);
+    return u;
+  };
 
   it('clients cannot call reservation/finish functions', async () => {
-    await expect(as('authenticated', A, `select public.ai_reserve($1, gen_random_uuid(), 'coach_question', 0.01)`, [A])).rejects.toThrow(/permission denied/);
+    await expect(as('authenticated', A, `select public.ai_reserve($1, gen_random_uuid(), 'coach_question', 0.01, 'UTC')`, [A])).rejects.toThrow(/permission denied/);
     await expect(as('authenticated', A, `select public.ai_finish(gen_random_uuid(), $1, 'succeeded', 0, null, null, null)`, [A])).rejects.toThrow(/permission denied/);
   });
 
@@ -155,15 +163,62 @@ describe('AI reservations (service role only)', () => {
     expect((await reserve(C, randomUUID(), 'coach_question')).status).toBe('not_member');
   });
 
-  it('10 concurrent questions → exactly 5 reserved (daily limit), replay returns in_progress', async () => {
+  it('10 concurrent requests from one person → exactly 1 reserved, the rest refused as busy; replay → in_progress', async () => {
     const clients = await Promise.all(Array.from({ length: 10 }, async () => { const c = new pg.Client(); await c.connect(); return c; }));
     const ids = clients.map(() => randomUUID());
     const results = await Promise.all(clients.map((c, i) => reserve(B, ids[i]!, 'coach_question', 0.01, c)));
     await Promise.all(clients.map((c) => c.end()));
-    expect(results.filter((r) => r.status === 'reserved')).toHaveLength(5);
-    expect(results.filter((r) => r.status === 'limit_user')).toHaveLength(5);
+    expect(results.filter((r) => r.status === 'reserved')).toHaveLength(1);
+    expect(results.filter((r) => r.status === 'busy')).toHaveLength(9);
     const reservedIndex = results.findIndex((r) => r.status === 'reserved');
     expect((await reserve(B, ids[reservedIndex]!, 'coach_question')).status).toBe('in_progress');
+    await finish(results[reservedIndex]!.request_id!, B);
+  });
+
+  it('20 chat messages per person per local day; the 21st is refused; failed calls do not count', async () => {
+    const u = await fresh();
+    for (let i = 0; i < 20; i++) {
+      const r = await reserve(u, randomUUID(), 'coach_question');
+      expect(r.status, `message ${i + 1}`).toBe('reserved');
+      await finish(r.request_id!, u);
+    }
+    expect((await reserve(u, randomUUID(), 'coach_question')).status).toBe('limit_user');
+    // A failed request is not counted (yesterday's local-day requests are not either).
+    await db.query(`update private.ai_requests set status = 'failed' where id = (select id from private.ai_requests where user_id = $1 order by created_at desc limit 1)`, [u]);
+    const again = await reserve(u, randomUUID(), 'coach_question');
+    expect(again.status).toBe('reserved');
+    await finish(again.request_id!, u);
+  });
+
+  it('the daily window follows the person’s timezone, computed on the server', async () => {
+    const u = await fresh();
+    await db.query(`update private.ai_limits set question_per_day = 1`);
+    try {
+      // A request 1 minute after local midnight in Toronto counts for Toronto "today" …
+      await db.query(`insert into private.ai_requests (user_id, operation_id, operation, status, reserved_usd, created_at)
+        values ($1, gen_random_uuid(), 'coach_question', 'succeeded', 0.001,
+                (date_trunc('day', now() at time zone 'America/Toronto') + interval '1 minute') at time zone 'America/Toronto')`, [u]);
+      expect((await reserve(u, randomUUID(), 'coach_question', 0.01, db, 'America/Toronto')).status).toBe('limit_user');
+      // … and an invalid zone falls back to UTC rather than trusting the client.
+      const r = await reserve(u, randomUUID(), 'coach_question', 0.01, db, 'Mars/Olympus');
+      expect(['limit_user', 'reserved']).toContain(r.status);
+      if (r.status === 'reserved') await finish(r.request_id!, u);
+    } finally {
+      await db.query(`update private.ai_limits set question_per_day = 20`);
+    }
+  });
+
+  it('onboarding plans: first plan + 2 regenerations per week, separate from chat', async () => {
+    const u = await fresh();
+    for (let i = 0; i < 3; i++) {
+      const r = await reserve(u, randomUUID(), 'onboarding_plan');
+      expect(r.status, `plan ${i + 1}`).toBe('reserved');
+      await finish(r.request_id!, u);
+    }
+    expect((await reserve(u, randomUUID(), 'onboarding_plan')).status).toBe('limit_user');
+    const chat = await reserve(u, randomUUID(), 'coach_question');
+    expect(chat.status).toBe('reserved');
+    await finish(chat.request_id!, u);
   });
 
   it('a finished request replays its stored result instead of calling again', async () => {
@@ -187,8 +242,9 @@ describe('AI reservations (service role only)', () => {
   });
 
   it('members can see their own usage counts only', async () => {
-    const r = await as<{ u: { questions_today: number } }>('authenticated', B, `select public.my_ai_usage() as u`);
-    expect(r.rows[0]!.u.questions_today).toBe(5);
+    const r = await as<{ u: { questions_today: number; limits: { question_per_day: number; plan_regen_per_week: number } } }>('authenticated', B, `select public.my_ai_usage('America/Toronto') as u`);
+    expect(r.rows[0]!.u.questions_today).toBe(1);
+    expect(r.rows[0]!.u.limits).toMatchObject({ question_per_day: 20, plan_regen_per_week: 2 });
     expect((await as<{ u: unknown }>('authenticated', C, `select public.my_ai_usage() as u`)).rows[0]!.u).toBeNull();
   });
 });

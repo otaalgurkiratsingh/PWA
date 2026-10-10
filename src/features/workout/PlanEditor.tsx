@@ -15,6 +15,8 @@ import {
   setWeekday, updatePlannedSet, validatePlan, type PlanDraft,
 } from '@/domain/training/plan';
 import { saveErrorMessage } from '@/features/food/useFood';
+import { decideDraft } from '@/core/ai/coachData';
+import { PLAN_SEED_KEY } from '@/domain/training/aiPlan';
 
 const MUSCLES: { value: MuscleGroup; label: string }[] = [
   { value: 'chest', label: 'Chest' }, { value: 'back', label: 'Back' }, { value: 'legs', label: 'Legs' }, { value: 'shoulders', label: 'Shoulders' },
@@ -165,7 +167,7 @@ function NotebookImport({ onClose, onImport }: { onClose: () => void; onImport: 
       {state.kind === 'photo' ? (
         <PhotoCropper hint="Frame the page with your plan. You’ll check every exercise before anything is added." onDone={async (p) => {
           setState({ kind: 'loading' });
-          const res = await callAi({ operation: 'photo_suggest', kind: 'notebook', image_base64: base64Of(p.analysis), presets: [] });
+          const res = await callAi({ operation: 'photo_suggest', kind: 'notebook', image_base64: base64Of(p.analysis) });
           if (res.status === 'ok' && res.operation === 'photo_suggest' && res.kind === 'notebook') setState({ kind: 'result', r: res.result, picked: res.result.exercises.map(() => true) });
           else setState({ kind: 'error', message: 'message' in res ? res.message : 'Couldn’t read that page.' });
         }} />
@@ -192,18 +194,30 @@ function NotebookImport({ onClose, onImport }: { onClose: () => void; onImport: 
   );
 }
 
-export function PlanEditor() {
-  const current = useQuery((j) => j.currentProgram(), []);
-  if (current === undefined) return <div className="skeleton" style={{ minHeight: 320 }} />;
-  return <PlanEditorForm key={current?.id ?? 'none'} current={current} />;
+/** One-shot hand-off from an AI draft preview ("Edit"); read once when the editor opens. */
+function takeSeed(): { draftId: string; plan: PlanDraft } | null {
+  try {
+    const raw = sessionStorage.getItem(PLAN_SEED_KEY);
+    sessionStorage.removeItem(PLAN_SEED_KEY);
+    return raw ? (JSON.parse(raw) as { draftId: string; plan: PlanDraft }) : null;
+  } catch {
+    return null;
+  }
 }
 
-function PlanEditorForm({ current }: { current: ProgramVersion | null }) {
+export function PlanEditor() {
+  const current = useQuery((j) => j.currentProgram(), []);
+  const [seed] = useState(takeSeed);
+  if (current === undefined) return <div className="skeleton" style={{ minHeight: 320 }} />;
+  return <PlanEditorForm key={current?.id ?? 'none'} current={current} seed={seed} />;
+}
+
+function PlanEditorForm({ current, seed }: { current: ProgramVersion | null; seed: { draftId: string; plan: PlanDraft } | null }) {
   const { journal, profile, notify, refresh } = useJournal();
   const active = useQuery((j) => j.activeSession(), []);
   const customDefs = useQuery((j) => j.library().then((l) => l.exercises), []);
-  const [draft, setDraft] = useState<PlanDraft>(() => draftFrom(current));
-  const [dayId, setDayId] = useState<string | null>(() => current?.days[0]?.id ?? null);
+  const [draft, setDraft] = useState<PlanDraft>(() => seed?.plan ?? draftFrom(current));
+  const [dayId, setDayId] = useState<string | null>(() => (seed?.plan ?? current)?.days[0]?.id ?? null);
   const [openEx, setOpenEx] = useState<string | null>(null);
   const [picker, setPicker] = useState<{ mode: 'add' } | { mode: 'replace'; exId: string } | null>(null);
   const [preview, setPreview] = useState(false);
@@ -224,6 +238,8 @@ function PlanEditorForm({ current }: { current: ProgramVersion | null }) {
     try {
       const v: ProgramVersion = commitPlan({ draft, previous: current, ownerId: journal.ownerId, newId, now: new Date().toISOString(), synthetic: profile.synthetic });
       await journal.commit('programs', v);
+      // Saving an edited AI draft is the person's approval of it (best effort; the plan is already saved).
+      if (seed) void decideDraft(seed.draftId, 'accepted', profile.profile_version).catch(() => undefined);
       refresh();
       notify({ kind: 'info', message: 'Plan saved. Past workouts keep their own plan.' });
       goBack('workout');

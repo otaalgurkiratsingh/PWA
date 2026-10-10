@@ -6,10 +6,14 @@ import { Sheet } from '@/core/design/ui';
 import { watchSystemTheme } from '@/core/design/theme';
 import { formatLongDate } from '@/core/time/localDate';
 import { AccessScreen, WelcomeScreen } from '@/features/auth/WelcomeScreen';
+import { ChatScreen } from '@/features/coach/ChatScreen';
 import { CoachScreen } from '@/features/coach/CoachScreen';
+import { DraftScreen } from '@/features/coach/DraftScreen';
+import { PhotosScreen } from '@/features/photos/PhotosScreen';
 import { FoodScreen } from '@/features/food/FoodScreen';
 import { MealEditor } from '@/features/food/MealEditor';
 import { Onboarding } from '@/features/onboarding/Onboarding';
+import { PlanningWizard } from '@/features/onboarding/PlanningWizard';
 import { ProgressScreen } from '@/features/progress/ProgressScreen';
 import { SettingsScreen } from '@/features/settings/SettingsScreen';
 import { TodayScreen } from '@/features/today/TodayScreen';
@@ -21,7 +25,8 @@ import { navigate, TABS, useRoute, type RouteName } from './router';
 import { applyUpdate, onUpdateReady } from './serviceWorker';
 
 const TITLES: Record<RouteName, string> = {
-  today: 'Today', food: 'Food', workout: 'Workout', progress: 'Progress', settings: 'Settings', coach: 'Coach', plan: 'Edit plan', meal: 'Meal',
+  today: 'Today', food: 'Food', workout: 'Workout', progress: 'Progress', settings: 'Settings', coach: 'AI Coach', chat: 'AI Coach chat', draft: 'Plan draft',
+  plan: 'Edit plan', meal: 'Meal', photos: 'Progress photos', answers: 'Planning answers',
 };
 const NAV_ICON: Record<(typeof TABS)[number], IconName> = { today: 'today', food: 'food', workout: 'workout', progress: 'progress' };
 
@@ -109,15 +114,22 @@ function Header({ title }: { title: string }) {
   );
 }
 
+/** A signed-in member who hasn't finished onboarding continues the wizard (it resumes where it was). */
 function Shell() {
+  const { profile, mode } = useJournal();
+  if (mode === 'account' && !profile.onboarded_at) return <><PlanningWizard mode="onboarding" /><ToastView /></>;
+  return <AppShell />;
+}
+
+function AppShell() {
   const route = useRoute();
   const { profile } = useJournal();
   useEffect(() => {
-    document.title = `${TITLES[route.name]} · Rozana`;
+    document.title = `${TITLES[route.name]} · TrainLuma`;
     window.scrollTo({ top: 0 });
   }, [route.name, route.param]);
   const isTab = (TABS as readonly string[]).includes(route.name);
-  const focused = route.name === 'plan' || route.name === 'meal';
+  const focused = route.name === 'plan' || route.name === 'meal' || route.name === 'chat' || route.name === 'answers';
   let screen: ReactNode;
   switch (route.name) {
     case 'food': screen = <FoodScreen />; break;
@@ -125,6 +137,10 @@ function Shell() {
     case 'progress': screen = <ProgressScreen />; break;
     case 'settings': screen = <SettingsScreen />; break;
     case 'coach': screen = <CoachScreen />; break;
+    case 'chat': screen = <ChatScreen threadParam={route.param} />; break;
+    case 'draft': screen = <DraftScreen draftId={route.param} />; break;
+    case 'photos': screen = <PhotosScreen />; break;
+    case 'answers': screen = <PlanningWizard mode="edit" />; break;
     case 'plan': screen = <PlanEditor />; break;
     case 'meal': screen = <MealEditor presetId={route.param} />; break;
     default: screen = <TodayScreen />;
@@ -132,7 +148,7 @@ function Shell() {
   return (
     <>
       <main className={`app${focused ? ' no-nav' : ''}`} id="main">
-        {isTab ? <Header title={TITLES[route.name]} /> : focused ? <h1 className="sr-only">{TITLES[route.name]}</h1> : null}
+        {isTab ? <Header title={TITLES[route.name]} /> : focused && route.name !== 'chat' && route.name !== 'answers' ? <h1 className="sr-only">{TITLES[route.name]}</h1> : null}
         <UpdatePrompt />
         <div key={`${profile.id}:${route.name}:${route.param ?? ''}`}>{screen}</div>
       </main>

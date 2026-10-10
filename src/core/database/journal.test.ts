@@ -203,7 +203,7 @@ describe('v2 upgrade, restore and sync hooks', () => {
 
   it('refuses exports from another owner or a non-export file', async () => {
     await expect(j.restore({ format: 'rozana-export', owner_id: 'someone-else' })).rejects.toThrow(/different account/);
-    await expect(j.restore({ hello: 1 })).rejects.toThrow(/not a Rozana export/);
+    await expect(j.restore({ hello: 1 })).rejects.toThrow(/not a TrainLuma export/);
   });
 
   it('acknowledged ops leave the outbox; cloud copies never overwrite a pending local edit', async () => {

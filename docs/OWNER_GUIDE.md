@@ -1,6 +1,6 @@
 # Owner guide (plain language)
 
-Rozana is a private meal and workout journal for you, your wife and a few invited friends. This guide covers three things: how to try it, the one-time setup that only you can do, and how data is kept. Dashboard menu names change from time to time. If a label below doesn't match what you see, look for the closest equivalent; the official links are at the end.
+TrainLuma (formerly Rozana) is a private meal and workout journal with an AI Coach, for you, your wife and a few invited friends. This guide covers how to try it, the one-time setup that only you can do, and how data is kept. Dashboard menu names change from time to time. If a label below doesn't match what you see, look for the closest equivalent; the official links are at the end.
 
 > Never paste a key, password or recovery code into a chat, an issue, a screenshot or a file in this project. Enter secrets only in the official dashboards.
 
@@ -8,82 +8,84 @@ Rozana is a private meal and workout journal for you, your wife and a few invite
 
 ## 1. Try it right now (no accounts needed)
 
-Your existing Netlify site (or `npm run dev` on your computer) opens the **welcome screen**. Tap **Explore the demo (made-up data)**. Everything in the demo is invented: meals, nutrition numbers, history and plan. It stays only on that device.
+Your Netlify site (or `npm run dev` on your computer) opens the **welcome screen**. Tap **Explore the demo (made-up data)**. Everything in the demo is invented and stays on that device.
 
 Try:
-- **Food:** tap **+** on a usual meal (with Undo). Tap a meal card to choose an amount and the meal type. Use **Add food → Create meal** to save one of your own.
-- **Workout:** **Edit plan** to add a day and a custom exercise, then save. **Start** a day, enter weight and reps, and tap ✓. Lock the phone for a minute: the rest timer keeps counting. Reload the page: your sets are still there.
-- **Progress:** switch between 7 days, 4 weeks and 3 months. Tap the weight chart to read a day.
-- **Settings:** use the sun/moon toggle. The app starts in light mode even if your phone is in dark mode.
+- **Food:** **Add food → Choose food**. Search "chapati", "daal" or "sabji", or browse the category chips (Roti & breads, Dal & beans, Chai & drinks…, All foods). Picking a list food adds it to your meals with nutrition "not set" until you add a label or your recipe.
+- **Workout:** **Recent workouts** shows the date in a mint tile (month over day).
+- **Coach** needs a signed-in account; the demo explains this.
 
 ---
 
-## 2. One-time setup for real sign-in, backup and AI
+## 2. One-time setup for sign-in, backup, AI Coach and photos
 
-You only need to do this once. Until it's done, the sign-in screen says "Sign-in is still being set up" and offers the demo.
+You do this once. Until it's done, the sign-in screen says "Sign-in is still being set up" and offers the demo.
 
 ### 2a. Supabase project (free tier)
-1. Create a **new, separate** Supabase project, not your agency one. Turn on MFA for your Supabase account and keep the database password in a password manager.
-2. Apply the database migrations in order. Either:
-   - with the Supabase CLI on your computer: `supabase link --project-ref <your-ref>`, then `supabase db push`, or
-   - in **SQL Editor**: paste and run `supabase/migrations/20261009000001_init.sql`, then `…000002_sync_auth_ai.sql`.
-3. In **Authentication → Sign In / Providers**:
-   - **Email**: enabled.
-   - **Allow new users to sign up**: **off**. Rozana never creates accounts by itself; the app sends `shouldCreateUser: false`.
-   - **Email OTP expiration**: a short value, e.g. 10 minutes. **Email OTP length**: 6.
-4. In **Authentication → Emails → Templates → Magic Link**, make the email contain the **code**, not a link. The app asks for a code. For example:
-
+1. Create a **new, separate** Supabase project (not your agency one). Turn on MFA for your Supabase account. Keep the database password in a password manager.
+2. Apply the three database migrations **in order**. Either:
+   - with the Supabase CLI: `supabase link --project-ref <your-ref>`, then `supabase db push`; or
+   - in **SQL Editor**, paste and run each file in `supabase/migrations/`, oldest first:
+     `20261009000001_init.sql`, `20261009000002_sync_auth_ai.sql`, `20261010000003_coach_v2.sql`.
+   The third one creates the private **progress-photos** storage bucket, the chat tables, plan drafts and the daily chat-expiry job.
+3. Check **Storage**: a bucket named `progress-photos` exists and is **Private** (not public).
+4. Check **Database → Extensions**: `pg_cron` is enabled. If the migration couldn't schedule the job, enable `pg_cron` and run the migration's last block again (or ask me). Expired chats are hidden either way.
+5. **Authentication → Sign In / Providers**: Email **on**; **Allow new users to sign up: off**; Email OTP expiry about 10 minutes; OTP length 6.
+6. **Authentication → Emails → Templates → Magic Link**: make the email show the **code**, for example:
    ```
-   <h2>Your Rozana sign-in code</h2>
+   <h2>Your TrainLuma sign-in code</h2>
    <p>Enter this code in the app: <strong>{{ .Token }}</strong></p>
    <p>It expires soon. If you didn’t ask for it, ignore this email.</p>
    ```
-5. In **Authentication → Emails → SMTP settings**, connect a real email sender (for example Resend, Postmark or Amazon SES) and verify your sending domain as the provider instructs. The built-in Supabase mailer is for testing only and sends very few emails.
-6. In **Authentication → Rate limits**, keep the email limits low; a few per hour is plenty for this group.
-7. In **Authentication → URL configuration**, set **Site URL** to your Netlify address. Add only that exact address under **Redirect URLs**.
+7. **Authentication → Emails → SMTP settings**: connect a real sender (Resend, Postmark or Amazon SES) and verify your domain.
+8. **Authentication → Rate limits**: keep email limits low.
+9. **Authentication → URL configuration**: **Site URL** = your Netlify address; add only that address under **Redirect URLs**.
 
 ### 2b. Invite people (start with yourself)
-1. **Authentication → Users → Add user**: enter the email address and confirm the user.
-2. **SQL Editor**: run the first statement in `supabase/admin/members.sql` with that email. This approves the membership.
-   Without step 2 the person can receive a code but sees "This account isn’t active".
-3. Start with your own account only. Add your wife after you've checked separation (section 5). Add friends only with their informed agreement.
+1. **Authentication → Users → Add user**: enter the email and confirm the user.
+2. **SQL Editor**: run the first statement in `supabase/admin/members.sql` with that email.
+   Without this, the person gets a code but sees "This account isn’t active".
+3. Start with yourself. Add your wife after the two-person check in 2e. Add friends only with their informed agreement (tell them what you, as project owner, can technically see; see section 4).
 
 ### 2c. Connect the website (Netlify)
-1. In Supabase, open **Project Settings → API Keys** and copy the **Project URL** and the **publishable** key. **Do not** use the secret or service-role key here.
-2. In Netlify, open **Site configuration → Environment variables** and add:
-   - `VITE_SUPABASE_URL` = your project URL
-   - `VITE_SUPABASE_PUBLISHABLE_KEY` = the publishable key
-3. Trigger a new deploy. The build writes your project address into the site's security headers automatically.
+1. Supabase **Project Settings → API Keys**: copy the **Project URL** and the **publishable** key (never the secret/service-role key).
+2. Netlify **Site configuration → Environment variables**: add `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`.
+3. Trigger a new deploy.
 
-### 2d. AI coach (Gemini, paid API project)
-1. In Google Cloud / Google AI Studio, use a **separate project with paid billing turned on**. A consumer Gemini subscription is not the same thing. Turn on MFA, and set budget alerts. Alerts only notify you; the app enforces its own limits.
+### 2d. AI Coach (Gemini, paid API project)
+1. In Google AI Studio / Google Cloud, use a **separate project with paid billing on** (a Gemini consumer subscription is different). Turn on MFA. Set a budget alert (alerts only notify; the app enforces its own limits).
 2. Create an API key in Google AI Studio and restrict it to the Gemini (Generative Language) API.
-3. Check that `gemini-3.8-flash` is available to your project, and note the current **input and output price per 1M tokens** from the official pricing page.
-4. Deploy the function from your computer: `supabase functions deploy ai`.
-5. In **Supabase → Edge Functions → Secrets**, type these in yourself:
-   - `GEMINI_API_KEY`: your key (never anywhere else)
+3. Check that `gemini-3.8-flash` is available to your project. Note the current **input and output price per 1M tokens**.
+4. From your computer: `supabase functions deploy ai` (redeploy after every update of this repository).
+5. **Supabase → Edge Functions → Secrets**, type in:
+   - `GEMINI_API_KEY`: your key (only here)
    - `GEMINI_MODEL`: `gemini-3.8-flash`
-   - `AI_PRICE_INPUT_PER_MTOK` and `AI_PRICE_OUTPUT_PER_MTOK`: the prices from step 3. Without them the coach stays off on purpose, so it can't spend money it can't count.
+   - `AI_PRICE_INPUT_PER_MTOK`, `AI_PRICE_OUTPUT_PER_MTOK`: the prices from step 3 (without them the coach stays off on purpose)
    - `ALLOWED_ORIGINS`: your Netlify address, e.g. `https://your-site.netlify.app`
-   - Optional `GEMINI_API_STYLE`: leave unset, so it uses `generateContent`, which is stateless. `interactions` uses the newer Interactions API with `store=false`; only switch after a successful test.
-6. The monthly budget starts at **US$10**, with per-person limits of 3 photos a day, 5 questions a day and 1 weekly review a week. Change them with `supabase/admin/members.sql`.
-7. Each person turns on **AI help** for themselves under Settings or on the Coach screen. Logging never needs AI.
+   - Leave `GEMINI_API_STYLE` unset. Never set `GEMINI_TEST_BASE_URL` (test harness only; it accepts only a local address anyway).
+6. Limits (change with `supabase/admin/members.sql`): US$10 per month for everyone together; per person 20 chat messages a day (their local day), 3 food photo suggestions a day, 1 weekly review a week, the first plan draft plus 2 regenerations a week, and one AI request at a time.
+7. Each person turns on **AI help** for themselves. The coach reads their **backed-up** journal, so backup must be on too. Photos need their own two switches (see 3).
 
-### 2e. First live check (about 15 minutes, with the builder)
-- [ ] Sign in with your invited email: a 6-digit code arrives and works. A wrong code shows an error.
-- [ ] An email that isn't invited gets no code, and the screen doesn't reveal that.
+### 2e. First live check (about 20 minutes, with me)
+- [ ] Sign in with your email: a 6-digit code arrives and works; a wrong code shows an error.
+- [ ] An uninvited email gets no code and the screen doesn't reveal that.
 - [ ] A created but **unapproved** user sees "This account isn’t active".
-- [ ] Log a meal and a set, then open Settings: it shows "Backed up". Sign in on a second device: the same entries appear.
-- [ ] Turn on AI help and get a weekly review. It names the days it used and what is missing.
-- [ ] Revoke a test member: their open app stops syncing straight away.
+- [ ] Onboarding: pick 5 usual foods, skip photos, turn on backup and AI help, **Generate my draft plan**. A draft appears; nothing changes until **Accept plan**.
+- [ ] Workout shows the accepted plan. Your earlier workouts (if any) keep their old plan.
+- [ ] Coach → **Ask Coach** → "Can you fit today’s workout into 30 minutes?" gets a grounded answer. Reload: the chat is still there. **Delete chat** removes it.
+- [ ] Settings → Optional progress photos: turn on private storage, add one photo, delete it; it disappears from Storage → progress-photos.
+- [ ] Log a meal and a set; Settings shows "Backed up"; a second device shows the same entries.
+- [ ] Revoke a test member: their open app stops syncing and the coach refuses them straight away.
+- [ ] Two people, one phone: sign out, sign in as the second person; none of the first person's chats, photos, drafts or meals appear.
 
 ---
 
 ## 3. Daily use
 
-- **Food:** the cards are your usual meals. **+** adds your usual amount; tap the card to change the amount or the meal type. **Add food** offers a saved meal, a new meal, or a photo. A photo gives dish suggestions that you confirm; it never assigns calories by itself. At the end of the day, tap **I’ve logged everything** so averages only use complete days.
-- **Workout:** **Edit plan** changes days, exercises and sets. Each save creates a new version, and past workouts keep the plan they were done with. During a workout, tap a set number for effort, skip, or "something hurt". **Something hurts** skips the rest of that exercise and notes it.
-- **Coach:** a weekly review grounded in your own logs, short questions, and target suggestions you can **Accept** or **Keep current**. "What the coach remembers" shows only the facts you added; you can edit or delete them.
+- **Food:** the cards are your usual meals; **+** adds your usual amount. **Add food → Choose food** opens your meals and the full food list (293 Punjabi and Canadian foods with pictures). List foods start with nutrition **not set**: they log as entries and daily totals show as partial ("≥") until you add a package label or your recipe (**Edit meal, portion or nutrition**). Weigh your usual bowl or roti once for better estimates.
+- **AI Coach:** **Ask Coach** on Today (or Coach → Ask Coach). Text only. Answers use your own records, usual foods and plan. Suggestions are just suggestions. To change your plan, tap **Draft an updated plan to review**, then **Accept**, **Edit** or **Not now**. To remember something, tap **Save** on "Remember this?". Nothing is ever logged for you from chat.
+- **Optional progress photos:** Front, Back, Left, Right and an Inspiration photo. Two separate switches: **Keep my photos in private storage** and **Let AI Coach see the photos I add when drafting my plan**. Both can stay off; plans work from answers alone. Wear whatever feels comfortable; crop out your face if you like.
+- **Planning answers:** Settings → **Workout planning answers** updates goal, week, experience, equipment and screening. New plan drafts use the new answers.
 
 ---
 
@@ -91,19 +93,20 @@ You only need to do this once. Until it's done, the sign-in screen says "Sign-in
 
 | What | Where | Who can read it |
 |---|---|---|
-| Your journal, on the phone | this browser's storage (IndexedDB), one separate store per account | anyone using your unlocked phone and browser — keep the phone locked |
-| Backup copy | your private Supabase project, row-level security + approved membership | only your account through the app. The project owner can technically see stored rows in the Supabase dashboard — tell friends this; the app itself has no admin view of anyone’s journal |
-| Meal pictures you choose to save | inside your meal record (small, re-encoded, no location data) | only your account |
-| Photos sent for suggestions | cropped and shrunk on the phone, sent once to the AI function, not stored by Rozana | Google processes them under the paid API terms (stateless, but may keep them briefly for abuse monitoring) |
-| Coach reviews, notes, consent history | your Supabase project | only your account |
+| Your journal, on the phone | this browser's storage, one separate store per account | anyone using your unlocked phone; keep it locked |
+| Backup copy | your private Supabase project, row-level security + approved membership | only your account through the app. The project owner can technically see stored rows in the Supabase dashboard; tell friends this |
+| AI Coach chats | `coach_threads` / `coach_messages` in your project | only your account. Kept 90 days after the last message, or until you delete them |
+| Things the coach remembers | `user_confirmed_memory` | only your account; only what you confirmed; deleting a chat doesn't delete these |
+| Plan drafts | `plan_drafts` | only your account; nothing activates without your Accept |
+| Progress photos (if you chose storage) | private bucket `progress-photos`, path `<your id>/<random id>.jpg` | only your account; cropped and re-encoded on the phone (no location data) |
+| Photos you didn't store | this screen only (memory) | sent once to the AI function if you allowed it, never stored by TrainLuma |
+| What goes to Google | your question, a short summary of your own records, your answers, and photos only if you allowed it | processed under the paid Gemini API terms; may be kept briefly for abuse monitoring. It isn't zero retention |
 
-**Backups and restore.** In Settings, **Export my data** downloads a JSON file, and **Restore from an export** brings it back. Both have been tested. Keep exports private: they are health records. The free Supabase tier has limited backups, so export regularly or choose a paid plan if you need managed backups.
+**Export and restore:** Settings → **Export my data** / **Restore from an export**. Exports are health records; keep them private. They don't include chats or photos.
 
-**Signing out.** If something hasn't backed up yet, Rozana tells you and offers an export first. Your entries stay on that phone until they're backed up. After signing out, nobody can open your journal in Rozana without signing in again.
+**Deleting an account:** Settings → **Delete my account**, type DELETE. This removes the cloud journal, chats, drafts, reviews, saved notes, photos (the phone deletes the files first) and consent records, stops access immediately, and clears the phone. Then you, as owner, delete the user under Authentication → Users, and check `supabase/admin/members.sql` step 7 for any photo files to purge. Provider backups expire on their own schedule.
 
-**Deleting an account.** Go to Settings → **Delete my account** and type DELETE. This removes the cloud journal, reviews, notes and consent records, stops access immediately, and clears that phone. You, as owner, then delete the user under Authentication → Users. Provider backups expire on their own schedule; the deletion ledger lets you re-apply the deletion after any restore.
-
-**If a key leaks.** Revoke or rotate it in the provider's dashboard immediately, update the secret in Supabase, and check usage logs. Deleting it from a file does not revoke it.
+**If a key leaks:** revoke or rotate it in the provider's dashboard immediately, update the secret in Supabase, check usage. Deleting it from a file doesn't revoke it.
 
 ---
 
@@ -111,5 +114,7 @@ You only need to do this once. Until it's done, the sign-in screen says "Sign-in
 - Supabase passwordless email: https://supabase.com/docs/guides/auth/auth-email-passwordless
 - Supabase SMTP: https://supabase.com/docs/guides/auth/auth-smtp
 - Supabase RLS: https://supabase.com/docs/guides/database/postgres/row-level-security
+- Supabase Storage access control: https://supabase.com/docs/guides/storage/security/access-control
 - Supabase Edge Function auth and limits: https://supabase.com/docs/guides/functions/auth · https://supabase.com/docs/guides/functions/limits
-- Gemini model, keys, Interactions API, data retention: https://ai.google.dev/gemini-api/docs/latest-model · https://ai.google.dev/gemini-api/docs/api-key · https://ai.google.dev/gemini-api/docs/interactions-overview · https://ai.google.dev/gemini-api/docs/zdr
+- Gemini models, keys, retention: https://ai.google.dev/gemini-api/docs/latest-model · https://ai.google.dev/gemini-api/docs/api-key · https://ai.google.dev/gemini-api/docs/zdr
+- Pre-exercise screening (linked, not reproduced): https://store.csep.ca/pages/getactivequestionnaire

@@ -1,8 +1,10 @@
-# Rozana
+# TrainLuma
 
-**Rozana** (Hindi/Punjabi for "daily") is a private, phone-first meal and workout journal for a few invited adults. It is a hobby project, not a commercial product, and has no public sign-up.
+<img src="public/icons/icon-192.png" width="72" alt="TrainLuma logo">
 
-**Status:** The redesign is complete and runs locally. It has a light, calm interface, editable workout plans, natural meal logging, email-code sign-in with approved membership, cloud backup/sync, and an AI coach behind an authenticated backend. Live sign-in, backup and AI need the owner's one-time setup (Supabase, email sender, paid Gemini key). Until then the app offers a clearly labelled demo. See [`docs/BUILD_STATUS.md`](docs/BUILD_STATUS.md) for exactly what has been tested.
+**TrainLuma** (formerly Rozana) is a private, phone-first meal and workout journal for a few invited adults. It is a hobby project, not a commercial product, and has no public sign-up.
+
+**Status:** V2 adds a 293-food Punjabi Canadian food list with original pictures, personalised onboarding with optional photos and an AI-drafted plan you approve, and a text AI Coach. The redesign is complete and runs locally. It has a light, calm interface, editable workout plans, natural meal logging, email-code sign-in with approved membership, cloud backup/sync, and an AI coach behind an authenticated backend. Live sign-in, backup and AI need the owner's one-time setup (Supabase, email sender, paid Gemini key). Until then the app offers a clearly labelled demo. See [`docs/BUILD_STATUS.md`](docs/BUILD_STATUS.md) for exactly what has been tested.
 
 | Welcome | Today | Food | Workout | Progress | Coach |
 |---|---|---|---|---|---|
@@ -26,12 +28,14 @@ To use real sign-in, copy `.env.example` to `.env.local` and fill in the **publi
 | Command | What it runs |
 |---|---|
 | `npm run check` | typecheck + lint + unit tests + build + secret scan |
-| `npm test` | domain, storage, sync, meal/plan builder and AI-handler tests (Vitest) |
+| `npm test` | domain, storage, sync, meal/plan builder, catalogue, artwork coverage, AI handler, plan rules and prompt-install tests (Vitest) |
 | `npm run test:db` | throwaway PostgreSQL + both migrations + isolation/sync/quota tests |
 | `npm run test:e2e` | Playwright on two builds: demo, and an auth harness with a scripted fake Supabase |
 | `DENO=… npm run smoke:ai` | the real `ai` Edge Function in Deno against a mock Supabase |
 | `npm run scan:secrets` | tracked files, git history and `dist/` scanned for credentials and source maps |
 | `npm run screenshots` | renders the review screenshots (needs `npm run preview` running) |
+| `node scripts/build-coach-prompt.mjs [--check]` | installs/checks the single versioned coach prompt from `docs/spec/AI_FITNESS_COACH_SYSTEM_PROMPT_V2.md` |
+| `node scripts/render-icons.mjs` | renders install icons from the owner's TL logo |
 
 ## Layout
 ```
@@ -44,8 +48,8 @@ src/core/design/      tokens, styles, components, food illustrations, icons, the
 src/domain/           nutrition maths, training sessions and plan editing, metrics
 src/features/         today, food, workout, progress, coach, settings, auth, onboarding
 shared/               contracts (zod) and fixtures (demo data, exercise library)
-supabase/migrations/  0001 schema/RLS, 0002 sync + membership + deletion + AI accounting
-supabase/functions/   ai Edge Function (wiring) + _shared (tested logic)
+supabase/migrations/  0001 schema/RLS, 0002 sync + membership + deletion + AI accounting, 0003 chat, plan drafts, photos, permissions
+supabase/functions/   ai Edge Function (wiring) + _shared (tested logic, coach prompt, exercise catalogue, food list data)
 supabase/admin/       owner SQL for approving members and setting AI limits
 tests/e2e/            Playwright specs + mock Supabase
 docs/                 build status, owner guide, security/data flow, design, decisions, screenshots

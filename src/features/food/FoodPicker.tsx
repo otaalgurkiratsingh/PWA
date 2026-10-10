@@ -48,16 +48,17 @@ function CatalogueRow({ f, mine, onPick }: { f: CatalogueFood; mine: MealPreset 
  * Choose food: your meals first, then the full food list (search, categories). Same row layout,
  * cream thumbnails and "Create a meal" action as the approved picker.
  */
-export function FoodPicker({ presets, date, slot, onPickPreset, onClose }: {
+export function FoodPicker({ presets, date, slot, onPickPreset, onClose, initialQuery = '' }: {
   presets: MealPreset[];
   date: string;
   slot: MealSlot;
+  initialQuery?: string;
   onPickPreset: (p: MealPreset) => void;
   onClose: () => void;
 }) {
   const { profile } = useJournal();
   const { index, failed } = useCatalogue();
-  const [q, setQ] = useState('');
+  const [q, setQ] = useState(initialQuery);
   const [chip, setChip] = useState<Chip>('popular');
   const [showHidden, setShowHidden] = useState(false);
   const [adding, setAdding] = useState<CatalogueFood | null>(null);

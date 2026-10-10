@@ -9,6 +9,8 @@ const PATHS = {
   workout: <><path d="M6.5 7v10M17.5 7v10M3.5 9.5v5M20.5 9.5v5M6.5 12h11" /></>,
   progress: <><path d="M4 19h16" /><path d="M6 15l4-4 3 3 5-6" /><circle cx="18" cy="8" r="1" /></>,
   plus: <><path d="M12 5v14M5 12h14" /></>,
+  send: <><path d="M5 12h13M13 6l6 6-6 6" /></>,
+  photo: <><rect x="4" y="5" width="16" height="14" rx="2.5" /><circle cx="9" cy="10" r="1.6" /><path d="M5 17l4.5-4.5 3 3L15 13l4 4" /></>,
   minus: <><path d="M5 12h14" /></>,
   close: <><path d="M6 6l12 12M18 6 6 18" /></>,
   check: <><path d="M5 12.5 10 17l9-10" /></>,
@@ -79,13 +81,19 @@ export function EquipmentArt({ equipment, size = 34 }: { equipment: Equipment | 
   }
 }
 
+/** TrainLuma mark: white T and mint L on the brand blue (vector version of the owner's logo). */
 export function Mark({ size = 32 }: { size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 32 32" aria-hidden="true">
-      <rect width="32" height="32" rx="10" fill="var(--primary)" />
-      <circle cx="16" cy="16" r="8.5" fill="none" stroke="var(--primary-ink)" strokeWidth="2.4" />
-      <path d="M16 7.5a8.5 8.5 0 0 1 8.5 8.5" fill="none" stroke="#FDBA74" strokeWidth="2.4" strokeLinecap="round" />
-      <circle cx="16" cy="16" r="2.2" fill="var(--primary-ink)" />
+    <svg width={size} height={size} viewBox="0 0 512 512" aria-hidden="true">
+      <defs>
+        <linearGradient id="tl-bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#0057FF" /><stop offset="1" stopColor="#0A1FB8" /></linearGradient>
+        <linearGradient id="tl-l" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#B9F8E4" /><stop offset="1" stopColor="#22DCD4" /></linearGradient>
+      </defs>
+      <rect width="512" height="512" rx="120" fill="url(#tl-bg)" />
+      <rect x="100" y="128" width="266" height="77" rx="38.5" fill="#FFFFFF" />
+      <rect x="185" y="150" width="71" height="235" rx="35.5" fill="#FFFFFF" />
+      <rect x="271" y="223" width="65" height="159" rx="32.5" fill="url(#tl-l)" />
+      <rect x="271" y="318" width="162" height="64" rx="32" fill="url(#tl-l)" />
     </svg>
   );
 }

@@ -183,6 +183,7 @@ export function FoodScreen() {
   const [editing, setEditing] = useState<MealEntry | null>(null);
   const [menu, setMenu] = useState(false);
   const [all, setAll] = useState<MealSlot | null>(null);
+  const [pickerQuery, setPickerQuery] = useState('');
   const [photo, setPhoto] = useState(false);
 
   const markComplete = async () => {
@@ -296,10 +297,11 @@ export function FoodScreen() {
           </div>
         </Sheet>
       ) : null}
-      {all && presets ? <FoodPicker presets={presets} date={date} slot={all} onClose={() => setAll(null)} onPickPreset={(p) => { const s = all; setAll(null); setAdding({ preset: p, slot: s }); }} /> : null}
+      {all && presets ? <FoodPicker presets={presets} date={date} slot={all} initialQuery={pickerQuery} onClose={() => { setAll(null); setPickerQuery(''); }} onPickPreset={(p) => { const s = all; setAll(null); setAdding({ preset: p, slot: s }); }} /> : null}
       {adding ? <AddMealSheet preset={adding.preset} slot={adding.slot} date={date} onClose={() => setAdding(null)} /> : null}
       {editing ? <EntrySheet entry={editing} onClose={() => setEditing(null)} /> : null}
-      {photo && presets ? <PhotoSheet presets={presets} onClose={() => setPhoto(false)} onPickPreset={(p) => { setPhoto(false); setAdding({ preset: p, slot: defaultSlot }); }} /> : null}
+      {photo && presets ? <PhotoSheet presets={presets} onClose={() => setPhoto(false)} onPickPreset={(p) => { setPhoto(false); setAdding({ preset: p, slot: defaultSlot }); }}
+        onPickListFood={(name) => { setPhoto(false); setPickerQuery(name); setAll(defaultSlot); }} /> : null}
     </div>
   );
 }

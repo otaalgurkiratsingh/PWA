@@ -1,4 +1,4 @@
-/* Rozana service worker — app shell and static assets ONLY.
+/* TrainLuma service worker — app shell and static assets ONLY.
  * Never caches API responses, health data, or photos. Personal data lives in IndexedDB.
  * The build id and precache list are injected at build time by vite.config.ts. */
 const BUILD_ID = '__BUILD_ID__';

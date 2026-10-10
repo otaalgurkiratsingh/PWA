@@ -1,5 +1,12 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="112" fill="#1d7a48"/>
-  <circle cx="256" cy="256" r="150" fill="none" stroke="#f4f3ef" stroke-width="28"/>
-  <path d="M176 268h160M196 228v80M316 228v80" stroke="#f4f3ef" stroke-width="28" stroke-linecap="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="TrainLuma">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0057FF"/><stop offset="1" stop-color="#0A1FB8"/></linearGradient>
+    <linearGradient id="t" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#DCE8FF"/></linearGradient>
+    <linearGradient id="l" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#B9F8E4"/><stop offset="1" stop-color="#22DCD4"/></linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <rect x="100" y="128" width="266" height="77" rx="38.5" fill="url(#t)"/>
+  <rect x="185" y="150" width="71" height="235" rx="35.5" fill="url(#t)"/>
+  <rect x="271" y="223" width="65" height="159" rx="32.5" fill="url(#l)"/>
+  <rect x="271" y="318" width="162" height="64" rx="32" fill="url(#l)"/>
 </svg>

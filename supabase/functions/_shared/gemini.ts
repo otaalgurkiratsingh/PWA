@@ -17,11 +17,14 @@ export interface ModelRequest {
   style: 'generate_content' | 'interactions';
   system: string;
   text: string;
-  imageJpegBase64?: string;
+  /** Base64 JPEGs (already validated). */
+  images?: string[];
   jsonSchema: Record<string, unknown>;
   maxOutputTokens: number;
   timeoutMs: number;
   fetchImpl?: typeof fetch;
+  /** Test harness only: a loopback mock of the Gemini API. Anything else is ignored. */
+  baseUrl?: string;
 }
 
 export interface ModelUsage {
@@ -42,7 +45,7 @@ export class ProviderError extends Error {
   }
 }
 
-const BASE = 'https://generativelanguage.googleapis.com/v1beta';
+const PROVIDER_BASE = 'https://generativelanguage.googleapis.com/v1beta';
 
 function numOrNull(v: unknown): number | null {
   return typeof v === 'number' && Number.isFinite(v) ? v : null;
@@ -50,12 +53,13 @@ function numOrNull(v: unknown): number | null {
 
 export async function callModel(r: ModelRequest): Promise<ModelResult> {
   const f = r.fetchImpl ?? fetch;
+  const BASE = r.baseUrl && /^http:\/\/127\.0\.0\.1:\d+\/v1beta$/.test(r.baseUrl) ? r.baseUrl : PROVIDER_BASE;
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), r.timeoutMs);
   try {
     if (r.style === 'interactions') {
       const input: unknown[] = [{ type: 'text', text: r.text }];
-      if (r.imageJpegBase64) input.push({ type: 'image', mime_type: 'image/jpeg', data: r.imageJpegBase64 });
+      for (const img of r.images ?? []) input.push({ type: 'image', mime_type: 'image/jpeg', data: img });
       const res = await f(`${BASE}/interactions`, {
         method: 'POST',
         signal: ctrl.signal,
@@ -95,7 +99,7 @@ export async function callModel(r: ModelRequest): Promise<ModelResult> {
     }
 
     const parts: unknown[] = [{ text: r.text }];
-    if (r.imageJpegBase64) parts.push({ inlineData: { mimeType: 'image/jpeg', data: r.imageJpegBase64 } });
+    for (const img of r.images ?? []) parts.push({ inlineData: { mimeType: 'image/jpeg', data: img } });
     const res = await f(`${BASE}/models/${encodeURIComponent(r.model)}:generateContent`, {
       method: 'POST',
       signal: ctrl.signal,

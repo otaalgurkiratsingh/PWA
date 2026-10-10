@@ -217,6 +217,6 @@ let loading: Promise<CatalogueIndex> | null = null;
 
 /** Lazy-load (separate chunk, cached by the service worker) and validate once per session. */
 export function loadCatalogue(): Promise<CatalogueIndex> {
-  loading ??= import('./punjabi-canadian-v2.json').then((m) => parseCatalogue((m as { default: unknown }).default));
+  loading ??= import('../../supabase/functions/_shared/data/punjabi-canadian-v2.json').then((m) => parseCatalogue((m as { default: unknown }).default));
   return loading;
 }

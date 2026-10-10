@@ -377,9 +377,9 @@ export class Journal {
    */
   async restore(data: unknown): Promise<RestoreResult> {
     const result: RestoreResult = { written: 0, skipped: 0, rejected: [] };
-    if (!data || typeof data !== 'object') throw new StorageWriteError('That file is not a Rozana export.');
+    if (!data || typeof data !== 'object') throw new StorageWriteError('That file is not a TrainLuma export.');
     const d = data as Record<string, unknown>;
-    if (d.format !== 'rozana-export' && d.format !== 'aapnafit-export') throw new StorageWriteError('That file is not a Rozana export.');
+    if (d.format !== 'rozana-export' && d.format !== 'aapnafit-export') throw new StorageWriteError('That file is not a TrainLuma export.');
     if (d.owner_id !== this.ownerId) throw new StorageWriteError('This export belongs to a different account or profile.');
     for (const store of AGGREGATES) {
       const rows = d[store];

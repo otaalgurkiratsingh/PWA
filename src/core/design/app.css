@@ -1,4 +1,4 @@
-/* Rozana component styles. One system: page header, section, card, metric tile, meal card,
+/* TrainLuma component styles. One system: page header, section, card, metric tile, meal card,
    day card, exercise row, sheet, segmented control, chart frame, toast, empty state. */
 *,
 *::before,
@@ -1619,4 +1619,156 @@ table.data td {
 .lazy-row {
   content-visibility: auto;
   contain-intrinsic-size: auto 76px;
+}
+
+/* ---------- AI Coach chat ---------- */
+.chat-page {
+  min-height: calc(100dvh - env(safe-area-inset-top) - 48px);
+}
+.chat-head {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.chat-log {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  flex: 1;
+  padding-bottom: 8px;
+}
+.chat-log .bubble {
+  overflow-wrap: anywhere;
+}
+.bubble.typing {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-2);
+}
+.chat-fail {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  color: var(--danger);
+  max-width: 88%;
+  text-align: right;
+}
+/* The composer stays above the on-screen keyboard and the home indicator. */
+.composer {
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  padding: 10px 0 calc(6px + env(safe-area-inset-bottom));
+  background: var(--page);
+  border-top: 1px solid var(--border);
+}
+.composer .textarea {
+  flex: 1;
+  min-height: 44px;
+  max-height: 40dvh;
+  resize: none;
+  field-sizing: content;
+}
+.composer-note {
+  margin: 0;
+}
+
+/* ---------- optional photos ---------- */
+.photo-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.photo-slot {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--card);
+  min-width: 0;
+}
+.photo-slot.wide {
+  grid-column: 1 / -1;
+}
+.photo-slot .ps-frame {
+  aspect-ratio: 1;
+  border-radius: var(--r-sm);
+  background: var(--card-2);
+  color: var(--text-2);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+.photo-slot.wide .ps-frame {
+  aspect-ratio: 16 / 9;
+}
+.photo-slot .ps-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.photo-slot .ps-meta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* ---------- onboarding ---------- */
+.rank-badge {
+  width: 28px;
+  height: 28px;
+  flex: none;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  display: grid;
+  place-items: center;
+  font-weight: 750;
+  font-size: var(--fs-small);
+}
+.choice[aria-pressed='true'] .rank-badge {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--primary-ink);
+}
+.food-pick-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 8px;
+}
+.choice.food-pick {
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 8px 6px 10px;
+  gap: 4px;
+  position: relative;
+  min-width: 0;
+}
+.food-pick .fp-art {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--r-sm);
+  background: var(--food);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+.food-pick .fp-check {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: var(--primary-ink);
+  display: grid;
+  place-items: center;
 }

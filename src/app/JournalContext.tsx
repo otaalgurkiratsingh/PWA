@@ -3,7 +3,7 @@ import type { LocalProfile, RestTimer } from '@shared/contracts';
 import { Journal } from '@/core/database/journal';
 import { seedDemoIfEmpty } from '@/core/database/seed';
 import { syncExclusive } from '@/core/sync/engine';
-import { recordConsent, supabaseTransport } from '@/core/sync/supabaseTransport';
+import { recordConsent, supabaseTransport, type ConsentType } from '@/core/sync/supabaseTransport';
 import { deviceTimezone, localDateIn } from '@/core/time/localDate';
 
 export interface Toast {
@@ -36,6 +36,8 @@ interface Ctx {
   updateProfile: (p: LocalProfile) => Promise<void>;
   sync: SyncState;
   syncNow: () => Promise<void>;
+  /** Record pending permission changes in the cloud ledger now (before uploads or AI calls). */
+  flushConsents: () => Promise<void>;
   conflictsCount: number;
 }
 
@@ -95,7 +97,7 @@ export function JournalProvider({ ownerId, mode, email, onboarding, children }: 
   const backupEnabled = mode === 'account' && Boolean(profile?.consent.cloud_backup);
 
   const flushConsent = useCallback(async (j: Journal) => {
-    const queue = (await j.getMeta<{ type: 'cloud_backup' | 'ai_processing'; granted: boolean }[]>(PENDING_CONSENT_KEY)) ?? [];
+    const queue = (await j.getMeta<{ type: ConsentType; granted: boolean }[]>(PENDING_CONSENT_KEY)) ?? [];
     while (queue.length) {
       const c = queue[0]!;
       await recordConsent(c.type, c.granted);
@@ -173,12 +175,13 @@ export function JournalProvider({ ownerId, mode, email, onboarding, children }: 
   const updateProfile = useCallback(async (p: LocalProfile) => {
     if (!journal) return;
     const prev = profile ?? null;
-    const consentChanged = prev && (prev.consent.cloud_backup !== p.consent.cloud_backup || prev.consent.ai_processing !== p.consent.ai_processing);
+    const TYPES: ConsentType[] = ['cloud_backup', 'ai_processing', 'photo_storage', 'ai_images'];
+    const changed = TYPES.filter((t) => !prev || prev.consent[t] !== p.consent[t]);
     await journal.setProfile(p);
-    if (mode === 'account' && (consentChanged || !prev)) {
-      const queue = (await journal.getMeta<{ type: string; granted: boolean }[]>(PENDING_CONSENT_KEY)) ?? [];
-      if (!prev || prev.consent.cloud_backup !== p.consent.cloud_backup) queue.push({ type: 'cloud_backup', granted: p.consent.cloud_backup });
-      if (!prev || prev.consent.ai_processing !== p.consent.ai_processing) queue.push({ type: 'ai_processing', granted: p.consent.ai_processing });
+    if (mode === 'account' && changed.length) {
+      // Each permission is recorded separately in the append-only ledger (the server checks the latest).
+      const queue = (await journal.getMeta<{ type: ConsentType; granted: boolean }[]>(PENDING_CONSENT_KEY)) ?? [];
+      for (const t of changed) queue.push({ type: t, granted: p.consent[t] });
       await journal.setMeta(PENDING_CONSENT_KEY, queue);
     }
     setProfile(p);
@@ -194,14 +197,15 @@ export function JournalProvider({ ownerId, mode, email, onboarding, children }: 
         setTimerState(t);
       },
       updateProfile, sync, syncNow, conflictsCount,
+      flushConsents: () => flushConsent(journal),
     };
-  }, [journal, mode, email, profile, today, revision, refresh, notify, timer, updateProfile, sync, syncNow, conflictsCount]);
+  }, [journal, mode, email, profile, today, revision, refresh, notify, timer, updateProfile, sync, syncNow, conflictsCount, flushConsent]);
 
   if (error) {
     return (
       <main className="app no-nav">
         <div className="card stack" role="alert" style={{ marginTop: 48 }}>
-          <h2>Rozana can’t open its storage on this device</h2>
+          <h2>TrainLuma can’t open its storage on this device</h2>
           <p className="muted">Private browsing, blocked site data, or a full disk can cause this. Nothing was sent anywhere.</p>
           <button className="btn" onClick={() => location.reload()}>Try again</button>
         </div>

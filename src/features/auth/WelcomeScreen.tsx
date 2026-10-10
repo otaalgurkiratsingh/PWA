@@ -81,7 +81,7 @@ export function WelcomeScreen() {
   return (
     <main className="welcome">
       <div className="row between">
-        <span className="brand"><Mark /> Rozana</span>
+        <span className="brand"><Mark /> TrainLuma</span>
         <button className="icon-btn plain" aria-label={dark ? 'Use light theme' : 'Use dark theme'} onClick={() => { applyTheme(dark ? 'light' : 'dark'); setDark(!dark); }}>
           <Icon name={dark ? 'sun' : 'moon'} />
         </button>
@@ -103,7 +103,7 @@ export function WelcomeScreen() {
           {error ? <div className="notice error" role="alert">{error}</div> : null}
           {notSetUp ? (
             <div className="notice" role="status">
-              Sign-in is still being set up for Rozana. Nothing was sent. You can explore a demo with made-up data in the meantime.
+              Sign-in is still being set up for TrainLuma. Nothing was sent. You can explore a demo with made-up data in the meantime.
             </div>
           ) : null}
           <button className="btn block" type="submit" disabled={busy}>{busy ? <span className="spinner" /> : 'Continue'}</button>
@@ -138,7 +138,7 @@ export function AccessScreen({ kind, membership, email, message }: { kind: 'not_
   const { signOut, recheck } = useAuth();
   return (
     <main className="welcome">
-      <span className="brand"><Mark /> Rozana</span>
+      <span className="brand"><Mark /> TrainLuma</span>
       <div className="hero">
         <h1>{kind === 'error' ? 'We couldn’t check your account' : membership === 'deleting' ? 'This account is being deleted' : 'This account isn’t active'}</h1>
         <p className="muted">
@@ -148,7 +148,7 @@ export function AccessScreen({ kind, membership, email, message }: { kind: 'not_
               ? 'Access for this account has been turned off by the owner.'
               : membership === 'deleting'
                 ? 'Your data is being removed. Contact the owner if this is a mistake.'
-                : `${email ?? 'This email'} hasn’t been added to Rozana yet. Ask the owner to invite you.`}
+                : `${email ?? 'This email'} hasn’t been added to TrainLuma yet. Ask the owner to invite you.`}
         </p>
       </div>
       <div className="stack">

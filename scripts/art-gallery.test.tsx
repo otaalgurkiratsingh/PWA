@@ -3,7 +3,7 @@
 import { writeFileSync } from 'node:fs';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { it } from 'vitest';
-import raw from '../shared/catalogue/punjabi-canadian-v2.json';
+import raw from '../supabase/functions/_shared/data/punjabi-canadian-v2.json';
 import { parseCatalogue } from '../shared/catalogue/catalogue';
 import { CatalogueArt } from '../src/core/design/catalogueArt';
 

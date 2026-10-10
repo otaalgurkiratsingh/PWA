@@ -110,17 +110,20 @@ export function TodayScreen() {
         </div>
       ) : null}
 
-      <button className="card coach" style={{ textAlign: 'left', width: '100%', color: 'inherit' }} onClick={() => navigate('coach')}>
+      <div className="card coach">
         <div className="row" style={{ gap: 14 }}>
           <span className="ex-art" style={{ background: 'var(--coach-strong)', color: 'var(--coach-ink)' }}><Icon name="sparkle" size={26} /></span>
           <span className="grow">
-            <span className="eyebrow">Coach</span>
-            <span style={{ display: 'block', fontWeight: 700, fontSize: '1.0625rem' }}>Your weekly review</span>
-            <span className="small" style={{ color: 'var(--coach-ink)' }}>{mode === 'demo' ? 'Available with your own signed-in account' : 'Grounded in your own logs. Ask a question any time.'}</span>
+            <span className="eyebrow">AI Coach</span>
+            <span style={{ display: 'block', fontWeight: 700, fontSize: '1.0625rem' }}>Ask about your week</span>
+            <span className="small" style={{ color: 'var(--coach-ink)' }}>{mode === 'demo' ? 'Available with your own signed-in account' : 'Answers from your own logs. You decide on every change.'}</span>
           </span>
-          <Icon name="chevronRight" />
         </div>
-      </button>
+        <div className="row" style={{ marginTop: 14 }}>
+          <button className="btn grow" onClick={() => navigate('chat', 'new')}><Icon name="sparkle" size={18} /> Ask Coach</button>
+          <button className="btn secondary" onClick={() => navigate('coach')}>Review & more</button>
+        </div>
+      </div>
 
       {adding ? <AddMealSheet preset={adding} slot={slot} date={today} onClose={() => setAdding(null)} /> : null}
     </div>

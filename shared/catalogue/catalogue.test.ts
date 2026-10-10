@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import raw from './punjabi-canadian-v2.json';
+import raw from '../../supabase/functions/_shared/data/punjabi-canadian-v2.json';
 import { CatalogueFile, legacyMatch, normalize, parseCatalogue, searchCatalogue } from './catalogue';
 
 const index = parseCatalogue(raw);

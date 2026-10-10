@@ -6,6 +6,7 @@ import { goBack, navigate } from '@/app/router';
 import { useAuth } from '@/core/auth/AuthContext';
 import { supabase } from '@/core/auth/supabase';
 import { deleteJournalDB } from '@/core/database/db';
+import { deleteAllPhotos } from '@/core/photos/progressPhotos';
 import { Icon } from '@/core/design/icons';
 import { Section, Segmented, Sheet, Toggle } from '@/core/design/ui';
 import { applyTheme, readTheme, type Theme } from '@/core/design/theme';
@@ -137,7 +138,7 @@ export function SettingsScreen() {
           </div>
           {mode === 'account' ? (
             <>
-              <Toggle label="Back up to my private cloud" description="Stored in Rozana’s private Supabase project, readable only by your account." checked={profile.consent.cloud_backup}
+              <Toggle label="Back up to my private cloud" description="Stored in TrainLuma’s private Supabase project, readable only by your account." checked={profile.consent.cloud_backup}
                 onChange={(v) => void save({ consent: { ...profile.consent, cloud_backup: v, updated_at: new Date().toISOString() } })} />
               {profile.consent.cloud_backup ? <button className="btn secondary sm" onClick={() => void syncNow()} disabled={sync.kind === 'syncing'}>Back up now</button> : null}
             </>
@@ -161,9 +162,11 @@ export function SettingsScreen() {
       {mode === 'account' ? (
         <Section title="Privacy">
           <div className="card stack-sm">
-            <Toggle label="AI help" description="Weekly review, questions and photo suggestions. Sends minimal summaries — never your name or email." checked={profile.consent.ai_processing}
+            <Toggle label="AI help" description="AI Coach chat, plan drafts, weekly review and food photo suggestions. Sends your question and a short summary of your own records, never your name or email. Needs backup on." checked={profile.consent.ai_processing}
               onChange={(v) => void save({ consent: { ...profile.consent, ai_processing: v, updated_at: new Date().toISOString() } })} />
-            <button className="link" onClick={() => navigate('coach')}>What the coach remembers <Icon name="chevronRight" size={16} /></button>
+            <button className="link" onClick={() => navigate('coach')}>Chats and what the coach remembers <Icon name="chevronRight" size={16} /></button>
+            <button className="link" onClick={() => navigate('photos')}>Optional progress photos and photo permissions <Icon name="chevronRight" size={16} /></button>
+            <button className="link" onClick={() => navigate('answers')}>Workout planning answers <Icon name="chevronRight" size={16} /></button>
           </div>
         </Section>
       ) : null}
@@ -200,7 +203,7 @@ export function SettingsScreen() {
       {sheet === 'restore' ? (
         <Sheet title="Restore from an export" onClose={() => setSheet(null)}>
           <div className="stack">
-            <p className="small muted">Choose a Rozana export from this account or demo person. Anything missing here, or older here, is brought back. Nothing newer is overwritten.</p>
+            <p className="small muted">Choose a TrainLuma export from this account or demo person. Anything missing here, or older here, is brought back. Nothing newer is overwritten.</p>
             <label className="btn">Choose file<input type="file" accept="application/json,.json" className="sr-only" onChange={(e) => void restore(e.target.files?.[0])} /></label>
           </div>
         </Sheet>
@@ -214,17 +217,19 @@ export function SettingsScreen() {
             {pending ? <button className="btn secondary" onClick={exportData}><Icon name="download" size={18} /> Export a copy first</button> : null}
             <button className="btn" onClick={() => void finishSignOut(false)}>Sign out</button>
             {!pending ? <button className="btn ghost" onClick={() => void finishSignOut(true)}>Sign out and remove this phone’s copy</button> : null}
-            <span className="label">After signing out, nobody can open your journal in Rozana without signing in. The browser doesn’t encrypt stored data, so keep your phone locked.</span>
+            <span className="label">After signing out, nobody can open your journal in TrainLuma without signing in. The browser doesn’t encrypt stored data, so keep your phone locked.</span>
           </div>
         </Sheet>
       ) : null}
       {sheet === 'delete' ? (
         <Sheet title="Delete your account" onClose={() => setSheet(null)}>
           <div className="stack">
-            <p>This removes your cloud journal, coach reviews, notes and consent records, signs you out everywhere you use Rozana, and removes this phone’s copy.</p>
+            <p>This removes your cloud journal, AI Coach chats, plan drafts, reviews, saved notes, progress photos and consent records, signs you out everywhere you use TrainLuma, and removes this phone’s copy.</p>
             <p className="small muted">Backups kept by the hosting provider expire on their own schedule; the owner re-applies your deletion if one is ever restored. Export first if you want a copy.</p>
             <label className="field">Type DELETE to confirm<input className="input" value={confirmText} onChange={(e) => setConfirmText(e.target.value)} autoCapitalize="characters" /></label>
             <button className="btn danger" disabled={confirmText.trim().toUpperCase() !== 'DELETE'} onClick={async () => {
+              // Photo files are removed through Storage first (SQL can't delete them); any left are listed for the owner.
+              await deleteAllPhotos().catch(() => undefined);
               const { error } = await (await supabase()).rpc('request_account_deletion');
               if (error) return notify({ kind: 'error', message: 'Couldn’t delete right now. Check your connection and try again.' });
               await finishSignOut(true);

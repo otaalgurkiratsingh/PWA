@@ -1,6 +1,10 @@
 -- TrainLuma reminders: owner setup (run once in the Supabase SQL Editor, AFTER migration
 -- 20261012000004_notifications.sql and after deploying the `notify` function).
 --
+-- Notifications v2 (migration 20261013000005_growth.sql) needs no new job: the same 5-minute
+-- tick now calls notify_candidates instead of notify_due. Redeploy the function after migrating
+-- (supabase functions deploy notify); the old function version would call the removed notify_due.
+--
 -- Before running:
 --   1. On your computer: npx web-push generate-vapid-keys
 --      - Public key  → Netlify env VITE_VAPID_PUBLIC_KEY and Supabase secret VAPID_PUBLIC_KEY
@@ -37,7 +41,7 @@ select cron.schedule(
 
 -- Check it: recent runs (status should be "succeeded"), and the function's replies.
 -- select * from cron.job_run_details where jobid = (select jobid from cron.job where jobname = 'trainluma-notify') order by start_time desc limit 5;
--- select status_code, content from net._http_response order by created desc limit 5;   -- expect 200 {"due":…,"sent":…}
+-- select status_code, content from net._http_response order by created desc limit 5;   -- expect 200 {"candidates":…,"due":…,"sent":…}
 
 -- Stop reminders for everyone:
 -- select cron.unschedule('trainluma-notify');

@@ -1,4 +1,5 @@
-// TrainLuma notify Edge Function: daily motivation + pre-gym reminders over Web Push.
+// TrainLuma notify Edge Function (v2): routine nudges, learned pre-gym reminders and insights
+// over Web Push. Max 2 per person per local day, quiet 22:00-07:00, kinds dismissed 3 times stop.
 // Called every 5 minutes by pg_cron (see supabase/admin/notifications.sql). Wiring only —
 // decisions live in ../_shared/notify.ts (unit-tested), encryption in ../_shared/webpush.ts.
 //
@@ -9,7 +10,7 @@
 //   VAPID_SUBJECT        mailto:you@example.com — how push services can contact the sender
 // Provided by Supabase: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY / SUPABASE_SECRET_KEYS.
 import { createClient } from '@supabase/supabase-js';
-import { handleNotifyRequest, type DueRow, type NotifyContext, type NotifyDeps, type PushTarget } from '../_shared/notify.ts';
+import { handleNotifyRequest, type CandidateRow, type NotifyContext, type NotifyDeps, type PushTarget } from '../_shared/notify.ts';
 import { sendPush } from '../_shared/webpush.ts';
 
 function env(name: string): string | null {
@@ -47,7 +48,7 @@ function deps(): NotifyDeps | null {
   const db = createClient(SUPABASE_URL!, SECRET!, { auth: { persistSession: false, autoRefreshToken: false } });
   return {
     now: () => new Date(),
-    due: async (now) => check<DueRow[]>(await db.rpc('notify_due', { p_now: now.toISOString() })) ?? [],
+    candidates: async (now) => check<CandidateRow[]>(await db.rpc('notify_candidates', { p_now: now.toISOString() })) ?? [],
     claim: async (u, k, d) => check<boolean>(await db.rpc('notify_claim', { p_user: u, p_kind: k, p_date: d })) === true,
     context: async (u, d) => check<NotifyContext>(await db.rpc('notify_context', { p_user: u, p_today: d })),
     targets: async (u) => check<PushTarget[]>(await db.rpc('notify_subscriptions', { p_user: u })) ?? [],

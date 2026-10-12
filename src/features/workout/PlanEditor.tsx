@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type InputHTMLAttributes } from 'react';
 import type { Equipment, ExerciseDefinition, Measurement, MuscleGroup, PlannedExercise, PrescribedSet, ProgramVersion } from '@shared/contracts';
 import { EXERCISE_LIBRARY, type LibraryExercise } from '@shared/fixtures/exerciseLibrary';
 import { useJournal, useQuery } from '@/app/JournalContext';
@@ -12,7 +12,7 @@ import { EmptyState, Segmented, Sheet, Toggle } from '@/core/design/ui';
 import {
   WEEKDAY_LONG, WEEKDAY_SHORT, addDay, addExercise, addPlannedSet, commitPlan, describeChanges, draftFrom, duplicateDay, duplicateExercise,
   duplicatePlannedSet, moveDay, moveExercise, plannedFromDefinition, removeDay, removeExercise, removePlannedSet, renameDay, replaceExercise,
-  setWeekday, updatePlannedSet, validatePlan, type PlanDraft,
+  parseLoadInput, parseRepInput, setWeekday, updatePlannedSet, validatePlan, type PlanDraft,
 } from '@/domain/training/plan';
 import { saveErrorMessage } from '@/features/food/useFood';
 import { decideDraft } from '@/core/ai/coachData';
@@ -27,6 +27,17 @@ const EQUIPMENT: { value: Equipment; label: string }[] = [
   { value: 'bodyweight', label: 'Bodyweight' }, { value: 'kettlebell', label: 'Kettlebell' }, { value: 'band', label: 'Band' }, { value: 'other', label: 'Other' },
 ];
 const REST = [30, 45, 60, 90, 120, 150, 180, 240];
+
+/** Keeps the raw text while typing (so "62." or a cleared field survive) and commits on blur. */
+function DraftNumberInput({ value, onCommit, ...rest }: Omit<InputHTMLAttributes<HTMLInputElement>, 'value' | 'onChange' | 'onBlur'> & {
+  value: number | null; onCommit: (text: string) => void;
+}) {
+  const [text, setText] = useState<string | null>(null);
+  return (
+    <input {...rest} value={text ?? (value ?? '')} onChange={(e) => setText(e.target.value)}
+      onBlur={() => { if (text !== null) onCommit(text); setText(null); }} />
+  );
+}
 
 export function defToLibrary(d: ExerciseDefinition): LibraryExercise {
   return { key: d.key, name: d.name, equipment: d.equipment, muscle_group: d.muscle_group, load_convention: d.load_convention, unilateral: d.unilateral, measurement: d.measurement };
@@ -130,13 +141,13 @@ function SetEditor({ ex, onChange, onAdd, onDuplicate, onRemove, unit }: {
               <div className="field">
                 <span>{repWord}</span>
                 <div className="row" style={{ gap: 4 }}>
-                  <input className="num-input" inputMode="numeric" aria-label={`${name} ${repWord.toLowerCase()} minimum`} value={s.rep_min} onChange={(e) => { const v = parseInt(e.target.value, 10); if (v > 0) onChange(i, { rep_min: v }); }} />
+                  <DraftNumberInput className="num-input" inputMode="numeric" aria-label={`${name} ${repWord.toLowerCase()} minimum`} value={s.rep_min} onCommit={(t) => { const v = parseRepInput(t); if (v !== null) onChange(i, { rep_min: v }); }} />
                   <span aria-hidden="true">–</span>
-                  <input className="num-input" inputMode="numeric" aria-label={`${name} ${repWord.toLowerCase()} maximum`} value={s.rep_max} onChange={(e) => { const v = parseInt(e.target.value, 10); if (v > 0) onChange(i, { rep_max: v }); }} />
+                  <DraftNumberInput className="num-input" inputMode="numeric" aria-label={`${name} ${repWord.toLowerCase()} maximum`} value={s.rep_max} onCommit={(t) => { const v = parseRepInput(t); if (v !== null) onChange(i, { rep_max: v }); }} />
                 </div>
               </div>
               {ex.measurement === 'weight_reps' ? (
-                <label className="field">{unit}<input className="num-input" inputMode="decimal" aria-label={`${name} target weight (optional)`} placeholder="—" value={s.target_load ?? ''} onChange={(e) => { const v = Number(e.target.value.replace(',', '.')); onChange(i, { target_load: e.target.value.trim() === '' || !(v > 0) ? null : v, target_unit: unit as PrescribedSet['target_unit'] }); }} /></label>
+                <label className="field">{unit}<DraftNumberInput className="num-input" inputMode="decimal" aria-label={`${name} target weight (optional)`} placeholder="—" value={s.target_load} onCommit={(t) => onChange(i, { target_load: parseLoadInput(t), target_unit: unit as PrescribedSet['target_unit'] })} /></label>
               ) : null}
               <label className="field">Rest
                 <select className="num-input" aria-label={`${name} rest`} value={s.rest_seconds} onChange={(e) => onChange(i, { rest_seconds: Number(e.target.value) })}>

@@ -74,6 +74,7 @@ export class MockSupabase {
   messages: Message[] = [];
   drafts: Draft[] = [];
   photos: PhotoRow[] = [];
+  notifyPrefs = new Map<string, Record<string, unknown>>();
   objects = new Map<string, { owner: string; bytes: number }>();
   memory: { id: string; user_id: string; fact: string }[] = [];
   usage = { questions_today: 0, limit: 20 };
@@ -260,6 +261,16 @@ export class MockSupabase {
         const id = url.searchParams.get('id')?.replace(/^eq\./, '');
         this.photos = this.photos.filter((x) => !(x.user_id === me && x.id === id));
         return route.fulfill({ status: 204, body: '' });
+      }
+    }
+
+    // ---- reminder preferences (RLS: own row only; owner forced like the database trigger) ----
+    if (p === '/rest/v1/notification_prefs') {
+      if (req.method() === 'GET') return this.rows(route, headers, this.notifyPrefs.has(me) ? [this.notifyPrefs.get(me)] : []);
+      if (req.method() === 'POST') {
+        const row = { ...(body as Record<string, unknown>), user_id: me };
+        this.notifyPrefs.set(me, row);
+        return this.rows(route, headers, [row]);
       }
     }
 

@@ -1,25 +1,16 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/core/auth/AuthContext';
 import { authMessage } from '@/core/auth/messages';
-import { FoodArt } from '@/core/design/foodArt';
-import { EquipmentArt, Icon, Mark } from '@/core/design/icons';
+import { AnimatedMark } from '@/core/design/BrandLogo';
+import { Icon, Mark } from '@/core/design/icons';
 import { applyTheme, resolvedTheme } from '@/core/design/theme';
 
-function Illustration() {
-  return (
-    <div aria-hidden="true" style={{ position: 'relative', height: 168, margin: '8px 0 4px' }}>
-      <div style={{ position: 'absolute', left: '6%', top: 18, width: 132, height: 132, borderRadius: '50%', background: 'var(--food)', display: 'grid', placeItems: 'center' }}>
-        <FoodArt icon="dal" size={112} />
-      </div>
-      <div style={{ position: 'absolute', left: '42%', top: 0, width: 96, height: 96, borderRadius: 32, background: 'var(--train)', color: 'var(--train-ink)', display: 'grid', placeItems: 'center' }}>
-        <EquipmentArt equipment="dumbbell" size={58} />
-      </div>
-      <div style={{ position: 'absolute', right: '6%', top: 70, width: 92, height: 92, borderRadius: '50%', background: 'var(--coach)', color: 'var(--coach-ink)', display: 'grid', placeItems: 'center' }}>
-        <FoodArt icon="roti" size={80} />
-      </div>
-    </div>
-  );
-}
+const FEATURES: { icon: 'food' | 'workout' | 'sparkle' | 'progress'; label: string }[] = [
+  { icon: 'food', label: 'Nutrition' },
+  { icon: 'workout', label: 'Training' },
+  { icon: 'sparkle', label: 'AI Coach' },
+  { icon: 'progress', label: 'Progress' },
+];
 
 export function WelcomeScreen() {
   const { configured, sendCode, verifyCode, enterDemo } = useAuth();
@@ -79,57 +70,64 @@ export function WelcomeScreen() {
   };
 
   return (
-    <main className="welcome">
-      <div className="row between">
-        <span className="brand"><Mark /> TrainLuma</span>
-        <button className="icon-btn plain" aria-label={dark ? 'Use light theme' : 'Use dark theme'} onClick={() => { applyTheme(dark ? 'light' : 'dark'); setDark(!dark); }}>
-          <Icon name={dark ? 'sun' : 'moon'} />
-        </button>
-      </div>
+    <main className="welcome premium">
+      <section className="w-hero">
+        <div className="row between w-top">
+          <span className="brand on-dark"><Mark size={28} /> TrainLuma</span>
+          <button className="icon-btn plain on-dark" aria-label={dark ? 'Use light theme' : 'Use dark theme'} onClick={() => { applyTheme(dark ? 'light' : 'dark'); setDark(!dark); }}>
+            <Icon name={dark ? 'sun' : 'moon'} />
+          </button>
+        </div>
+        <div className="w-logo"><AnimatedMark size={92} /></div>
+        <h1>Eat well. Train smart.<br /><span>Glow up.</span></h1>
+        <p>Meals, workouts and a personal AI coach, together in one private app.</p>
+        <ul className="w-pills" aria-label="What TrainLuma does">
+          {FEATURES.map((f) => <li key={f.label}><Icon name={f.icon} size={16} /> {f.label}</li>)}
+        </ul>
+      </section>
 
-      <div className="hero">
-        <Illustration />
-        <h1>Your routine, made simpler</h1>
-        <p className="muted">Meals and workouts in one calm, private journal.</p>
-      </div>
-
-      {step === 'email' ? (
-        <form className="stack" onSubmit={(e) => { e.preventDefault(); void send(); }}>
-          <label className="field">
-            Email
-            <input className="input" type="email" inputMode="email" autoComplete="email" autoCapitalize="none" value={email}
-              onChange={(e) => { setEmail(e.target.value); setError(null); }} placeholder="you@example.com" />
-          </label>
-          {error ? <div className="notice error" role="alert">{error}</div> : null}
-          {notSetUp ? (
-            <div className="notice" role="status">
-              Sign-in is still being set up for TrainLuma. Nothing was sent. You can explore a demo with made-up data in the meantime.
+      <section className="w-card" aria-labelledby="w-card-title">
+        <h2 id="w-card-title">{step === 'email' ? 'Sign in' : 'Check your email'}</h2>
+        {step === 'email' ? (
+          <form className="stack" onSubmit={(e) => { e.preventDefault(); void send(); }}>
+            <label className="field">
+              Email
+              <input className="input" type="email" inputMode="email" autoComplete="email" autoCapitalize="none" value={email}
+                onChange={(e) => { setEmail(e.target.value); setError(null); }} placeholder="you@example.com" />
+            </label>
+            {error ? <div className="notice error" role="alert">{error}</div> : null}
+            {notSetUp ? (
+              <div className="notice" role="status">
+                Sign-in is still being set up for TrainLuma. Nothing was sent. You can explore a demo with made-up data in the meantime.
+              </div>
+            ) : null}
+            <button className="btn block" type="submit" disabled={busy}>{busy ? <span className="spinner" /> : 'Continue'}</button>
+            <p className="label" style={{ textAlign: 'center' }}>Invite-only. We’ll email you a one-time code — no password.</p>
+          </form>
+        ) : (
+          <form className="stack" onSubmit={(e) => { e.preventDefault(); void verify(); }}>
+            <div className="small">{info}</div>
+            <label className="field">
+              Code
+              <input className="input otp-input" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9 ]*" maxLength={12} value={code}
+                onChange={(e) => { setCode(e.target.value); setError(null); }} aria-describedby="code-help" />
+            </label>
+            <span id="code-help" className="label">Codes expire after a short time. Check spam if it hasn’t arrived.</span>
+            {error ? <div className="notice error" role="alert">{error}</div> : null}
+            <button className="btn block" type="submit" disabled={busy}>{busy ? <span className="spinner" /> : 'Sign in'}</button>
+            <div className="row between">
+              <button type="button" className="link" onClick={() => { setStep('email'); setCode(''); setError(null); }}>Use a different email</button>
+              <button type="button" className="link" disabled={resendIn > 0 || busy} onClick={() => void send()}>
+                {resendIn > 0 ? `Resend in ${resendIn}s` : 'Resend code'}
+              </button>
             </div>
-          ) : null}
-          <button className="btn block" type="submit" disabled={busy}>{busy ? <span className="spinner" /> : 'Continue'}</button>
-          <p className="label" style={{ textAlign: 'center' }}>Invite-only. We’ll email you a one-time code — no password.</p>
-        </form>
-      ) : (
-        <form className="stack" onSubmit={(e) => { e.preventDefault(); void verify(); }}>
-          <div className="small">{info}</div>
-          <label className="field">
-            Code
-            <input className="input otp-input" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9 ]*" maxLength={12} value={code}
-              onChange={(e) => { setCode(e.target.value); setError(null); }} aria-describedby="code-help" />
-          </label>
-          <span id="code-help" className="label">Codes expire after a short time. Check spam if it hasn’t arrived.</span>
-          {error ? <div className="notice error" role="alert">{error}</div> : null}
-          <button className="btn block" type="submit" disabled={busy}>{busy ? <span className="spinner" /> : 'Sign in'}</button>
-          <div className="row between">
-            <button type="button" className="link" onClick={() => { setStep('email'); setCode(''); setError(null); }}>Use a different email</button>
-            <button type="button" className="link" disabled={resendIn > 0 || busy} onClick={() => void send()}>
-              {resendIn > 0 ? `Resend in ${resendIn}s` : 'Resend code'}
-            </button>
-          </div>
-        </form>
-      )}
+          </form>
+        )}
 
-      <button className="btn ghost block" style={{ marginTop: 12 }} onClick={enterDemo}>Explore the demo (made-up data)</button>
+        <div className="w-or"><span>or</span></div>
+        <button className="btn secondary block" onClick={enterDemo}>Explore the demo (made-up data)</button>
+      </section>
+      <p className="w-foot"><Icon name="cloudCheck" size={16} /> Private by design. Your journal belongs to you.</p>
     </main>
   );
 }

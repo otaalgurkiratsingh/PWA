@@ -166,6 +166,22 @@ export function updatePlannedSet(d: PlanDraft, dayId: string, exId: string, inde
   );
 }
 
+/** Parses a typed rep/second count; null when blank or not a positive whole number. */
+export function parseRepInput(text: string): number | null {
+  const t = text.trim();
+  if (!/^\d+$/.test(t)) return null;
+  const v = parseInt(t, 10);
+  return v > 0 ? v : null;
+}
+
+/** Parses a typed target weight (comma or dot decimal); null when blank or not a positive number. */
+export function parseLoadInput(text: string): number | null {
+  const t = text.trim().replace(',', '.');
+  if (t === '') return null;
+  const v = Number(t);
+  return Number.isFinite(v) && v > 0 ? v : null;
+}
+
 // ---- validation & saving --------------------------------------------------------
 export function validatePlan(d: PlanDraft): string[] {
   const errors: string[] = [];

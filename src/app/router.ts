@@ -2,13 +2,13 @@ import { useEffect, useState } from 'react';
 
 export const TABS = ['today', 'food', 'workout', 'progress'] as const;
 export type Tab = (typeof TABS)[number];
-export type RouteName = Tab | 'settings' | 'coach' | 'chat' | 'draft' | 'plan' | 'meal' | 'photos' | 'answers';
+export type RouteName = Tab | 'settings' | 'coach' | 'chat' | 'draft' | 'plan' | 'meal' | 'photos' | 'answers' | 'notifications';
 export interface Route {
   name: RouteName;
   param: string | null;
 }
 
-const NAMES: readonly RouteName[] = [...TABS, 'settings', 'coach', 'chat', 'draft', 'plan', 'meal', 'photos', 'answers'];
+const NAMES: readonly RouteName[] = [...TABS, 'settings', 'coach', 'chat', 'draft', 'plan', 'meal', 'photos', 'answers', 'notifications'];
 
 export function parseRoute(hash: string = location.hash): Route {
   const [name, param] = hash.replace(/^#\/?/, '').split('/');

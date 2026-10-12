@@ -106,7 +106,7 @@ export function WorkoutScreen() {
           </div>
         )}
       </Section>
-      {viewing ? <FinishSummary session={viewing} history={finished.filter((x) => x.id !== viewing.id)} onClose={() => setViewing(null)} /> : null}
+      {viewing ? <FinishSummary session={viewing} history={finished.filter((x) => x.id !== viewing.id && x.started_at < viewing.started_at)} onClose={() => setViewing(null)} /> : null}
       {justFinished ? (
         <FinishSummary session={justFinished} history={finished.filter((x) => x.id !== justFinished.id)} onClose={() => setJustFinished(null)}
           onReopen={async () => { await mutate(justFinished.id, reopenSession); setJustFinished(null); }} />

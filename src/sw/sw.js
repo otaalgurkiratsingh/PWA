@@ -38,3 +38,44 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(caches.match(url.pathname).then((r) => r || fetch(req)));
   }
 });
+
+// ---------- reminders (Web Push) ----------
+// The payload is end-to-end encrypted to this device by the `notify` function; the browser
+// decrypts it before this handler runs. Only same-origin in-app links are followed.
+self.addEventListener('push', (event) => {
+  let data;
+  try {
+    data = event.data ? event.data.json() : {};
+  } catch {
+    data = {};
+  }
+  const str = (v, max) => (typeof v === 'string' ? v.slice(0, max) : '');
+  const title = str(data.title, 80) || 'TrainLuma';
+  const url = typeof data.url === 'string' && data.url.startsWith('/#/') ? data.url : '/#/today';
+  event.waitUntil(
+    self.registration.showNotification(title, {
+      body: str(data.body, 240),
+      tag: str(data.tag, 64) || undefined,
+      icon: '/icons/icon-192.png?v=tl1',
+      badge: '/icons/icon-192.png?v=tl1',
+      data: { url },
+    }),
+  );
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const raw = event.notification.data && event.notification.data.url;
+  const url = typeof raw === 'string' && raw.startsWith('/#/') ? raw : '/#/today';
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => {
+      for (const c of list) {
+        if (new URL(c.url).origin === self.location.origin && 'focus' in c) {
+          c.navigate(url).catch(() => undefined);
+          return c.focus();
+        }
+      }
+      return self.clients.openWindow(url);
+    }),
+  );
+});

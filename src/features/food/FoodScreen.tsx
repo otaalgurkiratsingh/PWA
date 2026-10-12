@@ -169,7 +169,10 @@ function EntrySheet({ entry, onClose }: { entry: MealEntry; onClose: () => void 
 
 export function FoodScreen() {
   const { journal, profile, today, refresh, notify, mode } = useJournal();
-  const [date, setDate] = useState(today);
+  // Follows `today` (including across midnight) unless the person moved to another day.
+  const [picked, setPicked] = useState<string | null>(null);
+  const date = picked ?? today;
+  const setDate = (d: string) => setPicked(d === today ? null : d);
   const { data: lib } = useLibrary();
   const recent = useQuery((j) => j.mealsBetween(addDays(today, -14), today), [today]);
   const entries = useQuery((j) => j.mealsOn(date), [date]);
@@ -214,12 +217,12 @@ export function FoodScreen() {
   return (
     <div className="stack" style={{ gap: 24 }}>
       <div className="row between">
-        <button className="icon-btn" aria-label="Previous day" onClick={() => setDate((d) => addDays(d, -1))}><Icon name="chevronLeft" /></button>
+        <button className="icon-btn" aria-label="Previous day" onClick={() => setDate(addDays(date, -1))}><Icon name="chevronLeft" /></button>
         <div style={{ textAlign: 'center' }}>
           <div style={{ fontWeight: 700 }}>{dayLabel(date, today)}</div>
           <div className="label">{formatShortDate(date)}</div>
         </div>
-        <button className="icon-btn" aria-label="Next day" onClick={() => setDate((d) => addDays(d, 1))} disabled={date >= today}><Icon name="chevronRight" /></button>
+        <button className="icon-btn" aria-label="Next day" onClick={() => setDate(addDays(date, 1))} disabled={date >= today}><Icon name="chevronRight" /></button>
       </div>
 
       <div className="card food">

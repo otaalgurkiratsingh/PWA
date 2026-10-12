@@ -19,7 +19,8 @@ function LogSheet({ kind, onClose }: { kind: 'weight' | 'steps'; onClose: () => 
   const [value, setValue] = useState('');
   const [err, setErr] = useState<string | null>(null);
   const save = async () => {
-    const v = Number(value.replace(',', '.'));
+    // Blank input is not zero (Number('') === 0); it fails the checks below.
+    const v = value.trim() === '' ? NaN : Number(value.replace(',', '.'));
     const nowIso = new Date().toISOString();
     try {
       if (kind === 'weight') {

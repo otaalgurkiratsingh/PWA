@@ -3,3 +3,8 @@
 # The platform rejects requests without a valid user JWT before our code runs;
 # the function verifies the token again with getClaims().
 verify_jwt = true
+
+[functions.notify]
+# Called by pg_cron, not by people: there is no user JWT. The function itself requires the
+# NOTIFY_CRON_SECRET bearer token (constant-time compare) and refuses everything else.
+verify_jwt = false

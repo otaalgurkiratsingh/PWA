@@ -3,7 +3,7 @@ import { EXERCISE_LIBRARY } from '@shared/fixtures/exerciseLibrary';
 import { ProgramVersion, type WorkoutSession } from '@shared/contracts';
 import {
   addDay, addExercise, addPlannedSet, commitPlan, describeChanges, draftFrom, duplicateDay, duplicateExercise,
-  moveDay, moveExercise, plannedFromDefinition, removeDay, removePlannedSet, renameDay, replaceExercise,
+  moveDay, moveExercise, parseLoadInput, parseRepInput, plannedFromDefinition, removeDay, removePlannedSet, renameDay, replaceExercise,
   setWeekday, suggestedDay, updatePlannedSet, validatePlan,
 } from './plan';
 import { addSessionSet, completeSet, finishSession, removeAddedSet, sessionSummary, startSession } from './session';
@@ -134,5 +134,55 @@ describe('workout additions', () => {
     const sum = sessionSummary(s2, [s1], 'kg');
     expect(sum).toMatchObject({ durationMinutes: 45, exercisesDone: 1, workingSets: 1, discomfortFlags: 1 });
     expect(sum.comparisons[0]).toMatchObject({ name: 'Bench press', change: 'heavier' });
+  });
+});
+
+describe('typed set inputs', () => {
+  it('parses reps as positive whole numbers and rejects blanks', () => {
+    expect(parseRepInput('10')).toBe(10);
+    expect(parseRepInput(' 8 ')).toBe(8);
+    expect(parseRepInput('')).toBeNull();
+    expect(parseRepInput('0')).toBeNull();
+    expect(parseRepInput('8.5')).toBeNull();
+    expect(parseRepInput('abc')).toBeNull();
+  });
+
+  it('parses target weight with dot or comma decimals; blank clears it', () => {
+    expect(parseLoadInput('62.5')).toBe(62.5);
+    expect(parseLoadInput('62,5')).toBe(62.5);
+    expect(parseLoadInput('62.')).toBe(62);
+    expect(parseLoadInput('')).toBeNull();
+    expect(parseLoadInput('0')).toBeNull();
+    expect(parseLoadInput('x')).toBeNull();
+  });
+});
+
+describe('workout comparisons', () => {
+  const v1 = commitPlan({ draft: buildPlan(), previous: null, ownerId: 'o', newId, now: '2026-10-09T10:00:00Z', synthetic: false });
+  const upper = v1.days[0]!;
+  const withPlank = { ...v1, days: [{ ...upper, exercises: [...upper.exercises, plannedFromDefinition(lib('Plank'), 'kg', newId)] }] };
+  const day = withPlank.days[0]!;
+  const done = (now: string, results: { reps: number; load: number }[]) => {
+    let s = startSession({ id: newId(), ownerId: 'o', program: withPlank, day, localDate: now.slice(0, 10), timezone: 'UTC', now, newId, history: [], unit: 'kg', synthetic: false });
+    s.exercises.forEach((e, i) => {
+      const set = e.sets.find((x) => x.type === 'working')!;
+      s = completeSet(s, set.id, { ...results[i]!, unit: 'kg', rir: null, discomfort: false }, now);
+    });
+    return finishSession(s, now);
+  };
+
+  it('names lower results by what was measured', () => {
+    const before = done('2026-10-01T10:00:00Z', [{ reps: 8, load: 60 }, { reps: 10, load: 0 }, { reps: 45, load: 0 }]);
+    const fewer = done('2026-10-03T10:00:00Z', [{ reps: 6, load: 60 }, { reps: 8, load: 0 }, { reps: 30, load: 0 }]);
+    expect(sessionSummary(fewer, [before], 'kg').comparisons.map((c) => c.change)).toEqual(['fewer_reps', 'fewer_reps', 'shorter']);
+    const more = done('2026-10-03T10:00:00Z', [{ reps: 8, load: 55 }, { reps: 12, load: 0 }, { reps: 60, load: 0 }]);
+    expect(sessionSummary(more, [before], 'kg').comparisons.map((c) => c.change)).toEqual(['lighter', 'more_reps', 'longer']);
+  });
+
+  it('compares a past workout only with workouts before it', () => {
+    const older = done('2026-10-01T10:00:00Z', [{ reps: 8, load: 60 }, { reps: 10, load: 0 }, { reps: 45, load: 0 }]);
+    const later = done('2026-10-05T10:00:00Z', [{ reps: 8, load: 80 }, { reps: 15, load: 0 }, { reps: 90, load: 0 }]);
+    expect(sessionSummary(older, [later], 'kg').comparisons.every((c) => c.change === 'first_time')).toBe(true);
+    expect(sessionSummary(later, [older], 'kg').comparisons.map((c) => c.change)).toEqual(['heavier', 'more_reps', 'longer']);
   });
 });

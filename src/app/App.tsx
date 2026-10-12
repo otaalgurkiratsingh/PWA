@@ -1,10 +1,12 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { DEMO_PROFILES } from '@shared/fixtures/demo';
 import { AuthProvider, useAuth } from '@/core/auth/AuthContext';
-import { Icon, Mark, type IconName } from '@/core/design/icons';
+import { Icon, type IconName } from '@/core/design/icons';
 import { Sheet } from '@/core/design/ui';
 import { watchSystemTheme } from '@/core/design/theme';
 import { formatLongDate } from '@/core/time/localDate';
+import { NotificationsScreen } from '@/features/settings/NotificationsScreen';
+import { AnimatedMark, LaunchSplash } from '@/core/design/BrandLogo';
 import { AccessScreen, WelcomeScreen } from '@/features/auth/WelcomeScreen';
 import { ChatScreen } from '@/features/coach/ChatScreen';
 import { CoachScreen } from '@/features/coach/CoachScreen';
@@ -22,11 +24,11 @@ import { RestDock } from '@/features/workout/RestDock';
 import { WorkoutScreen } from '@/features/workout/WorkoutScreen';
 import { JournalProvider, useJournal, useJournalOptional, useToast } from './JournalContext';
 import { navigate, TABS, useRoute, type RouteName } from './router';
-import { applyUpdate, onUpdateReady } from './serviceWorker';
+import { applyUpdate, onUpdateReady, updateFoundAtLaunch } from './serviceWorker';
 
 const TITLES: Record<RouteName, string> = {
   today: 'Today', food: 'Food', workout: 'Workout', progress: 'Progress', settings: 'Settings', coach: 'AI Coach', chat: 'AI Coach chat', draft: 'Plan draft',
-  plan: 'Edit plan', meal: 'Meal', photos: 'Progress photos', answers: 'Planning answers',
+  plan: 'Edit plan', meal: 'Meal', photos: 'Progress photos', answers: 'Planning answers', notifications: 'Notifications',
 };
 const NAV_ICON: Record<(typeof TABS)[number], IconName> = { today: 'today', food: 'food', workout: 'workout', progress: 'progress' };
 
@@ -53,6 +55,14 @@ function UpdatePrompt() {
   useEffect(() => {
     if (ready) void journal.activeSession().then((s) => setBusyWorkout(!!s));
   }, [ready, journal]);
+  const auto = ready && updateFoundAtLaunch();
+  useEffect(() => {
+    if (!auto) return;
+    let live = true;
+    // Found while opening: apply now unless a workout is in progress (never replace it mid-workout).
+    void journal.activeSession().then((s) => { if (live && !s) applyUpdate(); });
+    return () => { live = false; };
+  }, [auto, journal]);
   if (!ready || busyWorkout) return null; // never replace the app mid-workout
   return (
     <div className="notice row" role="status" style={{ marginBottom: 16 }}>
@@ -141,6 +151,7 @@ function AppShell() {
     case 'draft': screen = <DraftScreen draftId={route.param} />; break;
     case 'photos': screen = <PhotosScreen />; break;
     case 'answers': screen = <PlanningWizard mode="edit" />; break;
+    case 'notifications': screen = <NotificationsScreen />; break;
     case 'plan': screen = <PlanEditor />; break;
     case 'meal': screen = <MealEditor presetId={route.param} />; break;
     default: screen = <TodayScreen />;
@@ -176,7 +187,7 @@ function Splash() {
   return (
     <main className="welcome" aria-busy="true" aria-label="Loading">
       <div className="hero" style={{ alignItems: 'center' }}>
-        <Mark size={56} />
+        <AnimatedMark size={72} animate={false} />
       </div>
     </main>
   );
@@ -222,6 +233,7 @@ export function App() {
   return (
     <AuthProvider>
       <Root />
+      <LaunchSplash />
     </AuthProvider>
   );
 }

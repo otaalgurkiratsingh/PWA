@@ -146,7 +146,7 @@ test('email code sign-in: wrong code, correct code, onboarding, backup, session 
   // Session restore: reload goes straight to the app; the welcome screen never shows.
   await page.addInitScript(() => {
     new MutationObserver(() => {
-      if (document.body?.innerText.includes('Your routine, made simpler')) (window as unknown as { __sawWelcome: boolean }).__sawWelcome = true;
+      if (document.body?.innerText.includes('Eat well. Train smart.')) (window as unknown as { __sawWelcome: boolean }).__sawWelcome = true;
     }).observe(document, { subtree: true, childList: true, characterData: true });
   });
   await page.reload();
@@ -156,7 +156,7 @@ test('email code sign-in: wrong code, correct code, onboarding, backup, session 
   // Sign out (everything is backed up) → welcome; signing in again restores the same journal.
   await page.getByRole('button', { name: 'Sign out' }).first().click();
   await page.getByRole('dialog').getByRole('button', { name: 'Sign out', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Your routine, made simpler' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /Eat well. Train smart./ })).toBeVisible();
   await signIn(page, OWNER.email);
   await expect(page.getByRole('heading', { level: 1, name: 'Today' })).toBeVisible();
   expect(provider).toEqual([]);
@@ -322,7 +322,7 @@ test('an authenticated but unapproved account is refused (no journal, no onboard
   await expect(page.getByText(/hasn’t been added to TrainLuma/)).toBeVisible();
   expect(sb.requests.filter((r) => r.path.includes('sync_push'))).toEqual([]);
   await page.getByRole('button', { name: 'Sign out' }).click();
-  await expect(page.getByRole('heading', { name: 'Your routine, made simpler' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /Eat well. Train smart./ })).toBeVisible();
 });
 
 test('an address that is not invited gets the same neutral message (no account discovery)', async ({ page }) => {
@@ -559,4 +559,26 @@ test('with backup off, the coach explains it needs backup instead of answering f
   await page.goto('/#/chat/new');
   await expect(page.getByText('Back up your journal first')).toBeVisible();
   expect(sb.aiCalls()).toEqual([]);
+});
+
+test('reminders panel: preferences saved to the person’s own row and reloaded', async ({ page }) => {
+  const sb = new MockSupabase([OWNER, WIFE]);
+  await sb.install(page);
+  await signIn(page, OWNER.email);
+  await onboardSimple(page);
+  await page.goto('/#/notifications');
+  await expect(page.getByRole('heading', { name: 'Notifications' })).toBeVisible();
+  await expect(page.getByText(/still being set up by the owner/)).toBeVisible(); // this build has no VAPID key
+  await page.getByLabel('Gym time', { exact: true }).fill('19:30');
+  await page.getByRole('combobox').selectOption('30');
+  await expect(page.getByText('You’ll get it at 19:00 on the days you picked.')).toBeVisible();
+  await page.getByRole('switch', { name: /Hide details on the lock screen/ }).click();
+  await page.getByRole('button', { name: 'Turn on reminders' }).click();
+  await expect(page.getByRole('status').getByText('Reminders saved.')).toBeVisible();
+  const saved = sb.notifyPrefs.get(OWNER.id)!;
+  expect(saved).toMatchObject({ user_id: OWNER.id, gym_time: '19:30', lead_minutes: 30, hide_details: true, motivation_enabled: true });
+  await page.reload();
+  await expect(page.getByLabel('Gym time', { exact: true })).toHaveValue('19:30');
+  await expect(page.getByRole('button', { name: 'Save changes' })).toBeDisabled();
+  expect(sb.notifyPrefs.size).toBe(1);
 });

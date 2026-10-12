@@ -69,7 +69,7 @@ export function SettingsScreen() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `rozana-export-${new Date().toISOString().slice(0, 10)}.json`;
+    a.download = `trainluma-export-${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
     notify({ kind: 'info', message: 'Export downloaded. It contains health records — keep it private.' });
@@ -170,6 +170,12 @@ export function SettingsScreen() {
           </div>
         </Section>
       ) : null}
+
+      <Section title="Notifications">
+        <div className="card stack-sm">
+          <button className="link" onClick={() => navigate('notifications')}><Icon name="clock" size={18} /> Daily motivation and gym reminders <Icon name="chevronRight" size={16} /></button>
+        </div>
+      </Section>
 
       <Section title="Your data">
         <div className="card stack-sm">

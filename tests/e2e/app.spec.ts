@@ -133,7 +133,7 @@ test.describe('food', () => {
     await page.getByRole('dialog').getByRole('button', { name: /^Sabzi/ }).first().click();
     await expect(page.getByText('Nutrition not set yet')).toBeVisible();
     await page.getByRole('button', { name: /^Add 1 bowl/ }).click();
-    await expect(page.locator('.bm-value').first()).toHaveText('Not logged');
+    await expect(page.locator('.bm-value').first()).toHaveText('Unknown');
     await expect(page.getByText(/Some items have no nutrition yet/)).toBeVisible();
   });
 });
@@ -464,6 +464,40 @@ test.describe('Today motivation', () => {
     await expect(card).toBeVisible();
     await expect(card.getByText(/workouts · 7 days/)).toBeVisible();
     await expect(card.getByText(/days? logging/)).toBeVisible();
+    await expect(page.locator('.launch-splash')).toHaveCount(0);
     await page.screenshot({ path: 'docs/screenshots/37-today-motivation.png', fullPage: false });
+  });
+});
+
+test.describe('reminders', () => {
+  test('Today invites once; the panel shows when reminders will arrive and sends a test notification', async ({ page }) => {
+    // Headless Chromium always reports notifications as denied: stand in for the browser's
+    // Notification API and record what the app shows.
+    await page.addInitScript(() => {
+      const shown: unknown[] = [];
+      (window as unknown as { __shown: unknown[] }).__shown = shown;
+      class FakeNotification { static permission = 'granted'; static requestPermission = async () => 'granted'; constructor(title: string, o: unknown) { shown.push({ title, o }); } }
+      Object.defineProperty(window, 'Notification', { value: FakeNotification, configurable: true });
+      ServiceWorkerRegistration.prototype.showNotification = async function (title: string, o?: NotificationOptions) { shown.push({ title, o }); };
+    });
+    await enterDemo(page);
+    const invite = page.getByRole('region', { name: 'Reminders' });
+    await expect(invite.getByText('Never miss gym time')).toBeVisible();
+    await invite.getByRole('button', { name: 'Turn on' }).click();
+    await expect(page.getByRole('heading', { name: 'Notifications' })).toBeVisible();
+    await expect(page.getByText(/In the demo, these settings stay on this phone/)).toBeVisible();
+    await expect(page.getByText('You’ll get it at 17:45 on the days you picked.')).toBeVisible();
+    const upcoming = page.getByLabel('Next reminders');
+    await expect(upcoming.getByText('Daily motivation')).toBeVisible();
+    await expect(upcoming.getByText('Gym reminder')).toBeVisible();
+    await page.getByRole('button', { name: 'Turn on reminders' }).click();
+    await expect(page.getByRole('status').getByText('Reminders saved.')).toBeVisible();
+    await page.getByRole('button', { name: 'Send a test notification' }).click();
+    await expect.poll(() => page.evaluate(() => (window as unknown as { __shown: { title: string }[] }).__shown.map((n) => n.title))).toEqual(['You’re all set']);
+    await expect(page.getByRole('alert')).toHaveCount(0);
+    await expect(page.locator('.launch-splash')).toHaveCount(0);
+    await page.screenshot({ path: 'docs/screenshots/38-notifications.png', fullPage: true });
+    await page.goto('/#/today');
+    await expect(page.getByRole('region', { name: 'Reminders' })).toHaveCount(0);
   });
 });

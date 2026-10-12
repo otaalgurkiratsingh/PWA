@@ -276,7 +276,7 @@ export interface ExerciseComparison {
   best: ActualSet | null;
   previous: ActualSet | null;
   /** Only computed for comparable variants with loads in the same convention. */
-  change: 'heavier' | 'more_reps' | 'same' | 'lower' | 'first_time' | 'not_comparable';
+  change: 'heavier' | 'more_reps' | 'longer' | 'same' | 'lighter' | 'fewer_reps' | 'shorter' | 'first_time' | 'not_comparable';
 }
 
 export interface SessionSummaryData {
@@ -300,14 +300,16 @@ export function sessionSummary(s: WorkoutSession, history: readonly WorkoutSessi
     workingSets += sum.completedWorkingSets;
     if (e.sets.some((x) => x.status === 'completed')) exercisesDone++;
     if (!sum.bestSet) continue;
-    const prev = lastComparable(history.filter((h) => h.id !== s.id), comparableKey(e));
+    // Only earlier workouts count as "last time", so a past workout is never compared to a later one.
+    const prev = lastComparable(history.filter((h) => h.id !== s.id && h.started_at < s.started_at), comparableKey(e));
     const prevBest = prev ? workingSummary(prev, unit).bestSet : null;
     let change: ExerciseComparison['change'] = 'first_time';
     if (prevBest) {
       const a = convertLoad(sum.bestSet.load, sum.bestSet.unit, unit);
       const b = convertLoad(prevBest.load, prevBest.unit, unit);
-      if (Math.abs(a - b) < 0.01) change = sum.bestSet.reps > prevBest.reps ? 'more_reps' : sum.bestSet.reps === prevBest.reps ? 'same' : 'lower';
-      else change = a > b ? 'heavier' : 'lower';
+      const [up, down] = e.measurement === 'duration' ? (['longer', 'shorter'] as const) : (['more_reps', 'fewer_reps'] as const);
+      if (Math.abs(a - b) < 0.01) change = sum.bestSet.reps > prevBest.reps ? up : sum.bestSet.reps === prevBest.reps ? 'same' : down;
+      else change = a > b ? 'heavier' : 'lighter';
     }
     comparisons.push({ name: e.name, best: sum.bestSet, previous: prevBest, change });
   }

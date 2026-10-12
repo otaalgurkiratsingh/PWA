@@ -20,7 +20,8 @@
     "scan:secrets": "node scripts/scan-secrets.mjs",
     "check": "npm run typecheck && npm run lint && npm run test && npm run build && npm run scan:secrets",
     "smoke:ai": "node scripts/smoke-ai-function.mjs",
-    "screenshots": "node scripts/screenshots.mjs"
+    "screenshots": "node scripts/screenshots.mjs",
+    "smoke:notify": "node scripts/smoke-notify-function.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.117.3",

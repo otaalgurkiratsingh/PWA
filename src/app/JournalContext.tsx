@@ -154,7 +154,9 @@ export function JournalProvider({ ownerId, mode, email, onboarding, children }: 
 
 
   useEffect(() => {
+    // Day boundaries follow the profile's timezone once it is known (device timezone until then).
     const tick = () => setToday(localDateIn(profile?.timezone ?? deviceTimezone()));
+    tick();
     const id = window.setInterval(tick, 60_000);
     document.addEventListener('visibilitychange', tick);
     return () => {

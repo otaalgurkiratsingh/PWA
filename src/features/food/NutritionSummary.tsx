@@ -3,8 +3,9 @@ import type { MealEntry, Targets } from '@shared/contracts';
 import { totalsOfEntries, type NutrientTotal } from '@/domain/nutrition/calc';
 import { Icon } from '@/core/design/icons';
 
-function value(t: NutrientTotal, unit: string) {
-  if (t.value === null) return <span className="muted">Not logged</span>;
+function value(t: NutrientTotal, unit: string, logged: boolean) {
+  // Meals exist but none has this nutrient: unknown, not "not logged".
+  if (t.value === null) return <span className="muted">{logged ? 'Unknown' : 'Not logged'}</span>;
   return (
     <>
       {t.complete ? '' : '≥ '}
@@ -14,7 +15,7 @@ function value(t: NutrientTotal, unit: string) {
   );
 }
 
-function Bar({ label, total, unit, target }: { label: string; total: NutrientTotal; unit: string; target: number | null }) {
+function Bar({ label, total, unit, target, logged }: { label: string; total: NutrientTotal; unit: string; target: number | null; logged: boolean }) {
   const pct = target && total.value !== null ? Math.min(100, (total.value / target) * 100) : 0;
   return (
     <div className="bar-meter food">
@@ -22,7 +23,7 @@ function Bar({ label, total, unit, target }: { label: string; total: NutrientTot
         <span className="label" style={{ fontWeight: 600 }}>{label}</span>
         <span className="label">{target ? `of ${target.toLocaleString('en-US')} ${unit}` : ''}</span>
       </div>
-      <div className="bm-value num">{value(total, unit)}</div>
+      <div className="bm-value num">{value(total, unit, logged)}</div>
       {target ? (
         <div className="bm-track" role="progressbar" aria-label={`${label} compared with your target`} aria-valuemin={0} aria-valuemax={target} aria-valuenow={Math.round(total.value ?? 0)}>
           <div className="bm-fill" style={{ width: `${pct}%` }} />
@@ -51,8 +52,8 @@ export function NutritionSummary({ entries, targets, dayComplete, compact = fals
   return (
     <div className="stack-sm">
       <div className="metrics" style={{ gridTemplateColumns: '1fr 1fr' }}>
-        <Bar label="Energy" total={t.energy_kcal} unit="kcal" target={targets?.energy_kcal ?? null} />
-        <Bar label="Protein" total={t.protein_g} unit="g" target={targets?.protein_g ?? null} />
+        <Bar label="Energy" total={t.energy_kcal} unit="kcal" target={targets?.energy_kcal ?? null} logged={entries.length > 0} />
+        <Bar label="Protein" total={t.protein_g} unit="g" target={targets?.protein_g ?? null} logged={entries.length > 0} />
       </div>
       <div className="row between wrap">
         <span className="small muted">
@@ -71,7 +72,7 @@ export function NutritionSummary({ entries, targets, dayComplete, compact = fals
           {([['Carbs', t.carbs_g], ['Fat', t.fat_g], ['Fibre', t.fiber_g]] as const).map(([l, v]) => (
             <div key={l} className="metric" style={{ minHeight: 0 }}>
               <span className="m-label">{l}</span>
-              <span className="m-value" style={{ fontSize: '1.125rem' }}>{value(v, 'g')}</span>
+              <span className="m-value" style={{ fontSize: '1.125rem' }}>{value(v, 'g', entries.length > 0)}</span>
             </div>
           ))}
         </div>

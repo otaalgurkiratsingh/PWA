@@ -248,7 +248,10 @@ function ExerciseCard({ session, ex, history, expanded, onToggle, unit, editable
 export function FinishSummary({ session, history, onClose, onReopen }: { session: WorkoutSession; history: WorkoutSession[]; onClose: () => void; onReopen?: () => void }) {
   const { profile } = useJournal();
   const s = sessionSummary(session, history, profile.units);
-  const word = { heavier: 'heavier than last time', more_reps: 'more reps than last time', same: 'same as last time', lower: 'lighter than last time', first_time: 'first time', not_comparable: '' } as const;
+  const word = {
+    heavier: 'heavier than last time', more_reps: 'more reps than last time', longer: 'longer than last time', same: 'same as last time',
+    lighter: 'lighter than last time', fewer_reps: 'fewer reps than last time', shorter: 'shorter than last time', first_time: 'first time', not_comparable: '',
+  } as const;
   return (
     <Sheet title={`${session.day_name} done`} onClose={onClose} actions={
       <>
@@ -267,7 +270,7 @@ export function FinishSummary({ session, history, onClose, onReopen }: { session
             {s.comparisons.map((c) => (
               <li key={c.name} className="row between" style={{ padding: '10px 0' }}>
                 <span><strong>{c.name}</strong><br /><span className="label">{c.best ? `Best: ${c.best.load ? `${c.best.load} ${c.best.unit} × ` : ''}${c.best.reps}` : ''}</span></span>
-                <span className={`tag${c.change === 'heavier' || c.change === 'more_reps' ? ' train' : ''}`}>{word[c.change]}</span>
+                <span className={`tag${c.change === 'heavier' || c.change === 'more_reps' || c.change === 'longer' ? ' train' : ''}`}>{word[c.change]}</span>
               </li>
             ))}
           </ul>

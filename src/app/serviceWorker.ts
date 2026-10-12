@@ -1,8 +1,11 @@
 /**
  * Service worker registration. The worker caches the app shell/static assets only.
- * New versions wait until the user taps Update (never mid-workout).
+ * New versions found while the app opens apply straight away; later ones wait until the user taps
+ * Update. Never mid-workout.
  */
 let waiting: ServiceWorker | null = null;
+let readyAt = Infinity;
+const startedAt = Date.now();
 let userAskedForUpdate = false;
 const listeners = new Set<() => void>();
 
@@ -14,6 +17,7 @@ export function registerServiceWorker() {
       const check = () => {
         if (reg.waiting && navigator.serviceWorker.controller) {
           waiting = reg.waiting;
+          readyAt = Math.min(readyAt, Date.now());
           listeners.forEach((l) => l());
         }
       };
@@ -40,6 +44,14 @@ export function onUpdateReady(fn: () => void): () => void {
   listeners.add(fn);
   if (waiting) fn();
   return () => listeners.delete(fn);
+}
+
+/**
+ * True when the new version was found while the app was just opening (within 20 s of launch).
+ * Then nothing is on screen yet that an update could interrupt, so it can apply on its own.
+ */
+export function updateFoundAtLaunch(): boolean {
+  return readyAt - startedAt < 20_000;
 }
 
 export function applyUpdate() {

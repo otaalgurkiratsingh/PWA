@@ -11,6 +11,8 @@ const errors = [];
 
 async function session(width, scheme) {
   const ctx = await browser.newContext({ viewport: { width, height: 800 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true, colorScheme: scheme });
+  // Skip the launch splash so screens are captured as people use them.
+  await ctx.addInitScript(() => sessionStorage.setItem('trainluma.splashSeen', '1'));
   const page = await ctx.newPage();
   page.on('pageerror', (e) => errors.push(`${width}/${scheme}: ${e.message}`));
   page.on('console', (m) => m.type() === 'error' && errors.push(`${width}/${scheme}: ${m.text()}`));

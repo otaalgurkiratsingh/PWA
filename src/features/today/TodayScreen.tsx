@@ -5,6 +5,7 @@ import { navigate } from '@/app/router';
 import { FoodArt } from '@/core/design/foodArt';
 import { Icon } from '@/core/design/icons';
 import { Section } from '@/core/design/ui';
+import { pushSupport } from '@/core/notifications/push';
 import { formatShortDate, formatTime, localHourIn } from '@/core/time/localDate';
 import { addDays } from '@/domain/metrics/metrics';
 import { momentum } from '@/domain/metrics/momentum';
@@ -31,6 +32,22 @@ export function TodayScreen() {
   const steps = useQuery((j) => j.db.get('daily_health', `steps:${today}`), [today]);
   const weights = useQuery((j) => j.weightsBetween(addDays(today, -13), today), [today]);
   const [adding, setAdding] = useState<MealPreset | null>(null);
+  const promptKey = `trainluma.reminderPrompt.${profile.id}`;
+  const [askReminders, setAskReminders] = useState(() => {
+    try {
+      return pushSupport() !== 'unsupported' && !localStorage.getItem(promptKey);
+    } catch {
+      return false;
+    }
+  });
+  const dismissReminders = () => {
+    try {
+      localStorage.setItem(promptKey, '1');
+    } catch {
+      // private mode: the card simply returns next visit
+    }
+    setAskReminders(false);
+  };
   const slot: MealSlot = slotForHour(localHourIn(profile.timezone));
 
   const usual = useMemo(() => (lib && recent ? sortPresets(lib.presets, recent).slice(0, 6) : []), [lib, recent]);
@@ -93,6 +110,20 @@ export function TodayScreen() {
             <span><b className="num">{mood.logStreak}</b> day{mood.logStreak === 1 ? '' : 's'} logging</span>
           </div>
         </section>
+      ) : null}
+
+      {askReminders ? (
+        <div className="card notify-hero" role="region" aria-label="Reminders">
+          <span className="nh-icon" aria-hidden="true"><Icon name="clock" size={22} /></span>
+          <span className="grow">
+            <strong>Never miss gym time</strong>
+            <span className="small muted" style={{ display: 'block' }}>A daily boost and a reminder 15 minutes before your workout.</span>
+            <span className="row" style={{ gap: 8, marginTop: 10 }}>
+              <button className="btn sm" onClick={() => { dismissReminders(); navigate('notifications'); }}>Turn on</button>
+              <button className="btn sm ghost" onClick={dismissReminders}>Not now</button>
+            </span>
+          </span>
+        </div>
       ) : null}
 
       <Section title="Food today" action={<button className="link" onClick={() => navigate('food')}>Open <Icon name="chevronRight" size={16} /></button>}>

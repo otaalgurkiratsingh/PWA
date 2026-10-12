@@ -22,7 +22,10 @@ exports/
 *.export.json
 rozana-export-*.json
 aapnafit-export-*.json
-photos/
+trainluma-export-*.json
+# personal photo folders (root only — src/**/photos/ is app code and must be tracked)
+/photos/
+/exports/photos/
 *.dump
 *.sql.gz
 *.backup
@@ -44,3 +47,4 @@ dist-e2e-auth/
 pw-tmp.config.ts
 pw-auth.config.ts
 pw-both.config.ts
+.claude/worktrees/

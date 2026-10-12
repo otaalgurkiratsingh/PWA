@@ -23,11 +23,11 @@ You do this once. Until it's done, the sign-in screen says "Sign-in is still bei
 
 ### 2a. Supabase project (free tier)
 1. Create a **new, separate** Supabase project (not your agency one). Turn on MFA for your Supabase account. Keep the database password in a password manager.
-2. Apply the three database migrations **in order**. Either:
+2. Apply the database migrations **in order**. Either:
    - with the Supabase CLI: `supabase link --project-ref <your-ref>`, then `supabase db push`; or
    - in **SQL Editor**, paste and run each file in `supabase/migrations/`, oldest first:
-     `20261009000001_init.sql`, `20261009000002_sync_auth_ai.sql`, `20261010000003_coach_v2.sql`.
-   The third one creates the private **progress-photos** storage bucket, the chat tables, plan drafts and the daily chat-expiry job.
+     `20261009000001_init.sql`, `20261009000002_sync_auth_ai.sql`, `20261010000003_coach_v2.sql`, `20261012000004_notifications.sql`.
+   The third one creates the private **progress-photos** storage bucket, the chat tables, plan drafts and the daily chat-expiry job. The fourth, `20261012000004_notifications.sql`, adds reminder settings and devices (see 2e).
 3. Check **Storage**: a bucket named `progress-photos` exists and is **Private** (not public).
 4. Check **Database → Extensions**: `pg_cron` is enabled. If the migration couldn't schedule the job, enable `pg_cron` and run the migration's last block again (or ask me). Expired chats are hidden either way.
 5. **Authentication → Sign In / Providers**: Email **on**; **Allow new users to sign up: off**; Email OTP expiry about 10 minutes; OTP length 6.
@@ -45,7 +45,7 @@ You do this once. Until it's done, the sign-in screen says "Sign-in is still bei
 1. **Authentication → Users → Add user**: enter the email and confirm the user.
 2. **SQL Editor**: run the first statement in `supabase/admin/members.sql` with that email.
    Without this, the person gets a code but sees "This account isn’t active".
-3. Start with yourself. Add your wife after the two-person check in 2e. Add friends only with their informed agreement (tell them what you, as project owner, can technically see; see section 4).
+3. Start with yourself. Add your wife after the two-person check in 2f. Add friends only with their informed agreement (tell them what you, as project owner, can technically see; see section 4).
 
 ### 2c. Connect the website (Netlify)
 1. Supabase **Project Settings → API Keys**: copy the **Project URL** and the **publishable** key (never the secret/service-role key).
@@ -66,7 +66,16 @@ You do this once. Until it's done, the sign-in screen says "Sign-in is still bei
 6. Limits (change with `supabase/admin/members.sql`): US$10 per month for everyone together; per person 20 chat messages a day (their local day), 3 food photo suggestions a day, 1 weekly review a week, the first plan draft plus 2 regenerations a week, and one AI request at a time.
 7. Each person turns on **AI help** for themselves. The coach reads their **backed-up** journal, so backup must be on too. Photos need their own two switches (see 3).
 
-### 2e. First live check (about 20 minutes, with me)
+### 2e. Phone reminders (daily motivation + before gym time)
+Optional. Until it's done, the Notifications screen saves people's choices and says setup is pending.
+1. On your computer: `npx web-push generate-vapid-keys`. You get a **public** and a **private** key.
+2. Netlify environment variables: add `VITE_VAPID_PUBLIC_KEY` = the public key, then redeploy. (The public key is safe in the app.)
+3. Supabase → Edge Functions → Secrets: `VAPID_PUBLIC_KEY` (same public key), `VAPID_PRIVATE_KEY` (the private key, **only here**), `VAPID_SUBJECT` = `mailto:your-email`, and `NOTIFY_CRON_SECRET` = a long random string (e.g. `openssl rand -hex 32`).
+4. Apply migration `20261012000004_notifications.sql` (after the first three), then `supabase functions deploy notify`.
+5. SQL Editor: open `supabase/admin/notifications.sql`, put your project ref and the same cron secret in **in the editor only**, and run it. It schedules `trainluma-notify` every 5 minutes. The file shows how to check runs and how to stop it.
+6. On each phone: Settings → Notifications → **Turn on reminders**, allow notifications, then **Send a test notification**. On iPhone, add TrainLuma to the Home Screen first and open it from there.
+
+### 2f. First live check (about 20 minutes, with me)
 - [ ] Sign in with your email: a 6-digit code arrives and works; a wrong code shows an error.
 - [ ] An uninvited email gets no code and the screen doesn't reveal that.
 - [ ] A created but **unapproved** user sees "This account isn’t active".
@@ -77,13 +86,21 @@ You do this once. Until it's done, the sign-in screen says "Sign-in is still bei
 - [ ] Log a meal and a set; Settings shows "Backed up"; a second device shows the same entries.
 - [ ] Revoke a test member: their open app stops syncing and the coach refuses them straight away.
 - [ ] Two people, one phone: sign out, sign in as the second person; none of the first person's chats, photos, drafts or meals appear.
+- [ ] Reminders (if set up): a test notification arrives; set gym time 20 minutes ahead and a reminder arrives 15 minutes before; "Hide details" shows only the neutral line.
+- [ ] Scan the barcode on a package you have: the product and its label values appear; check them against the package.
 
 ---
 
 ## 3. Daily use
 
-- **Food:** the cards are your usual meals; **+** adds your usual amount. **Add food → Choose food** opens your meals and the full food list (293 Punjabi and Canadian foods with pictures). List foods start with nutrition **not set**: they log as entries and daily totals show as partial ("≥") until you add a package label or your recipe (**Edit meal, portion or nutrition**). Weigh your usual bowl or roti once for better estimates.
-- **AI Coach:** **Ask Coach** on Today (or Coach → Ask Coach). Text only. Answers use your own records, usual foods and plan. Suggestions are just suggestions. To change your plan, tap **Draft an updated plan to review**, then **Accept**, **Edit** or **Not now**. To remember something, tap **Save** on "Remember this?". Nothing is ever logged for you from chat.
+- **Food:** the cards are your usual meals; **+** adds your usual amount. **Add food → Choose food** opens your meals and the full food list (293 Punjabi and Canadian foods with pictures). 145 of them start with **standard values** (Canadian Nutrient File or USDA), shown with their source. The rest start as **not set**: they log as entries and totals show as partial ("≥") until you add a label or recipe. Weigh your usual bowl or roti once for better estimates.
+- **Barcode:** in Choose food, tap the barcode button and point the camera at a package (or type the numbers). The product comes from Open Food Facts; only the number is sent. Check the label values once, then it's one tap next time.
+- **Your own recipe:** Edit meal → **My recipe** → **Add from ingredient list** (atta, dal, ghee, onion, paneer…). Enter grams for each and weigh the cooked pot; TrainLuma works out each portion.
+- **Exercises:** in the plan editor, **Add exercise** searches 823 exercises, with muscle and equipment filters and how-to steps (ⓘ).
+- **Water:** tap **+** on Today for each glass (250 ml).
+- **Reminders:** Settings → Notifications: a daily motivation time, gym days and time (reminder 15 minutes before by default), and "Hide details on the lock screen".
+- **Your AI trainer:** tap the round avatar button at the bottom right (or **Chat with …** on Today). Give your trainer a name and a look in the chat header or Settings → Your AI trainer.
+- **AI Coach:** the same chat. Text only. Answers use your own records, usual foods and plan. Suggestions are just suggestions. To change your plan, tap **Draft an updated plan to review**, then **Accept**, **Edit** or **Not now**. To remember something, tap **Save** on "Remember this?". Nothing is ever logged for you from chat.
 - **Optional progress photos:** Front, Back, Left, Right and an Inspiration photo. Two separate switches: **Keep my photos in private storage** and **Let AI Coach see the photos I add when drafting my plan**. Both can stay off; plans work from answers alone. Wear whatever feels comfortable; crop out your face if you like.
 - **Planning answers:** Settings → **Workout planning answers** updates goal, week, experience, equipment and screening. New plan drafts use the new answers.
 
@@ -99,6 +116,8 @@ You do this once. Until it's done, the sign-in screen says "Sign-in is still bei
 | Things the coach remembers | `user_confirmed_memory` | only your account; only what you confirmed; deleting a chat doesn't delete these |
 | Plan drafts | `plan_drafts` | only your account; nothing activates without your Accept |
 | Progress photos (if you chose storage) | private bucket `progress-photos`, path `<your id>/<random id>.jpg` | only your account; cropped and re-encoded on the phone (no location data) |
+| Reminder settings and devices | `notification_prefs` / `push_subscriptions` | only your account; removed when access ends; reminder text is encrypted to your phone |
+| Barcode lookups | Open Food Facts (openfoodfacts.org) | only the barcode number is sent |
 | Photos you didn't store | this screen only (memory) | sent once to the AI function if you allowed it, never stored by TrainLuma |
 | What goes to Google | your question, a short summary of your own records, your answers, and photos only if you allowed it | processed under the paid Gemini API terms; may be kept briefly for abuse monitoring. It isn't zero retention |
 

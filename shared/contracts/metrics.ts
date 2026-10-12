@@ -10,7 +10,7 @@ export const WeightEntry = AggregateBase.extend({
 });
 export type WeightEntry = z.infer<typeof WeightEntry>;
 
-export const HealthMetric = z.enum(['steps', 'sleep_minutes']);
+export const HealthMetric = z.enum(['steps', 'sleep_minutes', 'water_ml']);
 export type HealthMetric = z.infer<typeof HealthMetric>;
 
 /** A daily health summary. Absent = unknown. Source is always shown. */

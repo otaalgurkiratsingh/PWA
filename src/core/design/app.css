@@ -2070,3 +2070,311 @@ table.data td {
   background: var(--primary-soft);
   color: var(--primary-soft-ink);
 }
+
+/* ---------- AI trainer (avatar, picker, floating button, chat) ---------- */
+.coach-avatar {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--card);
+}
+.coach-avatar svg {
+  display: block;
+  overflow: visible;
+}
+.coach-avatar.ring {
+  padding: 2px;
+  background: linear-gradient(135deg, #22dcd4, #2563eb 55%, #a855f7);
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.25);
+}
+.coach-avatar.ring svg {
+  border-radius: 50%;
+  background: var(--card);
+}
+.coach-avatar .av-eyes {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: av-blink 5.5s infinite;
+}
+.coach-avatar .av-spin {
+  transform-origin: 32px 32px;
+  animation: av-spin 9s linear infinite;
+}
+.coach-avatar .av-pulse {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: av-pulse 2.8s ease-in-out infinite;
+}
+@keyframes av-blink {
+  0%, 92%, 100% { transform: scaleY(1); }
+  95% { transform: scaleY(0.1); }
+}
+@keyframes av-spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes av-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(0.9); }
+}
+.trainer-fab {
+  position: fixed;
+  z-index: 28;
+  right: max(16px, calc(50vw - 280px + 16px));
+  bottom: calc(var(--nav-h) + env(safe-area-inset-bottom) + 16px);
+  width: 62px;
+  height: 62px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  animation: ls-up 420ms 300ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.trainer-fab .coach-avatar.ring {
+  box-shadow: 0 10px 26px rgba(10, 40, 140, 0.35);
+}
+.trainer-fab:active {
+  transform: scale(0.94);
+}
+.trainer-fab .tf-dot {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: #22c55e;
+  border: 2.5px solid var(--card);
+}
+.trainer-id {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 4px 6px;
+  border: 0;
+  border-radius: 14px;
+  background: none;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.trainer-id .ti-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.trainer-id h1 {
+  margin: 0;
+  line-height: 1.15;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.coach-line {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  max-width: 100%;
+}
+.bubble.typing .dots {
+  display: inline-flex;
+  gap: 5px;
+  padding: 2px 0;
+}
+.bubble.typing .dots i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.5;
+  animation: dot-bounce 1.1s infinite ease-in-out;
+}
+.bubble.typing .dots i:nth-child(2) { animation-delay: 0.15s; }
+.bubble.typing .dots i:nth-child(3) { animation-delay: 0.3s; }
+@keyframes dot-bounce {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.45; }
+  30% { transform: translateY(-5px); opacity: 1; }
+}
+.meet-trainer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: linear-gradient(135deg, var(--coach), var(--primary-soft));
+  border-color: transparent;
+}
+.trainer-preview {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.avatar-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+}
+.avatar-choice {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  min-height: 52px;
+  border-radius: 16px;
+  border: 2px solid var(--border);
+  background: var(--card);
+  cursor: pointer;
+}
+.avatar-choice[aria-checked='true'] {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+}
+@media (max-width: 360px) {
+  .avatar-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+/* ---------- standard nutrition estimate ---------- */
+.std-nutrition {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px 12px;
+  font-size: var(--fs-small);
+  color: var(--text-2);
+}
+.std-nutrition b {
+  color: var(--text);
+  font-size: 1.0625rem;
+  margin-right: 3px;
+}
+
+/* ---------- barcode scanner ---------- */
+.scan-btn {
+  flex: none;
+  padding-left: 12px;
+  padding-right: 12px;
+}
+.scan-view {
+  position: relative;
+  overflow: hidden;
+  border-radius: 20px;
+  background: #0b0f1a;
+  aspect-ratio: 4 / 3;
+}
+.scan-view video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.scan-frame {
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  top: 30%;
+  bottom: 30%;
+  border: 3px solid rgba(255, 255, 255, 0.92);
+  border-radius: 16px;
+  box-shadow: 0 0 0 999px rgba(5, 10, 30, 0.38);
+}
+.scan-frame i {
+  position: absolute;
+  left: 6%;
+  right: 6%;
+  top: 50%;
+  height: 2px;
+  background: #22dcd4;
+  box-shadow: 0 0 12px #22dcd4;
+  animation: scan-line 1.8s ease-in-out infinite alternate;
+}
+@keyframes scan-line {
+  from { transform: translateY(-38px); }
+  to { transform: translateY(38px); }
+}
+.scan-hint {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 12px;
+  text-align: center;
+  color: #fff;
+  font-weight: 650;
+  font-size: var(--fs-small);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+}
+
+/* ---------- exercise library picker ---------- */
+.chips.scroll {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+  margin: 0 calc(var(--gutter) * -1);
+  padding: 2px var(--gutter);
+}
+.chips.scroll::-webkit-scrollbar {
+  display: none;
+}
+.chips.scroll .chip {
+  flex: none;
+}
+.ex-row-wrap {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.ex-row-wrap .ex-row {
+  min-width: 0;
+}
+ol.how-to {
+  margin: 0;
+  padding-left: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  line-height: 1.5;
+}
+
+/* ---------- water ---------- */
+.card.water .water-total {
+  display: block;
+  color: var(--text-2);
+  font-size: var(--fs-small);
+}
+.card.water .water-total b {
+  color: var(--text);
+  font-size: 1.375rem;
+  margin-right: 4px;
+}
+.glasses {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 12px;
+}
+.glass {
+  height: 26px;
+  border-radius: 4px 4px 8px 8px;
+  border: 2px solid #8cc8ff;
+  background: transparent;
+  transition: background var(--t-content);
+}
+.glass.full {
+  background: linear-gradient(180deg, #7cc4ff, #2f8cff);
+  border-color: #2f8cff;
+}
+
+/* Full-width buttons in stacked cards and long suggestion chips wrap instead of widening the page (200% text). */
+.stack > .btn,
+.stack-sm > .btn {
+  white-space: normal;
+  text-align: center;
+  padding-block: 8px;
+}
+.chips.wrap {
+  flex-wrap: wrap;
+}
+.chips.wrap .chip {
+  white-space: normal;
+  text-align: left;
+  max-width: 100%;
+}

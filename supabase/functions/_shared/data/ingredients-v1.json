@@ -1,0 +1,1352 @@
+{
+ "version": "2026-10-12",
+ "note": "Common cooking ingredients for personal recipes: values per 100 g as published (rounded to 2 decimals).",
+ "sources": [
+  {
+   "id": "cnf-2026",
+   "name": "Canadian Nutrient File (CNF)",
+   "version": "2026 (files cnf_fcen_all-files-data_2026)",
+   "licence": "Health Canada CNF copyright guidelines (users' guide 2026): free commercial and non-commercial use without further permission; nutrient values may not be modified but may be expressed per other serving sizes; must not be represented as official or endorsed by Health Canada; provided as-is. (open.canada.ca lists CNF under the Open Government Licence - Canada; not re-verified for the 2026 files from this environment.)",
+   "url": "https://open.canada.ca/data/en/dataset/1b6139bd-ed7e-4043-bc28-ff00e10f3109",
+   "attribution": "Canadian Nutrient File, Health Canada, 2026. Values shown are standard estimates; this app is not affiliated with or endorsed by Health Canada."
+  },
+  {
+   "id": "fndds-2019-2020",
+   "name": "USDA Food and Nutrient Database for Dietary Studies (FNDDS), via FoodData Central Survey Foods",
+   "version": "FNDDS 2019-2020 (FoodData Central survey food JSON, published 2022-10-28)",
+   "licence": "U.S. Government work: public domain in the U.S.; FoodData Central data are released under CC0 1.0. Citation requested.",
+   "url": "https://fdc.nal.usda.gov/",
+   "attribution": "U.S. Department of Agriculture, Agricultural Research Service. FoodData Central: Food and Nutrient Database for Dietary Studies 2019-2020. fdc.nal.usda.gov."
+  }
+ ],
+ "ingredients": [
+  {
+   "id": "maida",
+   "name": "All-purpose flour (maida)",
+   "aliases": [
+    "maida",
+    "plain flour"
+   ],
+   "state": "dry",
+   "source": "cnf-2026",
+   "record": "6642",
+   "record_name": "Grains, wheat flour, white, all purpose, unbleached",
+   "per_100g": {
+    "energy_kcal": 366.0,
+    "protein_g": 12.17,
+    "carbs_g": 72.35,
+    "fat_g": 2.24,
+    "fiber_g": 2.73
+   }
+  },
+  {
+   "id": "almonds",
+   "name": "Almonds",
+   "aliases": [
+    "badam"
+   ],
+   "state": "as_sold",
+   "source": "cnf-2026",
+   "record": "2534",
+   "record_name": "Nuts, almonds, dried, unblanched, unroasted",
+   "per_100g": {
+    "energy_kcal": 579.0,
+    "protein_g": 21.15,
+    "carbs_g": 21.55,
+    "fat_g": 49.93,
+    "fiber_g": 12.5
+   }
+  },
+  {
+   "id": "apple",
+   "name": "Apple",
+   "aliases": [
+    "seb"
+   ],
+   "state": "raw",
+   "source": "cnf-2026",
+   "record": "1696",
+   "record_name": "Apple, raw, with skin",
+   "per_100g": {
+    "energy_kcal": 52.0,
+    "protein_g": 0.26,
+    "carbs_g": 13.81,
+    "fat_g": 0.17,
+    "fiber_g": 1.9
+   }
+  },
+  {
+   "id": "banana",
+   "name": "Banana",
+   "aliases": [
+    "kela"
+   ],
+   "state": "raw",
+   "source": "cnf-2026",
+   "record": "1704",
+   "record_name": "Banana, raw",
+   "per_100g": {
+    "energy_kcal": 89.0,
+    "protein_g": 1.09,
+    "carbs_g": 22.84,
+    "fat_g": 0.33,
+    "fiber_g": 1.74
+   }
+  },
+  {
+   "id": "lauki",
+   "name": "Bottle gourd (lauki), raw",
+   "aliases": [
+    "ghiya",
+    "dudhi",
+    "calabash"
+   ],
+   "state": "raw",
+   "source": "cnf-2026",
+   "record": "2092",
+   "record_name": "Gourd, white flowered (calabash gourd), raw",
+   "per_100g": {
+    "energy_kcal": 14.0,
+    "protein_g": 0.62,
+    "carbs_g": 3.39,
+    "fat_g": 0.02,
+    "fiber_g": 0.5
+   }
+  },
+  {
+   "id": "brown-rice",
+   "name": "Brown rice, uncooked",
+   "aliases": [
+    "brown chawal"
+   ],
+   "state": "dry",
+   "source": "cnf-2026",
+   "record": "4496",
+   "record_name": "Grains, rice, brown, long-grain, dry",
+   "per_100g": {
+    "energy_kcal": 367.0,
+    "protein_g": 7.54,
+    "carbs_g": 76.25,
+    "fat_g": 3.2,
+    "fiber_g": 3.62
+   }
+  },
+  {
+   "id": "brown-sugar",
+   "name": "Brown sugar",
+   "aliases": [
+    "jaggery-like"
+   ],
+   "state": "as_sold",
+   "source": "cnf-2026",
+   "record": "4317",
+   "record_name": "Sweets, sugars, brown",
+   "per_100g": {
+    "energy_kcal": 380.0,
+    "protein_g": 0.12,
+    "carbs_g": 98.9,
+    "fat_g": 0.0,
+    "fiber_g": 0.0
+   }
+  },
+  {
+   "id": "butter",
+   "name": "Butter",
+   "aliases": [
+    "makhan"
+   ],
+   "state": "as_sold",
+   "source": "cnf-2026",
+   "record": "118",
+   "record_name": "Butter, regular",
+   "per_100g": {
+    "energy_kcal": 717.0,
+    "protein_g": 0.85,
+    "carbs_g": 0.06,
+    "fat_g": 81.11,
+    "fiber_g": 0.0
+   }
+  },
+  {
+   "id": "cabbage",
+   "name": "Cabbage, raw",
+   "aliases": [
+    "band gobi",
+    "patta gobi"
+   ],
+   "state": "raw",
+   "source": "cnf-2026",
+   "record": "2361",
+   "record_name": "Cabbage, raw",
+   "per_100g": {
+    "energy_kcal": 25.0,
+    "protein_g": 1.28,
+    "carbs_g": 5.8,
+    "fat_g": 0.1,
+    "fiber_g": 1.8
+   }
+  },
+  {
+   "id": "canola-oil",
+   "name": "Canola oil",
+   "aliases": [
+    "vegetable oil",
+    "cooking oil"
+   ],
+   "state": "as_sold",
+   "source": "cnf-2026",
+   "record": "451",
+   "record_name": "Vegetable oil, canola",
+   "per_100g": {
+    "energy_kcal": 885.0,
+    "protein_g": 0.0,
+    "carbs_g": 0.0,
+    "fat_g": 100.0,
+    "fiber_g": 0.0
+   }
+  },
+  {
+   "id": "carrot",
+   "name": "Carrot, raw",
+   "aliases": [
+    "gajar"
+   ],
+   "state": "raw",
+   "source": "cnf-2026",
+   "record": "2380",
+   "record_name": "Carrot, raw",
+   "per_100g": {
+    "energy_kcal": 41.0,
+    "protein_g": 0.93,
+    "carbs_g": 9.58,
+    "fat_g": 0.24,
+    "fiber_g": 2.44
+   }
+  },
+  {
+   "id": "cashews",
+   "name": "Cashews",
+   "aliases": [
+    "kaju"
+   ],
+   "state": "as_sold",
+   "source": "cnf-2026",
+   "record": "5709",
+   "record_name": "Nuts, cashew nuts, raw",
+   "per_100g": {
+    "energy_kcal": 553.0,
+    "protein_g": 18.22,
+    "carbs_g": 30.19,
+    "fat_g": 43.85,
+    "fiber_g": 3.3
+   }
+  },
+  {
+   "id": "cauliflower",
+   "name": "Cauliflower, raw",
+   "aliases": [
+    "gobi",
+    "phool gobi"
+   ],
+   "state": "raw",
+   "source": "cnf-2026",
+   "record": "2385",
+   "record_name": "Cauliflower, raw",
+   "per_100g": {
+    "energy_kcal": 25.0,
+    "protein_g": 1.92,
+    "carbs_g": 4.97,
+    "fat_g": 0.28,
+    "fiber_g": 1.75
+   }
+  },
+  {
+   "id": "cheddar",
+   "name": "Cheddar cheese",
+   "aliases": [
+    "cheese"
+   ],
+   "state": "as_sold",
+   "source": "cnf-2026",
+   "record": "119",
+   "record_name": "Cheese, cheddar, mild",
+   "per_100g": {
+    "energy_kcal": 418.0,
+    "protein_g": 23.29,
+    "carbs_g": 10.27,
+    "fat_g": 31.76,
+    "fiber_g": 0.0
+   }
+  },
+  {
+   "id": "chicken-breast",
+   "name": "Chicken breast, skinless, raw",
+   "aliases": [
+    "murgh"
+   ],
+   "state": "raw",
+   "source": "cnf-2026",
+   "record": "841",
+   "record_name": "Chicken, broiler, breast, skinless, boneless, meat, raw",
+   "per_100g": {
+    "energy_kcal": 120.0,
+    "protein_g": 22.5,
+    "carbs_g": 0.0,
+    "fat_g": 2.62,
+    "fiber_g": 0.0
+   }
+  },
+  {
+   "id": "chicken-thigh",
+   "name": "Chicken thigh, skinless, raw",
+   "aliases": [],
+   "state": "raw",
+   "source": "cnf-2026",
+   "record": "853",
+   "record_name": "Chicken, broiler, thigh, meat, raw",
+   "per_100g": {
+    "energy_kcal": 121.0,
+    "protein_g": 19.66,
+    "carbs_g": 0.0,
+    "fat_g": 4.12,
+    "fiber_g": 0.0
+   }
+  },
+  {
+   "id": "besan",
+   "name": "Chickpea flour (besan)",
+   "aliases": [
+    "besan",
+    "gram flour"
+   ],
+   "state": "dry",
+   "source": "cnf-2026",
+   "record": "4886",
+   "record_name": "Chickpea flour (besan)",
+   "per_100g": {
+    "energy_kcal": 387.0,
+    "protein_g": 22.39,
+    "carbs_g": 57.82,
+    "fat_g": 6.69,
+    "fiber_g": 10.8
+   }
+  },
+  {
+   "id": "chana",
+   "name": "Chickpeas (chana), dry",
+   "aliases": [
+    "chole",
+    "kabuli chana",
+    "garbanzo"
+   ],
+   "state": "dry",
+   "source": "cnf-2026",
+   "record": "3389",
+   "record_name": "Chickpeas (garbanzo beans, bengal gram), mature seeds, dry",
+   "per_100g": {
+    "energy_kcal": 378.0,
+    "protein_g": 20.47,
+    "carbs_g": 62.95,
+    "fat_g": 6.04,
+    "fiber_g": 10.03
+   }
+  },
+  {
+   "id": "coconut",
+   "name": "Coconut, desiccated, unsweetened",
+   "aliases": [
+    "nariyal"
+   ],
+   "state": "as_sold",
+   "source": "cnf-2026",
+   "record": "2559",
+   "record_name": "Coconut meat, desiccated, unsweetened",
+   "per_100g": {
+    "energy_kcal": 660.0,
+    "protein_g": 6.88,
+    "carbs_g": 23.65,
+    "fat_g": 64.53,
+    "fiber_g": 16.3
+   }
+  },
+  {
+   "id": "coriander",
+   "name": "Coriander leaves, raw",
+   "aliases": [
+    "dhania",
+    "cilantro"
+   ],
+   "state": "raw",
+   "source": "cnf-2026",
+   "record": "2067",
+   "record_name": "Coriander (cilantro), raw",
+   "per_100g": {
+    "energy_kcal": 23.0,
+    "protein_g": 2.13,
+    "carbs_g": 3.67,
+    "fat_g": 0.52,
+    "fiber_g": 2.8
+   }
+  },
+  {
+   "id": "corn",
+   "name": "Corn kernels, frozen",
+   "aliases": [
+    "makki",
+    "sweet corn"
+   ],
+   "state": "raw",
+   "source": "cnf-2026",
+   "record": "2491",
+   "record_name": "Corn, sweet, white, frozen, kernels off cob, unprepared",
+   "per_100g": {
+    "energy_kcal": 88.0,
+    "protein_g": 3.02,
+    "carbs_g": 20.73,
+    "fat_g": 0.77,
+    "fiber_g": 1.9
+   }
+  },
+  {
+   "id": "cottage-cheese",
+   "name": "Cottage cheese 2%",
+   "aliases": [],
+   "state": "as_sold",
+   "source": "cnf-2026",
+   "record": "120",
+   "record_name": "Cheese, cottage, 2% M.F.",
+   "per_100g": {
+    "energy_kcal": 81.0,
+    "protein_g": 10.45,
+    "carbs_g": 4.76,
+    "fat_g": 2.27,
+    "fiber_g": 0.0
+   }
+  },
+  {
+   "id": "cucumber",
+   "name": "Cucumber, raw",
+   "aliases": [
+    "kheera"
+   ],
+   "state": "raw",
+   "source": "cnf-2026",
+   "record": "2363",
+   "record_name": "Cucumber, raw",
+   "per_100g": {
+    "energy_kcal": 16.0,
+    "protein_g": 0.65,
+    "carbs_g": 3.63,
+    "fat_g": 0.11,
+    "fiber_g": 0.73
+   }
+  },
+  {
+   "id": "egg",
+   "name": "Egg, whole, raw",
+   "aliases": [
+    "anda",
+    "eggs"
+   ],
+   "state": "raw",
+   "source": "cnf-2026",
+   "record": "125",
+   "record_name": "Egg, chicken, whole, fresh or frozen, raw",
+   "per_100g": {
+    "energy_kcal": 152.0,
+    "protein_g": 12.27,
+    "carbs_g": 0.79,
+    "fat_g": 10.61,
+    "fiber_g": 0.0
+   }
+  },
+  {
+   "id": "eggplant",
+   "name": "Eggplant, raw",
+   "aliases": [
+    "baingan",
+    "brinjal"
+   ],
+   "state": "raw",
+   "source": "cnf-2026",
+   "record": "2088",
+   "record_name": "Eggplant (aubergine, brinjal), raw",
+   "per_100g": {
+    "energy_kcal": 25.0,
+    "protein_g": 0.98,
+    "carbs_g": 5.88,
+    "fat_g": 0.18,
+    "fiber_g": 3.0
+   }
+  },
+  {
+   "id": "garlic",
+   "name": "Garlic, raw",
+   "aliases": [
+    "lehsun"
+   ],
+   "state": "raw",
+   "source": "cnf-2026",
+   "record": "2394",
+   "record_name": "Garlic, raw",
+   "per_100g": {
+    "energy_kcal": 149.0,
+    "protein_g": 6.36,
+    "carbs_g": 33.06,
+    "fat_g": 0.5,
+    "fiber_g": 2.1
+   }
+  },
+  {
+   "id": "ghee",
+   "name": "Ghee",
+   "aliases": [
+    "desi ghee",
+    "clarified butter"
+   ],
+   "state": "as_sold",
+   "source": "cnf-2026",
+   "record": "7829",
+   "record_name": "Butter, Clarified butter (ghee)",
+   "per_100g": {
+    "energy_kcal": 900.0,
+    "protein_g": 0.0,
+    "carbs_g": 0.0,
+    "fat_g": 100.0,
+    "fiber_g": 0.0
+   }
+  },
+  {
+   "id": "ginger",
+   "name": "Ginger, raw",
+   "aliases": [
+    "adrak"
+   ],
+   "state": "raw",
+   "source": "cnf-2026",
+   "record": "2091",
+   "record_name": "Ginger root, raw",
+   "per_100g": {
+    "energy_kcal": 80.0,
+    "protein_g": 1.82,
+    "carbs_g": 17.77,
+    "fat_g": 0.75,
+    "fiber_g": 2.0
+   }
+  },
+  {
+   "id": "goat",
+   "name": "Goat meat (mutton), raw",
+   "aliases": [
+    "mutton",
+    "bakra"
+   ],
+   "state": "raw",
+   "source": "cnf-2026",
+   "record": "3583",
+   "record_name": "Game meat, goat, raw",
+   "per_100g": {
+    "energy_kcal": 109.0,
+    "protein_g": 20.6,
+    "carbs_g": 0.0,
+    "fat_g": 2.31,
+    "fiber_g": 0.0
+   }
+  },
+  {
+   "id": "greek-yogurt",
+   "name": "Greek yogurt, plain 2%",
+   "aliases": [],
+   "state": "as_sold",
+   "source": "cnf-2026",
+   "record": "7469",
+   "record_name": "Yogourt (yogurt), Greek style, 2% M.F., plain",
+   "per_100g": {
+    "energy_kcal": 69.0,
+    "protein_g": 9.71,
+    "carbs_g": 4.0,
+    "fat_g": 2.0,
+    "fiber_g": 0.0
+   }
+  },
+  {
+   "id": "bell-pepper",
+   "name": "Green bell pepper, raw",
+   "aliases": [
+    "shimla mirch",
+    "capsicum"
+   ],
+   "state": "raw",
+   "source": "cnf-2026",
+   "record": "2413",
+   "record_name": "Pepper, sweet, green, raw",
+   "per_100g": {
+    "energy_kcal": 20.0,
+    "protein_g": 0.86,
+    "carbs_g": 4.64,
+    "fat_g": 0.17,
+    "fiber_g": 1.41
+   }
+  },
+  {
+   "id": "green-chili",
+   "name": "Green chili, raw",
+   "aliases": [
+    "hari mirch",
+    "mirch"
+   ],
+   "state": "raw",
+   "source": "cnf-2026",
+   "record": "2322",
+   "record_name": "Pepper, hot chili, red or green, raw",
+   "per_100g": {
+    "energy_kcal": 40.0,
+    "protein_g": 2.0,
+    "carbs_g": 9.46,
+    "fat_g": 0.2,
+    "fiber_g": 1.5
+   }
+  },
+  {
+   "id": "peas",
+   "name": "Green peas, frozen",
+   "aliases": [
+    "matar",
+    "mutter"
+   ],
+   "state": "raw",
+   "source": "cnf-2026",
+   "record": "2151",
+   "record_name": "Peas, green, frozen, unprepared",
+   "per_100g": {
+    "energy_kcal": 77.0,
+    "protein_g": 5.22,
+    "carbs_g": 13.62,
+    "fat_g": 0.4,
+    "fiber_g": 4.5
+   }
+  },
+  {
+   "id": "honey",
+   "name": "Honey",
+   "aliases": [
+    "shahad"
+   ],
+   "state": "as_sold",
+   "source": "cnf-2026",
+   "record": "4294",
+   "record_name": "Sweets, honey, strained or extracted",
+   "per_100g": {
+    "energy_kcal": 304.0,
+    "protein_g": 0.3,
+    "carbs_g": 82.4,
+    "fat_g": 0.0,
+    "fiber_g": 0.2
+   }
+  },
+  {
+   "id": "rajma",
+   "name": "Kidney beans (rajma), dry",
+   "aliases": [
+    "kidney beans"
+   ],
+   "state": "dry",
+   "source": "cnf-2026",
+   "record": "3381",
+   "record_name": "Beans, kidney, dark red, mature seeds, dry",
+   "per_100g": {
+    "energy_kcal": 337.0,
+    "protein_g": 22.53,
+    "carbs_g": 61.29,
+    "fat_g": 1.06,
+    "fiber_g": 14.67
+   }
+  },
+  {
+   "id": "lamb",
+   "name": "Lamb leg, lean, raw",
+   "aliases": [],
+   "state": "raw",
+   "source": "cnf-2026",
+   "record": "3432",
+   "record_name": "Lamb, Canadian, leg, whole, lean, raw",
+   "per_100g": {
+    "energy_kcal": 113.0,
+    "protein_g": 21.8,
+    "carbs_g": 0.0,
+    "fat_g": 2.7,
+    "fiber_g": 0.0
+   }
+  },
+  {
+   "id": "lemon-juice",
+   "name": "Lemon juice",
+   "aliases": [
+    "nimbu"
+   ],
+   "state": "raw",
+   "source": "cnf-2026",
+   "record": "1589",
+   "record_name": "Lemon juice, raw",
+   "per_100g": {
+    "energy_kcal": 22.0,
+    "protein_g": 0.35,
+    "carbs_g": 6.9,
+    "fat_g": 0.24,
+    "fiber_g": 0.3
+   }
+  },
+  {
+   "id": "mango",
+   "name": "Mango",
+   "aliases": [
+    "aam"
+   ],
+   "state": "raw",
+   "source": "cnf-2026",
+   "record": "1603",
+   "record_name": "Mango, raw",
+   "per_100g": {
+    "energy_kcal": 60.0,
+    "protein_g": 0.82,
+    "carbs_g": 14.98,
+    "fat_g": 0.38,
+    "fiber_g": 1.6
+   }
+  },
+  {
+   "id": "masoor-dal",
+   "name": "Masoor dal (lentils), dry",
+   "aliases": [
+    "lentils",
+    "masur"
+   ],
+   "state": "dry",
+   "source": "cnf-2026",
+   "record": "3392",
+   "record_name": "Lentils, mature seeds, dry",
+   "per_100g": {
+    "energy_kcal": 352.0,
+    "protein_g": 24.63,
+    "carbs_g": 63.35,
+    "fat_g": 1.06,
+    "fiber_g": 10.66
+   }
+  },
+  {
+   "id": "milk-1",
+   "name": "Milk, 1%",
+   "aliases": [],
+   "state": "as_sold",
+   "source": "cnf-2026",
+   "record": "63",
+   "record_name": "Milk, fluid, partly skimmed, 1% M.F.",
+   "per_100g": {
+    "energy_kcal": 40.0,
+    "protein_g": 3.47,
+    "carbs_g": 4.59,
+    "fat_g": 0.86,
+    "fiber_g": 0.0
+   }
+  },
+  {
+   "id": "milk-2",
+   "name": "Milk, 2%",
+   "aliases": [
+    "doodh"
+   ],
+   "state": "as_sold",
+   "source": "cnf-2026",
+   "record": "61",
+   "record_name": "Milk, fluid, partly skimmed, 2% M.F.",
+   "per_100g": {
+    "energy_kcal": 47.0,
+    "protein_g": 3.31,
+    "carbs_g": 4.38,
+    "fat_g": 1.84,
+    "fiber_g": 0.0
+   }
+  },
+  {
+   "id": "milk-skim",
+   "name": "Milk, skim",
+   "aliases": [],
+   "state": "as_sold",
+   "source": "cnf-2026",
+   "record": "114",
+   "record_name": "Milk, fluid, skim, 0.1% M.F.",
+   "per_100g": {
+    "energy_kcal": 33.0,
+    "protein_g": 3.6,
+    "carbs_g": 4.46,
+    "fat_g": 0.06,
+    "fiber_g": 0.0
+   }
+  },
+  {
+   "id": "milk-3",
+   "name": "Milk, whole 3.25%",
+   "aliases": [
+    "full cream milk"
+   ],
+   "state": "as_sold",
+   "source": "cnf-2026",
+   "record": "113",
+   "record_name": "Milk, fluid, whole, pasteurized, homogenized, 3.25% M.F.",
+   "per_100g": {
+    "energy_kcal": 59.0,
+    "protein_g": 3.3,
+    "carbs_g": 4.46,
+    "fat_g": 3.09,
+    "fiber_g": 0.0
+   }
+  },
+  {
+   "id": "moong-dal",
+   "name": "Moong (mung beans), dry",
+   "aliases": [
+    "mung",
+    "moong"
+   ],
+   "state": "dry",
+   "source": "cnf-2026",
+   "record": "3297",
+   "record_name": "Beans, legumes, mung (green gram), mature seeds, dry",
+   "per_100g": {
+    "energy_kcal": 347.0,
+    "protein_g": 23.86,
+    "carbs_g": 62.62,
+    "fat_g": 1.15,
+    "fiber_g": 16.3
+   }
+  },
+  {
+   "id": "mustard-greens",
+   "name": "Mustard greens, raw",
+   "aliases": [
+    "sarson",
+    "saag"
+   ],
+   "state": "raw",
+   "source": "cnf-2026",
+   "record": "2126",
+   "record_name": "Mustard greens, raw",
+   "per_100g": {
+    "energy_kcal": 27.0,
+    "protein_g": 2.86,
+    "carbs_g": 4.67,
+    "fat_g": 0.42,
+    "fiber_g": 3.2
+   }
+  },
+  {
+   "id": "mustard-oil",
+   "name": "Mustard oil",
+   "aliases": [
+    "sarson ka tel"
+   ],
+   "state": "as_sold",
+   "source": "cnf-2026",
+   "record": "452",
+   "record_name": "Vegetable oil, mustard",
+   "per_100g": {
+    "energy_kcal": 885.0,
+    "protein_g": 0.0,
+    "carbs_g": 0.0,
+    "fat_g": 100.0,
+    "fiber_g": 0.0
+   }
+  },
+  {
+   "id": "oats",
+   "name": "Oats, dry",
+   "aliases": [
+    "rolled oats",
+    "oatmeal"
+   ],
+   "state": "dry",
+   "source": "cnf-2026",
+   "record": "4421",
+   "record_name": "Grains, oats, dry",
+   "per_100g": {
+    "energy_kcal": 389.0,
+    "protein_g": 16.89,
+    "carbs_g": 66.27,
+    "fat_g": 6.9,
+    "fiber_g": 10.6
+   }
+  },
+  {
+   "id": "okra",
+   "name": "Okra, raw",
+   "aliases": [
+    "bhindi",
+    "bhindi"
+   ],
+   "state": "raw",
+   "source": "cnf-2026",
+   "record": "2134",
+   "record_name": "Okra (gumbo), raw",
+   "per_100g": {
+    "energy_kcal": 33.0,
+    "protein_g": 1.93,
+    "carbs_g": 7.45,
+    "fat_g": 0.19,
+    "fiber_g": 3.2
+   }
+  },
+  {
+   "id": "olive-oil",
+   "name": "Olive oil",
+   "aliases": [],
+   "state": "as_sold",
+   "source": "cnf-2026",
+   "record": "422",
+   "record_name": "Vegetable oil, olive",
+   "per_100g": {
+    "energy_kcal": 885.0,
+    "protein_g": 0.0,
+    "carbs_g": 0.0,
+    "fat_g": 100.0,
+    "fiber_g": 0.0
+   }
+  },
+  {
+   "id": "onion",
+   "name": "Onion, raw",
+   "aliases": [
+    "pyaz",
+    "pyaaz"
+   ],
+   "state": "raw",
+   "source": "cnf-2026",
+   "record": "2401",
+   "record_name": "Onion, raw",
+   "per_100g": {
+    "energy_kcal": 40.0,
+    "protein_g": 1.1,
+    "carbs_g": 9.34,
+    "fat_g": 0.1,
+    "fiber_g": 1.7
+   }
+  },
+  {
+   "id": "paneer",
+   "name": "Paneer",
+   "aliases": [
+    "cottage cheese (Indian)"
+   ],
+   "state": "as_sold",
+   "source": "fndds-2019-2020",
+   "record": "14110050 (FDC ID 2341143)",
+   "record_name": "Cheese, paneer",
+   "per_100g": {
+    "energy_kcal": 299.0,
+    "protein_g": 15.9,
+    "carbs_g": 22.5,
+    "fat_g": 15.5,
+    "fiber_g": 0.0
+   }
+  },
+  {
+   "id": "peanut-butter",
+   "name": "Peanut butter",
+   "aliases": [],
+   "state": "as_sold",
+   "source": "cnf-2026",
+   "record": "3399",
+   "record_name": "Peanut butter, smooth type, fat, sugar and salt added",
+   "per_100g": {
+    "energy_kcal": 598.0,
+    "protein_g": 22.21,
+    "carbs_g": 22.31,
+    "fat_g": 51.36,
+    "fiber_g": 5.6
+   }
+  },
+  {
+   "id": "peanuts",
+   "name": "Peanuts",
+   "aliases": [
+    "moongphali"
+   ],
+   "state": "as_sold",
+   "source": "cnf-2026",
+   "record": "3396",
+   "record_name": "Peanuts, all types, raw",
+   "per_100g": {
+    "energy_kcal": 568.0,
+    "protein_g": 25.8,
+    "carbs_g": 16.13,
+    "fat_g": 49.24,
+    "fiber_g": 7.8
+   }
+  },
+  {
+   "id": "dahi",
+   "name": "Plain yogurt (dahi), 2–3.9%",
+   "aliases": [
+    "curd",
+    "yogurt",
+    "yoghurt"
+   ],
+   "state": "as_sold",
+   "source": "cnf-2026",
+   "record": "6961",
+   "record_name": "Yogourt (yogurt), 2-3.9% M.F., plain",
+   "per_100g": {
+    "energy_kcal": 50.0,
+    "protein_g": 4.6,
+    "carbs_g": 3.4,
+    "fat_g": 1.98,
+    "fiber_g": 0.0
+   }
+  },
+  {
+   "id": "potato",
+   "name": "Potato, raw",
+   "aliases": [
+    "aloo"
+   ],
+   "state": "raw",
+   "source": "cnf-2026",
+   "record": "2417",
+   "record_name": "Potato, flesh, raw",
+   "per_100g": {
+    "energy_kcal": 77.0,
+    "protein_g": 2.02,
+    "carbs_g": 17.47,
+    "fat_g": 0.09,
+    "fiber_g": 1.5
+   }
+  },
+  {
+   "id": "raisins",
+   "name": "Raisins",
+   "aliases": [
+    "kishmish"
+   ],
+   "state": "as_sold",
+   "source": "cnf-2026",
+   "record": "1745",
+   "record_name": "Raisin, seedless (sultana)",
+   "per_100g": {
+    "energy_kcal": 299.0,
+    "protein_g": 3.07,
+    "carbs_g": 79.18,
+    "fat_g": 0.46,
+    "fiber_g": 3.61
+   }
+  },
+  {
+   "id": "salmon",
+   "name": "Salmon, raw",
+   "aliases": [
+    "fish"
+   ],
+   "state": "raw",
+   "source": "cnf-2026",
+   "record": "3182",
+   "record_name": "Fish, salmon, atlantic, farmed, raw",
+   "per_100g": {
+    "energy_kcal": 208.0,
+    "protein_g": 20.42,
+    "carbs_g": 0.0,
+    "fat_g": 13.42,
+    "fiber_g": 0.0
+   }
+  },
+  {
+   "id": "salt",
+   "name": "Salt",
+   "aliases": [
+    "namak"
+   ],
+   "state": "as_sold",
+   "source": "cnf-2026",
+   "record": "214",
+   "record_name": "Salt, table",
+   "per_100g": {
+    "energy_kcal": 0.0,
+    "protein_g": 0.0,
+    "carbs_g": 0.0,
+    "fat_g": 0.0,
+    "fiber_g": 0.0
+   }
+  },
+  {
+   "id": "suji",
+   "name": "Semolina (suji / rava)",
+   "aliases": [
+    "sooji",
+    "rava",
+    "semolina"
+   ],
+   "state": "dry",
+   "source": "cnf-2026",
+   "record": "4478",
+   "record_name": "Grains, semolina",
+   "per_100g": {
+    "energy_kcal": 360.0,
+    "protein_g": 12.68,
+    "carbs_g": 72.83,
+    "fat_g": 1.05,
+    "fiber_g": 3.9
+   }
+  },
+  {
+   "id": "spinach",
+   "name": "Spinach, raw",
+   "aliases": [
+    "palak"
+   ],
+   "state": "raw",
+   "source": "cnf-2026",
+   "record": "2213",
+   "record_name": "Spinach, raw",
+   "per_100g": {
+    "energy_kcal": 23.0,
+    "protein_g": 2.86,
+    "carbs_g": 3.63,
+    "fat_g": 0.39,
+    "fiber_g": 2.2
+   }
+  },
+  {
+   "id": "sugar",
+   "name": "Sugar, white",
+   "aliases": [
+    "cheeni",
+    "shakkar"
+   ],
+   "state": "as_sold",
+   "source": "cnf-2026",
+   "record": "4318",
+   "record_name": "Sweets, sugars, granulated (white)",
+   "per_100g": {
+    "energy_kcal": 387.0,
+    "protein_g": 0.0,
+    "carbs_g": 99.8,
+    "fat_g": 0.0,
+    "fiber_g": 0.0
+   }
+  },
+  {
+   "id": "sunflower-oil",
+   "name": "Sunflower oil",
+   "aliases": [],
+   "state": "as_sold",
+   "source": "cnf-2026",
+   "record": "7191",
+   "record_name": "Vegetable oil, sunflower, mid-oleic",
+   "per_100g": {
+    "energy_kcal": 884.0,
+    "protein_g": 0.0,
+    "carbs_g": 0.0,
+    "fat_g": 100.0,
+    "fiber_g": 0.0
+   }
+  },
+  {
+   "id": "sweet-potato",
+   "name": "Sweet potato, raw",
+   "aliases": [
+    "shakarkandi"
+   ],
+   "state": "raw",
+   "source": "cnf-2026",
+   "record": "2240",
+   "record_name": "Sweet potato, raw",
+   "per_100g": {
+    "energy_kcal": 86.0,
+    "protein_g": 1.57,
+    "carbs_g": 20.12,
+    "fat_g": 0.05,
+    "fiber_g": 3.0
+   }
+  },
+  {
+   "id": "tea",
+   "name": "Tea, brewed",
+   "aliases": [
+    "chai patti"
+   ],
+   "state": "as_sold",
+   "source": "cnf-2026",
+   "record": "2909",
+   "record_name": "Tea, brewed",
+   "per_100g": {
+    "energy_kcal": 1.0,
+    "protein_g": 0.0,
+    "carbs_g": 0.3,
+    "fat_g": 0.0,
+    "fiber_g": 0.0
+   }
+  },
+  {
+   "id": "tilapia",
+   "name": "Tilapia / white fish, raw",
+   "aliases": [
+    "fish",
+    "machhi"
+   ],
+   "state": "raw",
+   "source": "cnf-2026",
+   "record": "5966",
+   "record_name": "Fish, tilapia, raw",
+   "per_100g": {
+    "energy_kcal": 96.0,
+    "protein_g": 20.08,
+    "carbs_g": 0.0,
+    "fat_g": 1.7,
+    "fiber_g": 0.0
+   }
+  },
+  {
+   "id": "tofu",
+   "name": "Tofu, firm",
+   "aliases": [],
+   "state": "as_sold",
+   "source": "cnf-2026",
+   "record": "3418",
+   "record_name": "Tofu, regular, medium firm or firm (prepared with calcium sulphate)",
+   "per_100g": {
+    "energy_kcal": 76.0,
+    "protein_g": 8.08,
+    "carbs_g": 1.87,
+    "fat_g": 4.78,
+    "fiber_g": 0.3
+   }
+  },
+  {
+   "id": "tomato",
+   "name": "Tomato, raw",
+   "aliases": [
+    "tamatar"
+   ],
+   "state": "raw",
+   "source": "cnf-2026",
+   "record": "2460",
+   "record_name": "Tomato, red, ripe, raw, year round average",
+   "per_100g": {
+    "energy_kcal": 18.0,
+    "protein_g": 0.88,
+    "carbs_g": 3.89,
+    "fat_g": 0.2,
+    "fiber_g": 1.21
+   }
+  },
+  {
+   "id": "toor-dal",
+   "name": "Toor dal (pigeon peas), dry",
+   "aliases": [
+    "arhar",
+    "tuvar",
+    "toor"
+   ],
+   "state": "dry",
+   "source": "cnf-2026",
+   "record": "3312",
+   "record_name": "Peas, pigeon (red gram), mature seeds, dry",
+   "per_100g": {
+    "energy_kcal": 343.0,
+    "protein_g": 21.7,
+    "carbs_g": 62.78,
+    "fat_g": 1.49,
+    "fiber_g": 15.0
+   }
+  },
+  {
+   "id": "cream",
+   "name": "Whipping cream 35%",
+   "aliases": [
+    "malai"
+   ],
+   "state": "as_sold",
+   "source": "cnf-2026",
+   "record": "138",
+   "record_name": "Cream, whipping, 35% M.F.",
+   "per_100g": {
+    "energy_kcal": 328.0,
+    "protein_g": 2.09,
+    "carbs_g": 2.85,
+    "fat_g": 35.0,
+    "fiber_g": 0.0
+   }
+  },
+  {
+   "id": "mushroom",
+   "name": "White mushrooms, raw",
+   "aliases": [],
+   "state": "raw",
+   "source": "cnf-2026",
+   "record": "2399",
+   "record_name": "Mushroom, white, raw",
+   "per_100g": {
+    "energy_kcal": 22.0,
+    "protein_g": 3.09,
+    "carbs_g": 3.28,
+    "fat_g": 0.34,
+    "fiber_g": 1.0
+   }
+  },
+  {
+   "id": "basmati-rice",
+   "name": "White rice, uncooked (basmati, long-grain)",
+   "aliases": [
+    "chawal",
+    "basmati",
+    "rice"
+   ],
+   "state": "dry",
+   "source": "cnf-2026",
+   "record": "4471",
+   "record_name": "Grains, rice, white, long-grain, regular, dry",
+   "per_100g": {
+    "energy_kcal": 365.0,
+    "protein_g": 7.13,
+    "carbs_g": 79.95,
+    "fat_g": 0.66,
+    "fiber_g": 0.97
+   }
+  },
+  {
+   "id": "ww-bread",
+   "name": "Whole-wheat bread",
+   "aliases": [
+    "bread"
+   ],
+   "state": "as_sold",
+   "source": "cnf-2026",
+   "record": "4067",
+   "record_name": "Bread, whole wheat, commercial",
+   "per_100g": {
+    "energy_kcal": 257.0,
+    "protein_g": 10.7,
+    "carbs_g": 45.64,
+    "fat_g": 3.03,
+    "fiber_g": 6.28
+   }
+  },
+  {
+   "id": "atta",
+   "name": "Whole-wheat flour (atta)",
+   "aliases": [
+    "atta",
+    "chapati flour",
+    "gehun ka atta"
+   ],
+   "state": "dry",
+   "source": "cnf-2026",
+   "record": "4500",
+   "record_name": "Grains, wheat flour, whole wheat",
+   "per_100g": {
+    "energy_kcal": 369.0,
+    "protein_g": 14.64,
+    "carbs_g": 68.51,
+    "fat_g": 3.24,
+    "fiber_g": 8.89
+   }
+  }
+ ]
+}

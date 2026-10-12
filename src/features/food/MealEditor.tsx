@@ -9,6 +9,7 @@ import { Icon } from '@/core/design/icons';
 import { PhotoCropper } from '@/core/design/PhotoCropper';
 import { Section, Segmented, Sheet, Toggle } from '@/core/design/ui';
 import { batchNutrients, formatTotal, portionNutrients } from '@/domain/nutrition/calc';
+import { IngredientPicker, ingredientForm } from './IngredientPicker';
 import { buildMeal, emptyMealForm, emptyNutrients, formFromPreset, nutrientsFrom, UNIT_OPTIONS, validateMealForm, type IngredientForm, type MealForm, type NutrientForm } from './mealBuilder';
 import { MEAL_DRAFT_KEY } from './PhotoSheet';
 import { saveBuiltMeal, saveErrorMessage, useLibrary } from './useFood';
@@ -18,7 +19,9 @@ const STATES: { value: PreparationState; label: string }[] = [
 ];
 const SOURCES: { value: SourceKind; label: string }[] = [
   { value: 'label', label: 'Package label' },
+  { value: 'cnf', label: 'Canadian Nutrient File' },
   { value: 'usda_fdc', label: 'USDA FoodData Central' },
+  { value: 'open_food_facts', label: 'Open Food Facts (barcode)' },
   { value: 'generic_assumption', label: 'General estimate' },
   { value: 'unknown', label: 'Not sure yet' },
 ];
@@ -42,7 +45,7 @@ function NutrientFields({ value, onChange, idPrefix }: { value: NutrientForm; on
 }
 
 function IngredientEditor({ ing, foods, onChange, onRemove }: { ing: IngredientForm; foods: FoodVersion[]; onChange: (i: IngredientForm) => void; onRemove: () => void }) {
-  const [open, setOpen] = useState(!ing.food_version_id && !ing.name);
+  const [open, setOpen] = useState(!ing.food_version_id && !ing.name && !ing.source_ref);
   return (
     <div className="card tight flat stack-sm">
       <div className="row">
@@ -53,6 +56,8 @@ function IngredientEditor({ ing, foods, onChange, onRemove }: { ing: IngredientF
       <Segmented label={`${ing.name || 'Ingredient'} state`} value={ing.state} full onChange={(v) => onChange({ ...ing, state: v })} options={STATES} />
       {ing.food_version_id ? (
         <span className="label">Uses your saved “{foods.find((f) => f.id === ing.food_version_id)?.name}” values.</span>
+      ) : ing.source_ref && !open ? (
+        <span className="label">Standard values per 100 g ({ing.per100.energy_kcal} kcal) from the {ing.source_kind === 'cnf' ? 'Canadian Nutrient File' : 'USDA'}. <button className="link" onClick={() => setOpen(true)}>Edit</button></span>
       ) : (
         <>
           <button className="link" onClick={() => setOpen((o) => !o)} aria-expanded={open}>Nutrition per 100 g <Icon name={open ? 'chevronUp' : 'chevronDown'} size={16} /></button>
@@ -97,6 +102,7 @@ function MealEditorForm({ existing, initial }: { existing: MealPreset | null; in
   const [errors, setErrors] = useState<string[]>([]);
   const [photoOpen, setPhotoOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [pickingIngredient, setPickingIngredient] = useState(false);
 
   const preview = useMemo(() => {
     const g = Number(form.grams_per_unit) * Number(form.default_quantity);
@@ -210,8 +216,10 @@ function MealEditorForm({ existing, initial }: { existing: MealPreset | null; in
       </Section>
 
       <Section title="Nutrition">
-        {form.catalogue_id ? (
-          <p className="small muted">This food came from the food list, which has no verified numbers. Add your own recipe or a package label to see estimates; until then it’s logged with nutrition unknown.</p>
+        {form.catalogue_id && (form.source_kind === 'cnf' || form.source_kind === 'usda_fdc') && form.kind === 'food' ? (
+          <p className="small muted">These are standard values from the {form.source_kind === 'cnf' ? 'Canadian Nutrient File' : 'USDA FoodData Central'}. Switch to “My recipe” and list your own ingredients for a closer estimate of how you make it.</p>
+        ) : form.catalogue_id ? (
+          <p className="small muted">This food has no standard values yet. Add your own recipe or a package label to see estimates; until then it’s logged with nutrition unknown.</p>
         ) : null}
         <Segmented label="Nutrition comes from" value={form.kind} full onChange={(kind) => set({ kind })} options={[{ value: 'food', label: 'A label or food' }, { value: 'recipe', label: 'My recipe' }]} />
         {form.kind === 'food' ? (
@@ -240,6 +248,9 @@ function MealEditorForm({ existing, initial }: { existing: MealPreset | null; in
                 onRemove={() => set({ ingredients: form.ingredients.filter((_, k) => k !== i) })} />
             ))}
             <div className="row wrap">
+              <button className="btn sm" onClick={() => setPickingIngredient(true)}>
+                <Icon name="search" size={18} /> Add from ingredient list
+              </button>
               <button className="btn secondary sm" onClick={() => set({ ingredients: [...form.ingredients, { key: newId(), food_version_id: null, name: '', state: 'raw', grams: '', per100: emptyNutrients(), source_kind: 'label' }] })}>
                 <Icon name="plus" size={18} /> Add ingredient
               </button>
@@ -278,6 +289,10 @@ function MealEditorForm({ existing, initial }: { existing: MealPreset | null; in
         <Sheet title="Meal picture" onClose={() => setPhotoOpen(false)}>
           <PhotoCropper hint="Frame just the food. Saved pictures stay private to you." onDone={(p) => { set({ photo: p.thumb }); setPhotoOpen(false); }} />
         </Sheet>
+      ) : null}
+      {pickingIngredient ? (
+        <IngredientPicker onClose={() => setPickingIngredient(false)}
+          onPick={(ing) => { set({ ingredients: [...form.ingredients, ingredientForm(ing)] }); setPickingIngredient(false); }} />
       ) : null}
       {confirmDelete && existing ? (
         <Sheet title={`Remove ${existing.name}?`} onClose={() => setConfirmDelete(false)} actions={

@@ -12,6 +12,8 @@ import { Section, Segmented, Sheet, Toggle } from '@/core/design/ui';
 import { applyTheme, readTheme, type Theme } from '@/core/design/theme';
 import { formatTime } from '@/core/time/localDate';
 import { saveErrorMessage } from '@/features/food/useFood';
+import { CoachAvatar } from '@/core/design/CoachAvatar';
+import { TrainerSheet, useTrainer } from '@/features/coach/Trainer';
 
 const GOALS: { value: Goal; label: string }[] = [
   { value: 'consistency', label: 'Be consistent' }, { value: 'maintenance', label: 'Maintain' }, { value: 'fat_loss', label: 'Lose fat' },
@@ -43,6 +45,8 @@ export function SettingsScreen() {
   const { signOut, exitDemo } = useAuth();
   const conflicts = useQuery((j) => j.conflicts(), [conflictsCount]);
   const [theme, setTheme] = useState<Theme>(readTheme);
+  const trainer = useTrainer();
+  const [trainerOpen, setTrainerOpen] = useState(false);
   const [sheet, setSheet] = useState<'signout' | 'delete' | 'restore' | null>(null);
   const [pending, setPending] = useState(0);
   const [confirmText, setConfirmText] = useState('');
@@ -171,6 +175,15 @@ export function SettingsScreen() {
         </Section>
       ) : null}
 
+      <Section title="Your AI trainer">
+        <div className="card row" style={{ gap: 12 }}>
+          <CoachAvatar avatar={trainer.avatar} size={48} ring />
+          <span className="grow"><strong>{trainer.name}</strong><br /><span className="small muted">Name and look of your trainer</span></span>
+          <button className="btn sm secondary" onClick={() => setTrainerOpen(true)}>Change</button>
+        </div>
+        {trainerOpen ? <TrainerSheet onClose={() => setTrainerOpen(false)} /> : null}
+      </Section>
+
       <Section title="Notifications">
         <div className="card stack-sm">
           <button className="link" onClick={() => navigate('notifications')}><Icon name="clock" size={18} /> Daily motivation and gym reminders <Icon name="chevronRight" size={16} /></button>
@@ -185,6 +198,7 @@ export function SettingsScreen() {
             <button className="btn ghost sm" onClick={async () => setPersisted((await navigator.storage?.persist?.()) ?? false)}>Ask this browser to keep my data</button>
           ) : null}
           <span className="label">Exports are JSON files with your meals, recipes, plans, workouts and settings. Clearing this site’s data removes anything not exported or backed up.</span>
+          <span className="label">Data sources: food values from the Canadian Nutrient File (Health Canada, 2026) and USDA FoodData Central; barcode products from Open Food Facts (ODbL); exercises from free-exercise-db (public domain). TrainLuma isn’t affiliated with or endorsed by any of them.</span>
         </div>
       </Section>
 

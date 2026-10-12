@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { MealEntry } from '@shared/contracts';
+import { DEFAULT_COACH, type MealEntry } from '@shared/contracts';
 import { deleteJournalDB } from './db';
 import { Journal, StorageWriteError } from './journal';
 import { seedDemoIfEmpty } from './seed';
@@ -184,7 +184,7 @@ describe('v2 upgrade, restore and sync hooks', () => {
     await j.commit('meal_entries', m);
     await j.setProfile({ id: OWNER, nickname: 'Me', units: 'kg', timezone: 'UTC', goal: 'consistency', targets: null, synthetic: false,
       adult_confirmed: true, height_cm: null, consent: { cloud_backup: true, ai_processing: false, photo_storage: false, ai_images: false, updated_at: null }, onboarded_at: null, updated_at: null,
-      food_prefs: { pattern: 'unspecified', meatless_weekdays: [], allergies: [] }, training: null, profile_version: 0 });
+      food_prefs: { pattern: 'unspecified', meatless_weekdays: [], allergies: [] }, training: null, profile_version: 0, coach: { ...DEFAULT_COACH } });
     const exported = JSON.parse(JSON.stringify(await j.exportAll()));
     j.close();
     await deleteJournalDB(OWNER);

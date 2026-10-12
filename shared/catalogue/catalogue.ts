@@ -9,6 +9,7 @@
  * - Dietary hints are discovery aids that depend on the recipe, never allergy or vegan guarantees.
  */
 import { z } from 'zod';
+import { parseStandard, type StandardNutrition } from './standardNutrition';
 
 export const CATEGORY_IDS = [
   'breads', 'rice_grains', 'dals_beans', 'vegetables', 'paneer', 'eggs', 'meat_fish', 'dairy', 'drinks',
@@ -151,6 +152,8 @@ export interface CatalogueIndex {
   foods: readonly CatalogueFood[];
   byId: ReadonlyMap<string, CatalogueFood>;
   indexed: readonly IndexedFood[];
+  /** Standard reference nutrition by food id (absent = no licensed source matched yet). */
+  standard: ReadonlyMap<string, StandardNutrition>;
 }
 
 export function buildIndex(file: CatalogueFile): CatalogueIndex {
@@ -161,6 +164,7 @@ export function buildIndex(file: CatalogueFile): CatalogueIndex {
     foods: file.foods,
     byId: new Map(file.foods.map((f) => [f.id, f])),
     indexed,
+    standard: new Map(),
   };
 }
 
@@ -215,8 +219,11 @@ export function parseCatalogue(raw: unknown): CatalogueIndex {
 
 let loading: Promise<CatalogueIndex> | null = null;
 
-/** Lazy-load (separate chunk, cached by the service worker) and validate once per session. */
+/** Lazy-load (separate chunks, cached by the service worker) and validate once per session. */
 export function loadCatalogue(): Promise<CatalogueIndex> {
-  loading ??= import('../../supabase/functions/_shared/data/punjabi-canadian-v2.json').then((m) => parseCatalogue((m as { default: unknown }).default));
+  loading ??= Promise.all([
+    import('../../supabase/functions/_shared/data/punjabi-canadian-v2.json'),
+    import('../../supabase/functions/_shared/data/food-nutrients-v1.json'),
+  ]).then(([c, n]) => ({ ...parseCatalogue((c as { default: unknown }).default), standard: parseStandard((n as { default: unknown }).default) }));
   return loading;
 }

@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import type { MealPreset, MealSlot } from '@shared/contracts';
+import { perServing, shortSource, type StandardNutrition } from '@shared/catalogue/standardNutrition';
 import { CATEGORY_IDS, searchCatalogue, canonicalTokens, type CatalogueFood, type CatalogueIndex, type CategoryId } from '@shared/catalogue/catalogue';
 import { useJournal } from '@/app/JournalContext';
 import { navigate } from '@/app/router';
@@ -8,6 +9,7 @@ import { CatalogueArt } from '@/core/design/catalogueArt';
 import { FoodArt } from '@/core/design/foodArt';
 import { Icon } from '@/core/design/icons';
 import { Segmented, Sheet, Stepper, Toggle } from '@/core/design/ui';
+import { BarcodeSheet } from './BarcodeSheet';
 import { existingPresetFor, presetFromCatalogue, visibleFor } from './catalogueFood';
 import { SLOT_LABEL, describeAmount, describeQuantity } from './mealActions';
 import { CATEGORY_SHORT, useCatalogue } from './useCatalogue';
@@ -31,13 +33,14 @@ function PresetRow({ p, onPick }: { p: MealPreset; onPick: () => void }) {
   );
 }
 
-function CatalogueRow({ f, mine, onPick }: { f: CatalogueFood; mine: MealPreset | null; onPick: () => void }) {
+function CatalogueRow({ f, mine, onPick, std }: { f: CatalogueFood; mine: MealPreset | null; onPick: () => void; std?: StandardNutrition }) {
+  const kcal = std && std.serving.unit === f.portion.display_unit ? perServing(std, std.serving.grams).energy_kcal : null;
   return (
     <button className="ex-row lazy-row" onClick={onPick} aria-label={mine ? `${f.name}, in your meals` : f.name}>
       <span className="ex-art" style={{ background: 'var(--food)', overflow: 'hidden' }}><CatalogueArt id={f.id} size={52} /></span>
       <span className="grow">
         <span className="er-name">{f.name}</span><br />
-        <span className="er-sub">{mine ? `In your meals · ${describeQuantity(mine, 1)}` : CATEGORY_SHORT[f.category_id]}</span>
+        <span className="er-sub">{mine ? `In your meals · ${describeQuantity(mine, 1)}` : kcal !== null ? `${Math.round(kcal)} kcal · 1 ${f.portion.display_unit}` : CATEGORY_SHORT[f.category_id]}</span>
       </span>
       {mine ? <Icon name="star" size={18} /> : <Icon name="plus" size={20} />}
     </button>
@@ -62,6 +65,7 @@ export function FoodPicker({ presets, date, slot, onPickPreset, onClose, initial
   const [chip, setChip] = useState<Chip>('popular');
   const [showHidden, setShowHidden] = useState(false);
   const [adding, setAdding] = useState<CatalogueFood | null>(null);
+  const [scanning, setScanning] = useState(false);
   const weekday = weekdayOf(date);
   const prefs = profile.food_prefs;
 
@@ -86,6 +90,7 @@ export function FoodPicker({ presets, date, slot, onPickPreset, onClose, initial
     return { foods: shown, hidden: pool.length - shown.length };
   }, [index, query, chip, showHidden, prefs, weekday]);
 
+  if (scanning) return <BarcodeSheet date={date} initialSlot={slot} onClose={onClose} />;
   if (adding && index) {
     return <CatalogueAddSheet food={adding} index={index} date={date} initialSlot={slot} onClose={onClose} onBack={() => setAdding(null)} />;
   }
@@ -99,7 +104,10 @@ export function FoodPicker({ presets, date, slot, onPickPreset, onClose, initial
   return (
     <Sheet title="Choose food" onClose={onClose} full>
       <div className="stack">
-        <input className="input" type="search" placeholder="Search foods: roti, dal, chai…" aria-label="Search foods" value={q} onChange={(e) => setQ(e.target.value)} />
+        <div className="row" style={{ gap: 8 }}>
+          <input className="input grow" type="search" placeholder="Search foods: roti, dal, chai…" aria-label="Search foods" value={q} onChange={(e) => setQ(e.target.value)} />
+          <button className="btn secondary scan-btn" onClick={() => setScanning(true)} aria-label="Scan a barcode"><Icon name="barcode" size={22} /></button>
+        </div>
 
         {myMatches.length ? (
           <div className="stack-sm">
@@ -123,7 +131,7 @@ export function FoodPicker({ presets, date, slot, onPickPreset, onClose, initial
           ) : null}
           {failed ? <p className="small muted">The food list couldn’t load. Your own meals still work.</p> : !index ? <div className="skeleton" /> : (
             <div className="list-divided">
-              {listed.foods.map((f) => <CatalogueRow key={f.id} f={f} mine={existingPresetFor(index, presets, f.id)} onPick={() => pick(f)} />)}
+              {listed.foods.map((f) => <CatalogueRow key={f.id} f={f} std={index.standard.get(f.id)} mine={existingPresetFor(index, presets, f.id)} onPick={() => pick(f)} />)}
             </div>
           )}
           {listed.hidden > 0 ? (
@@ -137,11 +145,13 @@ export function FoodPicker({ presets, date, slot, onPickPreset, onClose, initial
         </div>
 
         <button className="btn secondary" onClick={() => { onClose(); navigate('meal', 'new'); }}><Icon name="plus" size={18} /> Create a meal</button>
-        <p className="label">The food list has names and pictures only. Calories come from your own label or recipe, so nothing here is guessed.</p>
+        <p className="label">Calories on list foods are standard estimates from the Canadian Nutrient File (Health Canada, 2026) or USDA FoodData Central, not endorsed by either. Replace them with your own recipe or a package label any time.</p>
       </div>
     </Sheet>
   );
 }
+
+const fmtG = (g: number | null) => (g === null ? '–' : `${g < 10 ? Math.round(g * 10) / 10 : Math.round(g)} g`);
 
 /** First time a person picks a list food: confirm their usual amount (and optionally its weight), then add it. */
 function CatalogueAddSheet({ food, index, date, initialSlot, onClose, onBack }: { food: CatalogueFood; index: CatalogueIndex; date: string; initialSlot: MealSlot; onClose: () => void; onBack: () => void }) {
@@ -155,6 +165,10 @@ function CatalogueAddSheet({ food, index, date, initialSlot, onClose, onBack }: 
   const [keep, setKeep] = useState(true);
   const [busy, setBusy] = useState(false);
   const allergies = profile.food_prefs.allergies;
+  const std = index.standard.get(food.id) ?? null;
+  const typed = grams.trim() ? Number(grams.replace(',', '.')) : null;
+  const unitGrams = typed && typed > 0 ? typed : std && std.serving.unit === unit ? std.serving.grams : null;
+  const est = std && unitGrams ? perServing(std, unitGrams * qty) : null;
 
   const save = async (then: 'log' | 'edit') => {
     const g = grams.trim() ? Number(grams.replace(',', '.')) : null;
@@ -163,7 +177,7 @@ function CatalogueAddSheet({ food, index, date, initialSlot, onClose, onBack }: 
     try {
       const built = presetFromCatalogue({
         food, seedVersion: index.seed_version, ownerId: journal.ownerId, now: new Date().toISOString(), newId,
-        choice: { grams_per_unit: g, default_quantity: 1, favorite: keep },
+        choice: { grams_per_unit: g, default_quantity: 1, favorite: keep }, standard: std,
       });
       await journal.commit('foods', built.food);
       await journal.commit('presets', built.preset);
@@ -187,15 +201,28 @@ function CatalogueAddSheet({ food, index, date, initialSlot, onClose, onBack }: 
           <span className="thumb" style={{ width: 88, height: 88, borderRadius: 18, background: 'var(--food)', display: 'grid', placeItems: 'center', overflow: 'hidden', flex: 'none' }}>
             <CatalogueArt id={food.id} size={88} />
           </span>
-          <div className="grow small muted">
-            Nutrition not set yet. It’s logged with nutrition unknown until you add your recipe or a package label.
-          </div>
+          {est && std ? (
+            <div className="grow stack-sm">
+              <div className="std-nutrition" aria-label="Standard estimate">
+                <span><b className="num">{Math.round(est.energy_kcal ?? 0)}</b> kcal</span>
+                <span><b className="num">{fmtG(est.protein_g)}</b> protein</span>
+                <span><b className="num">{fmtG(est.carbs_g)}</b> carbs</span>
+                <span><b className="num">{fmtG(est.fat_g)}</b> fat</span>
+              </div>
+              <span className="label">Standard estimate for {describeAmount(unit, qty)} ({Math.round(unitGrams! * qty)} g) · {shortSource(std.source)}{std.match === 'close' ? ` (closest: ${std.record_name})` : ''}. Your recipe may differ.</span>
+            </div>
+          ) : (
+            <div className="grow small muted">
+              Nutrition not set yet. It’s logged with nutrition unknown until you add your recipe or a package label.
+            </div>
+          )}
         </div>
         <Stepper label="Amount" value={describeAmount(unit, qty)} onDec={() => setQty((v) => Math.max(step, v - step))} onInc={() => setQty((v) => Math.min(20, v + step))} disabledDec={qty <= step} />
         <Segmented label="Meal" value={slot} onChange={setSlot} full options={SLOTS.map((x) => ({ value: x, label: SLOT_LABEL[x] }))} />
         <label className="field">
           1 {unit} of yours weighs (g, optional)
-          <input className="input num" inputMode="decimal" value={grams} onChange={(e) => setGrams(e.target.value)} placeholder="Not weighed yet" />
+          <input className="input num" inputMode="decimal" value={grams} onChange={(e) => setGrams(e.target.value)}
+            placeholder={std && std.serving.unit === unit ? `Standard ${std.serving.grams} g` : 'Not weighed yet'} />
         </label>
         <Toggle label="Favourite" checked={keep} onChange={setKeep} description="Favourites come first in your usual meals." />
         <p className="label">

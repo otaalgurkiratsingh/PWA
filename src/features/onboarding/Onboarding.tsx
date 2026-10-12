@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { LoadUnit, LocalProfile } from '@shared/contracts';
+import { DEFAULT_COACH, type LoadUnit, type LocalProfile } from '@shared/contracts';
 import { useSetup } from '@/app/JournalContext';
 import { useAuth } from '@/core/auth/AuthContext';
 import { Icon, Mark } from '@/core/design/icons';
@@ -38,6 +38,7 @@ export function Onboarding() {
       food_prefs: { pattern: 'unspecified', meatless_weekdays: [], allergies: [] },
       training: null,
       profile_version: 0,
+      coach: { ...DEFAULT_COACH },
       onboarded_at: null,
       updated_at: now,
     };

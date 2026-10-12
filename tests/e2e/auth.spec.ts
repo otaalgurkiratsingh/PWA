@@ -360,8 +360,8 @@ test('AI Coach chat: send, plain-text rendering, stored thread, retry with the s
   await onboardSimple(page, { ai: true });
 
   await page.goto('/#/today');
-  await page.getByRole('button', { name: 'Ask Coach' }).click();
-  await expect(page.getByRole('heading', { level: 1, name: 'AI Coach' })).toBeVisible();
+  await page.getByRole('button', { name: 'Chat with Luma', exact: true }).click();
+  await expect(page.getByRole('heading', { level: 1, name: 'Luma' })).toBeVisible();
   await expect(page.getByText(/not a doctor, physiotherapist, registered dietitian or human trainer/)).toBeVisible();
   await shot(page, '34-chat-empty');
 

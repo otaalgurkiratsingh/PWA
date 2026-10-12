@@ -1,11 +1,11 @@
-// Render PNG install icons from the owner's TrainLuma logo artwork (public/icons/logo-source.png)
+// Render PNG install icons and favicons from the owner's TrainLuma logo artwork (docs/trainluma-logo.png)
 // using the local Chromium (Playwright). The artwork is full-bleed with the TL mark inside the
 // maskable safe zone, so the same picture serves "any" and "maskable" icons.
 // Usage: node scripts/render-icons.mjs
-import { readFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { chromium } from '@playwright/test';
 
-const src = `data:image/png;base64,${readFileSync(new URL('../public/icons/logo-source.png', import.meta.url)).toString('base64')}`;
+const src = `data:image/png;base64,${readFileSync(new URL('../docs/trainluma-logo.png', import.meta.url)).toString('base64')}`;
 const browser = await chromium.launch();
 const page = await browser.newPage();
 async function render(size, file, rounded = false) {
@@ -18,5 +18,20 @@ await render(192, 'icon-192.png');
 await render(512, 'icon-512.png');
 await render(512, 'icon-maskable-512.png');
 await render(180, 'apple-touch-icon.png');
+// Browser-tab favicons (rounded like the app icon), plus a multi-size favicon.ico at the site root
+// for browsers that ask for /favicon.ico directly.
+const sizes = [16, 32, 48];
+for (const s of sizes) await render(s, `favicon-${s}.png`, true);
+const pngs = sizes.map((s) => readFileSync(new URL(`../public/icons/favicon-${s}.png`, import.meta.url)));
+const header = Buffer.alloc(6 + 16 * pngs.length);
+header.writeUInt16LE(0, 0); header.writeUInt16LE(1, 2); header.writeUInt16LE(pngs.length, 4);
+let offset = header.length;
+pngs.forEach((png, i) => {
+  const e = 6 + 16 * i;
+  header.writeUInt8(sizes[i] % 256, e); header.writeUInt8(sizes[i] % 256, e + 1); header.writeUInt16LE(1, e + 4); header.writeUInt16LE(32, e + 6);
+  header.writeUInt32LE(png.length, e + 8); header.writeUInt32LE(offset, e + 12);
+  offset += png.length;
+});
+writeFileSync(new URL('../public/favicon.ico', import.meta.url), Buffer.concat([header, ...pngs]));
 await browser.close();
 console.log('icons rendered');

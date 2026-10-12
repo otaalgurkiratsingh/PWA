@@ -1,13 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useJournal } from '@/app/JournalContext';
-import { goBack, navigate, replaceRoute } from '@/app/router';
+import { navigate, replaceRoute } from '@/app/router';
 import { aiUsage, deleteThreads, threadMessages, type ChatMessage, type Usage } from '@/core/ai/coachData';
 import { aiErrorText, callAi, MAX_CHAT_CHARS, type AiResponse, type CoachOutput } from '@/core/ai/client';
 import { Icon } from '@/core/design/icons';
 import { Sheet } from '@/core/design/ui';
 import { newId } from '@/core/ids';
+import { CoachLine, Typing } from './ChatBits';
 import { AssistantBody, CoachGate, CoachScope, DataWindow } from './CoachParts';
+import { DemoChat } from './DemoChat';
 import { requestPlanDraft } from './planDraft';
+import { MeetTrainer, TrainerHead, useTrainer } from './Trainer';
 
 const STARTERS = [
   'Can you fit today’s workout into 30 minutes?',
@@ -43,12 +46,9 @@ function useOnline() {
 }
 
 export function ChatScreen({ threadParam }: { threadParam: string | null }) {
-  const header = (
-    <div className="chat-head">
-      <button className="icon-btn plain" aria-label="Back" onClick={() => goBack('coach')}><Icon name="chevronLeft" /></button>
-      <h1 className="sub-title grow">AI Coach</h1>
-    </div>
-  );
+  const { mode } = useJournal();
+  if (mode === 'demo') return <div className="stack chat-page"><DemoChat /></div>;
+  const header = <TrainerHead />;
   return (
     <div className="stack chat-page">
       <CoachGate header={header}>
@@ -72,6 +72,7 @@ function Chat({ initialThread }: { initialThread: string | null }) {
   const pending = useRef<AbortController | null>(null);
   const endRef = useRef<HTMLDivElement>(null);
   const busy = turns.some((t) => t.state === 'sending');
+  const trainer = useTrainer();
 
   const loadUsage = useCallback(() => { void aiUsage().then(setUsage, () => undefined); }, []);
 
@@ -184,12 +185,10 @@ function Chat({ initialThread }: { initialThread: string | null }) {
 
   return (
     <>
-      <div className="chat-head">
-        <button className="icon-btn plain" aria-label="Back" onClick={() => goBack('coach')}><Icon name="chevronLeft" /></button>
-        <h1 className="sub-title grow">AI Coach</h1>
+      <TrainerHead>
         <button className="icon-btn plain" aria-label="New chat" onClick={newChat}><Icon name="plus" /></button>
         <button className="icon-btn plain" aria-label="Delete chat" disabled={!threadId} onClick={() => setConfirmDelete(true)}><Icon name="trash" /></button>
-      </div>
+      </TrainerHead>
 
       {!online ? <div className="notice warn" role="status">You’re offline. The coach needs a connection; your journal still works. Nothing is sent later automatically.</div> : null}
       {loadError ? <div className="notice warn" role="alert">{loadError} <button className="link" onClick={newChat}>Start a new chat</button></div> : null}
@@ -198,6 +197,7 @@ function Chat({ initialThread }: { initialThread: string | null }) {
         {loading ? <div className="skeleton" /> : null}
         {!loading && turns.length === 0 ? (
           <div className="stack">
+            <MeetTrainer />
             <CoachScope />
             <p className="small muted">Ask about your plan, your week or your usual foods. Try one of these:</p>
             <div className="chips wrap">
@@ -221,7 +221,7 @@ function Chat({ initialThread }: { initialThread: string | null }) {
             </div>
           ) : (
             <div key={t.key} className="stack-sm" style={{ alignItems: 'flex-start' }}>
-              <div className="bubble coach">{t.text}</div>
+              <CoachLine avatar={trainer.avatar}><div className="bubble coach">{t.text}</div></CoachLine>
               {t.output ? <AssistantBody output={t.output} onQuestion={(q) => setInput(q)} onDraftPlan={drafting ? undefined : () => void draftPlan()} /> : null}
               {t.window ? <DataWindow from={t.window.from} to={t.window.to} /> : null}
             </div>
@@ -229,7 +229,7 @@ function Chat({ initialThread }: { initialThread: string | null }) {
         ))}
         {busy ? (
           <div className="stack-sm" style={{ alignItems: 'flex-start' }}>
-            <div className="bubble coach typing" role="status"><span className="spinner" /> Coach is thinking…</div>
+            <CoachLine avatar={trainer.avatar}><Typing name={trainer.name} /></CoachLine>
             <button className="link" onClick={() => pending.current?.abort()}>Stop waiting</button>
           </div>
         ) : null}
@@ -243,7 +243,7 @@ function Chat({ initialThread }: { initialThread: string | null }) {
           rows={1}
           value={input}
           maxLength={MAX_CHAT_CHARS}
-          placeholder={remaining === 0 ? 'Daily limit reached. It resets tomorrow.' : 'Message AI Coach'}
+          placeholder={remaining === 0 ? 'Daily limit reached. It resets tomorrow.' : `Message ${trainer.name}`}
           aria-label="Message AI Coach"
           disabled={remaining === 0}
           onChange={(e) => setInput(e.target.value)}

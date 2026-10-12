@@ -32,7 +32,7 @@ function serviceWorker(): Plugin {
   };
 }
 
-/** Emit Netlify-style _headers with a CSP whose connect-src names only this app and its Supabase project. */
+/** Emit Netlify-style _headers with a CSP whose connect-src names only this app, its Supabase project and Open Food Facts. */
 function securityHeaders(mode: string): Plugin {
   return {
     name: 'rozana-headers',
@@ -42,7 +42,8 @@ function securityHeaders(mode: string): Plugin {
       const url = (env.VITE_SUPABASE_URL ?? '').replace(/\/$/, '');
       const supa = /^https:\/\/[a-z0-9-]+\.supabase\.co$/.test(url) ? ` ${url}` : '';
       const template = readFileSync(fileURLToPath(new URL('./deploy/_headers.template', import.meta.url)), 'utf8');
-      const out = template.replaceAll('connect-src __CONNECT_SRC__;', `connect-src 'self'${supa};`);
+      // Open Food Facts: barcode lookups only (the barcode number is all that is sent).
+      const out = template.replaceAll('connect-src __CONNECT_SRC__;', `connect-src 'self'${supa} https://world.openfoodfacts.org;`);
       if (out.includes('__CONNECT_SRC__') || !out.includes('connect-src')) this.error('CSP template placeholder was not replaced');
       this.emitFile({ type: 'asset', fileName: '_headers', source: out });
     },

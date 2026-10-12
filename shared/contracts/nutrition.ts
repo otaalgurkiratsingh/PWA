@@ -17,6 +17,8 @@ export type Nutrients = z.infer<typeof Nutrients>;
 
 export const SourceKind = z.enum([
   'usda_fdc', // USDA FoodData Central record (public domain / CC0)
+  'cnf', // Canadian Nutrient File record (Health Canada)
+  'open_food_facts', // Open Food Facts product (ODbL), found by barcode
   'label', // product nutrition label entered by the user
   'user_recipe', // calculated from user-confirmed recipe
   'generic_assumption', // clearly-identified generic assumption

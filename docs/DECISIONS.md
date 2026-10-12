@@ -139,3 +139,35 @@ The backend assembles context from the person's backed-up documents, read with t
 ## D28. Staged imports and health integrations stay disabled
 
 Scale screenshots (stage B), MyFitnessPal CSV (stage C) and device health connections (stage D) are specified, not built. There is no attachment button in chat. `measurement_candidates` must be empty in every response; the schema allows at most 0 items.
+
+## D29. Standard nutrition only from licensed reference data, always labelled
+
+The owner asked for real calories and protein on list foods. Values come only from the Canadian Nutrient File 2026 (Health Canada; attribution kept, values not altered, no endorsement implied) or USDA FNDDS (public domain), matched per food with the record id and serving weight from the source's own measures. They are shown as "standard estimates", with the person's weighed serving and "My recipe" always able to replace them. Matches with an unclear licence (69 from the Indian Nutrient Databank) are excluded until permission is confirmed. Foods without an honest match stay "not set". This partly supersedes the V2 catalogue note that all nutrients stay null until a staged import.
+
+## D30. Barcode lookups go straight to Open Food Facts with the number only
+
+The browser calls `world.openfoodfacts.org` directly. Only the barcode number is sent; camera frames never leave the phone. This avoids routing through our backend and needs no key. The CSP adds just that origin. Values are volunteer-entered (ODbL), so the sheet says to check them against the package, and the food records its source and licence. A product scanned before is reused from the person's own meals with no lookup.
+
+## D31. Reminders via Web Push, with no third-party push SDK
+
+Reminders must arrive when the app is closed, so they need a server and Web Push. We implemented RFC 8291/8292 with WebCrypto (`_shared/webpush.ts`, no dependency), verified against the RFC vector and the `web-push` library. Payloads are encrypted to the device, so Google/Apple see only metadata. A `notify` function, triggered by pg_cron every 5 minutes with a Vault-held bearer secret, asks the database who is due (in each person's own time zone) and claims each notification once per day before sending. "Hide details" sends a neutral line and reads no records. Without a VAPID key in the build, the panel saves preferences and explains that setup is pending.
+
+## D32. Daily motivation reuses the "How you're doing" rules and never shames
+
+The same `momentum()` function (in `_shared`, used by the app and the function) picks the message: new best, weekly goal reached, more than last week, on track, logging streak, or a kind fresh start. It never says "missed" or anything like it (tested).
+
+## D33. Personal trainer name and avatar are cosmetic only
+
+The person names their AI trainer and picks one of 10 original avatars (two abstract AI marks inspired by the look of popular assistants, eight cute characters, no third-party logos). The persona lives in the profile, syncs, and appears in the chat, on Today and in a floating chat button. It does not change the system prompt, what the coach reads, or its limits.
+
+## D34. The demo shows a sample chat, not AI
+
+The demo has no account, so it cannot use the real coach. To show what chatting feels like, the demo chat answers with scripted sample replies, each labelled "Sample reply (demo)" under a "Sample replies, not AI" notice. Nothing is sent anywhere.
+
+## D35. Big exercise library for people; small curated list for AI
+
+823 exercises (free-exercise-db, public domain, plus 34 written for TrainLuma) load only when the picker opens. The 49 built-in exercises keep their ids, get how-to steps, and remain the only ids AI plans may use, keeping the plan validator and the prompt bounded.
+
+## D36. Updates found at launch apply immediately
+
+A new version found within 20 s of opening the app applies right away (nothing is on screen yet that it could interrupt), unless a workout is active. Later updates still wait for the person to tap Update. Icon URLs are versioned so installed apps pick up the TL icon.

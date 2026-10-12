@@ -1,15 +1,18 @@
 /**
  * Turn a catalogue food into the person's own meal (preset + one food version).
  *
- * - The catalogue supplies the name, the usual unit and the picture. Nothing else.
- * - Nutrition per 100 g is all null (unknown) with source "unknown" and a note saying why.
- *   The person adds a label or recipe later; until then logged entries show nutrition as partial.
- * - Grams per unit are null unless the person weighed their usual serving.
+ * - The catalogue supplies the name, the usual unit and the picture.
+ * - Nutrition comes from the standard reference record when one matched (Canadian Nutrient File
+ *   or USDA, named on the food as its source); otherwise it stays null (unknown) and logged
+ *   entries show nutrition as partial until the person adds a label or recipe.
+ * - Grams per unit: the person's own weighed serving, else the source's standard serving for the
+ *   same unit (recorded as an assumption), else null.
  * - Nothing is written into anyone's journal until they pick the food.
  */
 import type { FoodIcon, FoodVersion, MealPreset, PreparationState } from '@shared/contracts';
 import type { CatalogueFood, CatalogueIndex } from '@shared/catalogue/catalogue';
 import { legacyMatch } from '@shared/catalogue/catalogue';
+import { shortSource, type StandardNutrition } from '@shared/catalogue/standardNutrition';
 
 const FAMILY_ICON: Record<CatalogueFood['illustration']['family'], FoodIcon> = {
   flatbread: 'roti', rice_bowl: 'rice', dal_bowl: 'dal', sabzi_bowl: 'sabzi', paneer_bowl: 'paneer', eggs_plate: 'egg',
@@ -41,8 +44,12 @@ export function presetFromCatalogue(args: {
   ownerId: string;
   now: string;
   newId: () => string;
+  standard?: StandardNutrition | null;
 }): { food: FoodVersion; preset: MealPreset } {
   const { food: c, choice } = args;
+  const std = args.standard ?? null;
+  const stdGrams = std && std.serving.unit === c.portion.display_unit ? std.serving.grams : null;
+  const gramsPerUnit = choice.grams_per_unit ?? stdGrams;
   if (choice.grams_per_unit !== null && !(choice.grams_per_unit > 0)) throw new Error('Grams must be more than 0.');
   if (!(choice.default_quantity > 0)) throw new Error('Usual amount must be more than 0.');
   const base = (id: string) => ({ id, owner_id: args.ownerId, local_version: 0, created_at: args.now, updated_at: args.now, deleted_at: null, synthetic: false });
@@ -52,15 +59,22 @@ export function presetFromCatalogue(args: {
     revision: 1,
     name: c.name,
     preparation_state: stateFor(c),
-    per_100g: { energy_kcal: null, protein_g: null, carbs_g: null, fat_g: null, fiber_g: null },
-    source: { kind: 'unknown', ref: c.id, version: args.seedVersion, license: null, note: 'Food list identity only; nutrition not verified. Add a label or your recipe.' },
-    assumptions: [],
+    per_100g: std ? { ...std.per_100g } : { energy_kcal: null, protein_g: null, carbs_g: null, fat_g: null, fiber_g: null },
+    source: std
+      ? {
+          kind: std.source.id.startsWith('cnf') ? 'cnf' : 'usda_fdc', ref: std.record, version: std.source.version, license: std.source.attribution,
+          note: `Standard estimate from ${shortSource(std.source)}: “${std.record_name}”. Your recipe or brand may differ.`.slice(0, 500),
+        }
+      : { kind: 'unknown', ref: c.id, version: args.seedVersion, license: null, note: 'Food list identity only; nutrition not verified. Add a label or your recipe.' },
+    assumptions: choice.grams_per_unit === null && stdGrams !== null
+      ? [`1 ${c.portion.display_unit} taken as ${stdGrams} g (the source’s standard serving). Weigh yours once for a better estimate.`]
+      : [],
   };
   const preset: MealPreset = {
     ...base(args.newId()),
     name: c.name.slice(0, 60),
     icon: FAMILY_ICON[c.illustration.family],
-    items: [{ kind: 'food', food_version_id: food.id, unit_label: c.portion.display_unit, grams_per_unit: choice.grams_per_unit, default_quantity: choice.default_quantity }],
+    items: [{ kind: 'food', food_version_id: food.id, unit_label: c.portion.display_unit, grams_per_unit: gramsPerUnit, default_quantity: choice.default_quantity }],
     quantity_step: stepFor(c.portion.display_unit),
     favorite: choice.favorite,
     photo: null,

@@ -501,3 +501,116 @@ test.describe('reminders', () => {
     await expect(page.getByRole('region', { name: 'Reminders' })).toHaveCount(0);
   });
 });
+
+test.describe('AI trainer', () => {
+  test('floating trainer button → name and pick a look → demo chat with sample replies', async ({ page }) => {
+    await enterDemo(page);
+    await page.getByRole('button', { name: /^Chat with Luma, your AI trainer/ }).click();
+    await expect(page.getByRole('heading', { level: 1, name: 'Luma' })).toBeVisible();
+    await expect(page.getByText(/Sample replies, not AI/)).toBeVisible();
+    await page.getByRole('button', { name: 'Choose' }).click();
+    const sheet = page.getByRole('dialog', { name: 'Meet your trainer' });
+    await sheet.getByLabel('Name your trainer').fill('Veer');
+    await sheet.getByRole('radio', { name: 'Panda' }).click();
+    await expect(sheet.getByRole('radio', { name: 'Panda' })).toHaveAttribute('aria-checked', 'true');
+    await expect(sheet.getByText('Hi! I’m Veer.', { exact: false })).toBeVisible();
+    await sheet.getByRole('button', { name: 'Start chatting with Veer' }).click();
+    await expect(page.getByRole('heading', { level: 1, name: 'Veer' })).toBeVisible();
+    await page.getByRole('button', { name: 'Can you fit today’s workout into 30 minutes?' }).click();
+    await expect(page.getByRole('status', { name: 'Veer is thinking' })).toBeVisible();
+    await expect(page.locator('.bubble.coach').filter({ hasText: '30-minute version' })).toBeVisible();
+    await expect(page.locator('.launch-splash')).toHaveCount(0);
+    await page.screenshot({ path: 'docs/screenshots/39-trainer-chat.png' });
+    // The name sticks (saved in the profile) and shows on Today.
+    await page.goto('/#/today');
+    await expect(page.getByRole('button', { name: 'Chat with Veer', exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: /^Chat with Veer, your AI trainer/ })).toBeVisible();
+  });
+});
+
+test.describe('barcode', () => {
+  test('type a barcode → Open Food Facts product → add servings → logged with label nutrition; scanning again reuses it', async ({ page }) => {
+    const lookups: string[] = [];
+    await page.route('https://world.openfoodfacts.org/**', (route) => {
+      lookups.push(route.request().url());
+      return route.fulfill({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: JSON.stringify({
+        status: 1,
+        product: { product_name: 'Greek Yogurt Plain', brands: 'Oikos', serving_size: '175 g', serving_quantity: 175,
+          nutriments: { 'energy-kcal_100g': 80, proteins_100g: 9, carbohydrates_100g: 4.5, fat_100g: 2.5, fiber_100g: 0 } },
+      }) });
+    });
+    await enterDemo(page, 'food');
+    await page.getByRole('button', { name: 'Add food' }).click();
+    await page.getByRole('button', { name: /Choose food/ }).click();
+    await page.getByRole('button', { name: 'Scan a barcode' }).click();
+    const sheet = page.getByRole('dialog', { name: 'Scan a barcode' });
+    await sheet.getByLabel('Or type the numbers').fill('0064200116474');
+    await sheet.getByRole('button', { name: 'Look up' }).click();
+    await expect(sheet.getByRole('alert')).toContainText('valid barcode'); // wrong check digit: nothing sent
+    expect(lookups).toEqual([]);
+    await sheet.getByLabel('Or type the numbers').fill('0064200116473');
+    await sheet.getByRole('button', { name: 'Look up' }).click();
+    await expect(sheet.getByText('Oikos Greek Yogurt Plain')).toBeHidden(); // name shows without duplicating the brand
+    await expect(sheet.getByText('Greek Yogurt Plain', { exact: true })).toBeVisible();
+    await expect(sheet.getByLabel('Nutrition for this amount')).toContainText('140 kcal'); // 175 g × 80/100
+    await sheet.getByRole('button', { name: 'More' }).click(); // 1.5 servings
+    await expect(sheet.getByLabel('Nutrition for this amount')).toContainText('210 kcal');
+    expect(lookups).toHaveLength(1);
+    expect(lookups[0]).toMatch(/\/api\/v2\/product\/0064200116473\.json\?fields=/);
+    await expect(page.locator('.launch-splash')).toHaveCount(0);
+    await page.screenshot({ path: 'docs/screenshots/40-barcode-product.png' });
+    await sheet.getByRole('button', { name: /^Add to (breakfast|lunch|dinner|snack)$/ }).click();
+    await expect(page.getByRole('status').getByText(/Added Oikos Greek Yogurt Plain/)).toBeVisible();
+    // Second time: found in the person's own meals without another lookup.
+    await page.getByRole('button', { name: 'Add food' }).click();
+    await page.getByRole('button', { name: /Choose food/ }).click();
+    await page.getByRole('button', { name: 'Scan a barcode' }).click();
+    await page.getByLabel('Or type the numbers').fill('0064200116473');
+    await page.getByRole('button', { name: 'Look up' }).click();
+    await expect(page.getByText(/saved in your meals/)).toBeVisible();
+    expect(lookups).toHaveLength(1);
+  });
+});
+
+test.describe('personal recipe', () => {
+  test('build dal from the ingredient list: values filled in, only grams and the cooked weight to weigh', async ({ page }) => {
+    await enterDemo(page, 'meal/new');
+    await page.getByPlaceholder('e.g. Dal tadka').fill('Mummy’s dal');
+    await page.getByRole('radio', { name: 'My recipe' }).or(page.getByRole('button', { name: 'My recipe' })).first().click();
+    const add = async (q: string, name: RegExp, grams: string) => {
+      await page.getByRole('button', { name: 'Add from ingredient list' }).click();
+      await page.getByLabel('Search ingredients').fill(q);
+      await page.getByRole('dialog', { name: 'Add an ingredient' }).getByRole('button', { name }).click();
+      await page.getByRole('textbox', { name: /grams$/ }).last().fill(grams);
+    };
+    await add('toor', /^Toor dal/, '200');
+    await add('desi ghee', /^Ghee/, '15');
+    await add('pyaz', /^Onion/, '100');
+    await expect(page.getByText(/Standard values per 100 g \(.+ kcal\) from the Canadian Nutrient File/).first()).toBeVisible();
+    await page.getByLabel('Cooked batch weight (g)').fill('900');
+    await page.getByLabel(/^1 \w+ weighs \(g\)/).fill('250');
+    await expect(page.locator('.notice').filter({ hasText: 'Usual portion ≈' })).toContainText('kcal');
+    await page.getByRole('button', { name: 'Save meal' }).last().click();
+    await expect(page.getByRole('status').getByText(/saved|Saved/)).toBeVisible();
+  });
+});
+
+test.describe('exercise library', () => {
+  test('hundreds of exercises: filter by muscle and equipment, read how-to, add to a day', async ({ page }) => {
+    await enterDemo(page, 'workout');
+    await page.getByRole('button', { name: 'Edit plan' }).click();
+    await page.getByRole('button', { name: 'Add exercise' }).first().click();
+    const sheet = page.getByRole('dialog', { name: 'Add exercise' });
+    await expect(sheet.getByText(/Showing popular exercises\. Search or pick a muscle group to see all \d{3}/)).toBeVisible();
+    await sheet.getByRole('group', { name: 'Muscle group' }).getByRole('button', { name: 'Legs' }).click();
+    await sheet.getByLabel('Equipment').selectOption('dumbbell');
+    await sheet.getByLabel('Search exercises').fill('bulgarian');
+    await sheet.getByRole('button', { name: /^How to do .*Bulgarian/i }).first().click();
+    const how = page.getByRole('dialog', { name: /Bulgarian/i });
+    await expect(how.locator('ol.how-to li').first()).toBeVisible();
+    await expect(page.locator('.launch-splash')).toHaveCount(0);
+    await page.screenshot({ path: 'docs/screenshots/41-exercise-how-to.png' });
+    await how.getByRole('button', { name: /^Add / }).click();
+    await expect(page.getByText(/Bulgarian/i).first()).toBeVisible();
+  });
+});

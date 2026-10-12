@@ -43,12 +43,36 @@ Phone browser (PWA)
             (idempotent per request id), store_plan_draft (supersedes older drafts); ai_finish records cost
 ```
 
+## Added in pass 3 (2026-10-12)
+
+```
+Phone ── HTTPS ──> world.openfoodfacts.org   barcode number only (no cookies, no referrer); CSP allows just this origin
+Phone ── save_push_subscription (RLS) ──> push_subscriptions (endpoint + device public keys; one device = one person)
+Phone ── notification_prefs (RLS, owner forced, IANA time zone checked)
+pg_cron (every 5 min, Vault-held bearer secret) ──> Edge Function "notify"
+   1 constant-time secret check (no user token involved; verify_jwt off for this function only)
+   2 notify_due(now): active members with a device, per-person local time windows
+   3 notify_claim: once per kind per local day (overlapping ticks never double-send)
+   4 notify_context: only that person's finished workouts (90 days), meal DATES (60 days), plan, weekly target
+     (skipped entirely when "hide details" is on)
+   5 Web Push: payload AES-128-GCM encrypted to the device (RFC 8291), VAPID-signed (RFC 8292);
+     endpoint host must be a known push service (SSRF guard); 404/410 → device deleted
+   6 logs carry the kind and error name only
+```
+
+- Revoking or deleting a member deletes their devices and reminder settings in the same transaction (trigger).
+- All `notify_*` RPCs are executable only by `service_role` (DB-tested).
+- Camera frames for barcode scanning never leave the phone. ZXing is bundled (no CDN).
+- Bundled reference data: Canadian Nutrient File 2026 (Health Canada, attribution kept, unaltered), USDA FNDDS (public domain), free-exercise-db (Unlicense). Indian Nutrient Databank values are excluded until its licence is clear.
+
 ## Keys
 
 | Value | Allowed location | Never in |
 |---|---|---|
 | `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` | browser bundle (identifies the project; safe only with grants + RLS) | — |
 | `GEMINI_API_KEY` | Supabase Edge Function secrets, entered by the owner | `VITE_*`, frontend code, source maps, git, logs, chat |
+| `VAPID_PRIVATE_KEY`, `NOTIFY_CRON_SECRET` | Supabase Edge Function secrets (+ the cron secret in Supabase Vault) | same as above |
+| `VITE_VAPID_PUBLIC_KEY` | browser bundle (public by design) | — |
 | Supabase secret / service-role key | platform-provided to the Edge Function | same as above |
 | Session tokens | Supabase SDK storage in this browser (`rozana-auth`) | URLs, logs, error reports |
 

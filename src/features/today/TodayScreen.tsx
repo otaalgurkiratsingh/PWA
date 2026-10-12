@@ -6,6 +6,9 @@ import { FoodArt } from '@/core/design/foodArt';
 import { Icon } from '@/core/design/icons';
 import { Section } from '@/core/design/ui';
 import { pushSupport } from '@/core/notifications/push';
+import { CoachAvatar } from '@/core/design/CoachAvatar';
+import { useTrainer } from '@/features/coach/Trainer';
+import { WaterCard } from './WaterCard';
 import { formatShortDate, formatTime, localHourIn } from '@/core/time/localDate';
 import { addDays } from '@/domain/metrics/metrics';
 import { momentum } from '@/domain/metrics/momentum';
@@ -32,6 +35,7 @@ export function TodayScreen() {
   const steps = useQuery((j) => j.db.get('daily_health', `steps:${today}`), [today]);
   const weights = useQuery((j) => j.weightsBetween(addDays(today, -13), today), [today]);
   const [adding, setAdding] = useState<MealPreset | null>(null);
+  const trainer = useTrainer();
   const promptKey = `trainluma.reminderPrompt.${profile.id}`;
   const [askReminders, setAskReminders] = useState(() => {
     try {
@@ -155,6 +159,8 @@ export function TodayScreen() {
         ) : null}
       </Section>
 
+      <WaterCard />
+
       {steps || latestWeight ? (
         <div className="metrics">
           {latestWeight ? <div className="metric"><span className="m-label">Weight</span><span className="m-value">{latestWeight.value}<small>{latestWeight.unit}</small></span><span className="m-sub">{latestWeight.local_date === today ? 'Today' : formatShortDate(latestWeight.local_date)}</span></div> : null}
@@ -164,15 +170,15 @@ export function TodayScreen() {
 
       <div className="card coach">
         <div className="row" style={{ gap: 14 }}>
-          <span className="ex-art" style={{ background: 'var(--coach-strong)', color: 'var(--coach-ink)' }}><Icon name="sparkle" size={26} /></span>
+          <CoachAvatar avatar={trainer.avatar} size={52} ring />
           <span className="grow">
-            <span className="eyebrow">AI Coach</span>
-            <span style={{ display: 'block', fontWeight: 700, fontSize: '1.0625rem' }}>Ask about your week</span>
-            <span className="small" style={{ color: 'var(--coach-ink)' }}>{mode === 'demo' ? 'Available with your own signed-in account' : 'Answers from your own logs. You decide on every change.'}</span>
+            <span className="eyebrow">Your AI trainer</span>
+            <span style={{ display: 'block', fontWeight: 700, fontSize: '1.0625rem' }}>Ask {trainer.name} about your week</span>
+            <span className="small" style={{ color: 'var(--coach-ink)' }}>{mode === 'demo' ? 'Try the demo chat with sample replies' : 'Answers from your own logs. You decide on every change.'}</span>
           </span>
         </div>
         <div className="row" style={{ marginTop: 14 }}>
-          <button className="btn grow" onClick={() => navigate('chat', 'new')}><Icon name="sparkle" size={18} /> Ask Coach</button>
+          <button className="btn grow" onClick={() => navigate('chat', 'new')}><Icon name="sparkle" size={18} /> Chat with {trainer.name}</button>
           <button className="btn secondary" onClick={() => navigate('coach')}>Review & more</button>
         </div>
       </div>

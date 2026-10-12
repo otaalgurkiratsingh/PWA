@@ -1,0 +1,3079 @@
+{
+ "version": "2026-10-12",
+ "note": "Standard reference values per 100 g for catalogue foods. Values are as published by each source (rounded to 2 decimals); serving weights come from the source measure tables unless basis is \"assumed\". Indian Nutrient Databank matches were excluded until its licence is confirmed.",
+ "sources": [
+  {
+   "id": "cnf-2026",
+   "name": "Canadian Nutrient File (CNF)",
+   "version": "2026 (files cnf_fcen_all-files-data_2026)",
+   "licence": "Health Canada CNF copyright guidelines (users' guide 2026): free commercial and non-commercial use without further permission; nutrient values may not be modified but may be expressed per other serving sizes; must not be represented as official or endorsed by Health Canada; provided as-is. (open.canada.ca lists CNF under the Open Government Licence - Canada; not re-verified for the 2026 files from this environment.)",
+   "url": "https://open.canada.ca/data/en/dataset/1b6139bd-ed7e-4043-bc28-ff00e10f3109",
+   "attribution": "Canadian Nutrient File, Health Canada, 2026. Values shown are standard estimates; this app is not affiliated with or endorsed by Health Canada."
+  },
+  {
+   "id": "fndds-2019-2020",
+   "name": "USDA Food and Nutrient Database for Dietary Studies (FNDDS), via FoodData Central Survey Foods",
+   "version": "FNDDS 2019-2020 (FoodData Central survey food JSON, published 2022-10-28)",
+   "licence": "U.S. Government work: public domain in the U.S.; FoodData Central data are released under CC0 1.0. Citation requested.",
+   "url": "https://fdc.nal.usda.gov/",
+   "attribution": "U.S. Department of Agriculture, Agricultural Research Service. FoodData Central: Food and Nutrient Database for Dietary Studies 2019-2020. fdc.nal.usda.gov."
+  }
+ ],
+ "excluded_pending_licence": [
+  "achar",
+  "aloo-gobhi",
+  "aloo-matar",
+  "aloo-methi",
+  "aloo-palak",
+  "aloo-paratha",
+  "baingan-bharta",
+  "bathua-saag",
+  "besan-burfi",
+  "besan-chilla",
+  "besan-ladoo",
+  "bhindi-masala",
+  "bhindi-sabzi",
+  "butter-chicken",
+  "cereal-with-milk",
+  "chana-dal",
+  "cucumber-raita",
+  "dal-makhani",
+  "dhokla",
+  "egg-bhurji",
+  "egg-curry",
+  "gajar-halwa",
+  "gobhi-paratha",
+  "green-chutney",
+  "jeera-aloo",
+  "jeera-rice",
+  "kadai-paneer",
+  "kaju-katli",
+  "karela-sabzi",
+  "lamb-or-goat-curry",
+  "lauki-chana-dal",
+  "lemon-rice",
+  "makki-di-roti",
+  "matar-paneer",
+  "matar-pulao",
+  "methi-paratha",
+  "mixed-dal",
+  "mixed-vegetable-raita",
+  "mooli-paratha",
+  "moong-dal-chilla",
+  "moong-dal-halwa",
+  "mushroom-matar",
+  "onion-paratha",
+  "paneer-butter-masala",
+  "paneer-paratha",
+  "paneer-tikka",
+  "patta-gobhi-matar",
+  "poha",
+  "salted-lassi",
+  "sarson-da-saag",
+  "seekh-kebab",
+  "seviyan",
+  "shahi-paneer",
+  "soya-chunk-curry",
+  "suji-halwa",
+  "sweet-dalia",
+  "sweet-lassi",
+  "sweet-lemonade",
+  "sweet-rice",
+  "tamarind-chutney",
+  "tandoori-chicken",
+  "tinda-sabzi",
+  "upma",
+  "urad-dal",
+  "vegetable-pulao",
+  "whole-black-urad-dal",
+  "whole-green-moong-dal",
+  "whole-masoor-dal",
+  "yellow-moong-dal"
+ ],
+ "foods": {
+  "almond-butter": {
+   "source": "cnf-2026",
+   "record": "2605",
+   "record_name": "Nuts, almond butter, plain",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 614.0,
+    "protein_g": 20.96,
+    "carbs_g": 18.82,
+    "fat_g": 55.5,
+    "fiber_g": 10.3
+   },
+   "serving": {
+    "unit": "serving",
+    "grams": 32.4,
+    "basis": "source",
+    "note": "CNF 2026 measure \"30 ml\" of record 2605."
+   }
+  },
+  "almonds": {
+   "source": "cnf-2026",
+   "record": "2534",
+   "record_name": "Nuts, almonds, dried, unblanched, unroasted",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 579.0,
+    "protein_g": 21.15,
+    "carbs_g": 21.55,
+    "fat_g": 49.93,
+    "fiber_g": 12.5
+   },
+   "serving": {
+    "unit": "serving",
+    "grams": 24.1,
+    "basis": "source",
+    "note": "CNF 2026 measure \"60 ml ground\" of record 2534."
+   }
+  },
+  "aloo-tikki": {
+   "source": "fndds-2019-2020",
+   "record": "71503010 (FDC ID 2345004)",
+   "record_name": "Potato patty",
+   "method": "record",
+   "match": "close",
+   "per_100g": {
+    "energy_kcal": 171.0,
+    "protein_g": 3.89,
+    "carbs_g": 13.5,
+    "fat_g": 11.3,
+    "fiber_g": 1.5
+   },
+   "serving": {
+    "unit": "serving",
+    "grams": 55.0,
+    "basis": "source",
+    "note": "FNDDS 2019-2020 portion \"1 patty\" of record 71503010."
+   }
+  },
+  "apple": {
+   "source": "cnf-2026",
+   "record": "1696",
+   "record_name": "Apple, raw, with skin",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 52.0,
+    "protein_g": 0.26,
+    "carbs_g": 13.81,
+    "fat_g": 0.17,
+    "fiber_g": 1.9
+   },
+   "serving": {
+    "unit": "piece",
+    "grams": 182.0,
+    "basis": "source",
+    "note": "CNF 2026 measure \"1 medium fruit (7cm dia)\" of record 1696."
+   }
+  },
+  "avocado-toast": {
+   "source": "cnf-2026",
+   "record": "recipe:3732+1511",
+   "record_name": "Standard recipe: Bread, white, commercial, toasted (1 slice) + Avocado, raw (1/2 fruit)",
+   "method": "recipe",
+   "match": "close",
+   "per_100g": {
+    "energy_kcal": 191.64,
+    "protein_g": 4.0,
+    "carbs_g": 19.84,
+    "fat_g": 11.76,
+    "fiber_g": 5.96
+   },
+   "serving": {
+    "unit": "serving",
+    "grams": 133.5,
+    "basis": "assumed",
+    "note": "1 slice toast + 1/2 avocado, weights from CNF household measures; the amount of avocado is an assumption."
+   },
+   "recipe": [
+    {
+     "name": "Bread, white, commercial, toasted",
+     "grams": 33.0,
+     "source": "cnf-2026",
+     "record": "3732"
+    },
+    {
+     "name": "Avocado, raw, all commercial varieties",
+     "grams": 100.5,
+     "source": "cnf-2026",
+     "record": "1511"
+    }
+   ]
+  },
+  "bagel-with-cream-cheese": {
+   "source": "cnf-2026",
+   "record": "recipe:3671+28",
+   "record_name": "Standard recipe: Bagel, plain (1 medium) + Cheese, cream cheese product, plain (2 tbsp)",
+   "method": "recipe",
+   "match": "close",
+   "per_100g": {
+    "energy_kcal": 274.06,
+    "protein_g": 9.69,
+    "carbs_g": 42.74,
+    "fat_g": 7.26,
+    "fiber_g": 1.25
+   },
+   "serving": {
+    "unit": "serving",
+    "grams": 134.4,
+    "basis": "assumed",
+    "note": "1 medium bagel + 2 tbsp cream cheese, weights from CNF household measures; the cream cheese amount is an assumption."
+   },
+   "recipe": [
+    {
+     "name": "Bagel, plain (with onion, poppy seed and/or sesame seed)",
+     "grams": 105.0,
+     "source": "cnf-2026",
+     "record": "3671"
+    },
+    {
+     "name": "Cheese, cream cheese product, plain",
+     "grams": 29.4,
+     "source": "cnf-2026",
+     "record": "28"
+    }
+   ]
+  },
+  "banana": {
+   "source": "cnf-2026",
+   "record": "1704",
+   "record_name": "Banana, raw",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 89.0,
+    "protein_g": 1.09,
+    "carbs_g": 22.84,
+    "fat_g": 0.33,
+    "fiber_g": 1.74
+   },
+   "serving": {
+    "unit": "piece",
+    "grams": 118.0,
+    "basis": "source",
+    "note": "CNF 2026 measure \"1 medium (18cm to 20cm long)\" of record 1704."
+   }
+  },
+  "beef-burger": {
+   "source": "fndds-2019-2020",
+   "record": "27510521 (FDC ID 2342365)",
+   "record_name": "Hamburger, NFS",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 288.0,
+    "protein_g": 17.5,
+    "carbs_g": 20.7,
+    "fat_g": 14.4,
+    "fiber_g": 0.7
+   },
+   "serving": {
+    "unit": "serving",
+    "grams": 145.0,
+    "basis": "source",
+    "note": "FNDDS 2019-2020 portion \"1 hamburger\" of record 27510521."
+   }
+  },
+  "biscuits": {
+   "source": "cnf-2026",
+   "record": "7865",
+   "record_name": "Cookie, tea biscuit, wheat, Indian style (includes Punjabi, Gur/Jaggery), commercial",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 494.74,
+    "protein_g": 7.22,
+    "carbs_g": 63.74,
+    "fat_g": 23.44,
+    "fiber_g": 2.0
+   },
+   "serving": {
+    "unit": "serving",
+    "grams": 19.3,
+    "basis": "source",
+    "note": "CNF 2026 measure \"1 cookie\" of record 7865."
+   }
+  },
+  "black-coffee": {
+   "source": "cnf-2026",
+   "record": "2873",
+   "record_name": "Coffee, brewed, prepared with tap water",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 1.0,
+    "protein_g": 0.12,
+    "carbs_g": 0.0,
+    "fat_g": 0.02,
+    "fiber_g": 0.0
+   },
+   "serving": {
+    "unit": "cup",
+    "grams": 250.2,
+    "basis": "source",
+    "note": "CNF 2026 measure \"250 ml\" of record 2873."
+   }
+  },
+  "black-tea": {
+   "source": "cnf-2026",
+   "record": "2909",
+   "record_name": "Tea, brewed",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 1.0,
+    "protein_g": 0.0,
+    "carbs_g": 0.3,
+    "fat_g": 0.0,
+    "fiber_g": 0.0
+   },
+   "serving": {
+    "unit": "cup",
+    "grams": 250.4,
+    "basis": "source",
+    "note": "CNF 2026 measure \"250 ml\" of record 2909."
+   }
+  },
+  "blueberries": {
+   "source": "cnf-2026",
+   "record": "1705",
+   "record_name": "Blueberry, raw",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 57.0,
+    "protein_g": 0.74,
+    "carbs_g": 14.49,
+    "fat_g": 0.33,
+    "fiber_g": 2.59
+   },
+   "serving": {
+    "unit": "bowl",
+    "grams": 153.2,
+    "basis": "source",
+    "note": "CNF 2026 measure \"250 ml\" of record 1705."
+   }
+  },
+  "boiled-eggs": {
+   "source": "cnf-2026",
+   "record": "130",
+   "record_name": "Egg, chicken, whole, cooked, boiled in shell, hard-cooked",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 141.0,
+    "protein_g": 11.8,
+    "carbs_g": 1.85,
+    "fat_g": 10.01,
+    "fiber_g": 0.0
+   },
+   "serving": {
+    "unit": "egg",
+    "grams": 50.0,
+    "basis": "source",
+    "note": "CNF 2026 measure \"1 large egg\" of record 130."
+   }
+  },
+  "brown-rice": {
+   "source": "cnf-2026",
+   "record": "4497",
+   "record_name": "Grains, rice, brown, long-grain, cooked",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 123.0,
+    "protein_g": 2.74,
+    "carbs_g": 25.58,
+    "fat_g": 0.97,
+    "fiber_g": 1.48
+   },
+   "serving": {
+    "unit": "bowl",
+    "grams": 213.4,
+    "basis": "source",
+    "note": "CNF 2026 measure \"250 ml\" of record 4497."
+   }
+  },
+  "burrito-bowl": {
+   "source": "fndds-2019-2020",
+   "record": "58102700 (FDC ID 2344039)",
+   "record_name": "Burrito bowl, NFS",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 145.0,
+    "protein_g": 13.1,
+    "carbs_g": 10.6,
+    "fat_g": 5.48,
+    "fiber_g": 1.0
+   },
+   "serving": {
+    "unit": "serving",
+    "grams": 270.0,
+    "basis": "source",
+    "note": "FNDDS 2019-2020 portion \"1 item, any size\" of record 58102700."
+   }
+  },
+  "butter-added-to-food": {
+   "source": "cnf-2026",
+   "record": "118",
+   "record_name": "Butter, regular",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 717.0,
+    "protein_g": 0.85,
+    "carbs_g": 0.06,
+    "fat_g": 81.11,
+    "fiber_g": 0.0
+   },
+   "serving": {
+    "unit": "tsp",
+    "grams": 4.8,
+    "basis": "source",
+    "note": "CNF 2026 measure \"5 ml\" of record 118."
+   }
+  },
+  "butter-naan": {
+   "source": "cnf-2026",
+   "record": "recipe:6606+118",
+   "record_name": "Standard recipe: Indian, bread, naan (1 small) + Butter, regular (1 tsp)",
+   "method": "recipe",
+   "match": "close",
+   "per_100g": {
+    "energy_kcal": 310.49,
+    "protein_g": 8.52,
+    "carbs_g": 47.49,
+    "fat_g": 9.7,
+    "fiber_g": 2.65
+   },
+   "serving": {
+    "unit": "piece",
+    "grams": 94.8,
+    "basis": "assumed",
+    "note": "1 small naan + 1 tsp butter, weights from CNF household measures; the amount of butter is an assumption."
+   },
+   "recipe": [
+    {
+     "name": "Indian, bread, naan",
+     "grams": 90.0,
+     "source": "cnf-2026",
+     "record": "6606"
+    },
+    {
+     "name": "Butter, regular",
+     "grams": 4.8,
+     "source": "cnf-2026",
+     "record": "118"
+    }
+   ]
+  },
+  "canned-tuna": {
+   "source": "cnf-2026",
+   "record": "3081",
+   "record_name": "Fish, tuna, light, canned in water, drained, salt added",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 86.0,
+    "protein_g": 19.44,
+    "carbs_g": 0.0,
+    "fat_g": 0.96,
+    "fiber_g": 0.0
+   },
+   "serving": {
+    "unit": "serving",
+    "grams": 75,
+    "basis": "assumed",
+    "note": "No suitable source portion; Canada's Food Guide (2007) Food Guide Serving for cooked meat/fish/poultry = 75 g (2.5 oz)."
+   }
+  },
+  "cantaloupe": {
+   "source": "cnf-2026",
+   "record": "1721",
+   "record_name": "Melon, cantaloupe, raw",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 34.0,
+    "protein_g": 0.84,
+    "carbs_g": 8.16,
+    "fat_g": 0.19,
+    "fiber_g": 0.69
+   },
+   "serving": {
+    "unit": "piece",
+    "grams": 102.0,
+    "basis": "source",
+    "note": "CNF 2026 measure \"1 large wedge (1/8 large melon)\" of record 1721."
+   }
+  },
+  "carrot-sticks": {
+   "source": "cnf-2026",
+   "record": "2380",
+   "record_name": "Carrot, raw",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 41.0,
+    "protein_g": 0.93,
+    "carbs_g": 9.58,
+    "fat_g": 0.24,
+    "fiber_g": 2.44
+   },
+   "serving": {
+    "unit": "serving",
+    "grams": 61.0,
+    "basis": "source",
+    "note": "CNF 2026 measure \"1 medium\" of record 2380."
+   }
+  },
+  "cashews": {
+   "source": "cnf-2026",
+   "record": "2546",
+   "record_name": "Nuts, cashew nuts, dry roasted",
+   "method": "record",
+   "match": "close",
+   "per_100g": {
+    "energy_kcal": 574.0,
+    "protein_g": 15.31,
+    "carbs_g": 32.69,
+    "fat_g": 46.35,
+    "fiber_g": 3.0
+   },
+   "serving": {
+    "unit": "serving",
+    "grams": 34.7,
+    "basis": "source",
+    "note": "CNF 2026 measure \"60 ml whole or halves\" of record 2546."
+   }
+  },
+  "chaas": {
+   "source": "cnf-2026",
+   "record": "124",
+   "record_name": "Milk, fluid, buttermilk, 1% M.F.",
+   "method": "record",
+   "match": "close",
+   "per_100g": {
+    "energy_kcal": 36.0,
+    "protein_g": 3.79,
+    "carbs_g": 3.23,
+    "fat_g": 0.82,
+    "fiber_g": 0.0
+   },
+   "serving": {
+    "unit": "cup",
+    "grams": 258.9,
+    "basis": "source",
+    "note": "CNF 2026 measure \"250 ml\" of record 124."
+   }
+  },
+  "cheese-slice": {
+   "source": "cnf-2026",
+   "record": "7005",
+   "record_name": "Cheese, processed product, cheddar, slices",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 261.0,
+    "protein_g": 17.61,
+    "carbs_g": 13.73,
+    "fat_g": 15.12,
+    "fiber_g": 0.0
+   },
+   "serving": {
+    "unit": "serving",
+    "grams": 21.0,
+    "basis": "source",
+    "note": "CNF 2026 measure \"1 regular slice\" of record 7005."
+   }
+  },
+  "chia-seeds": {
+   "source": "cnf-2026",
+   "record": "2511",
+   "record_name": "Seeds, chia seeds, dried",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 486.0,
+    "protein_g": 16.54,
+    "carbs_g": 42.12,
+    "fat_g": 30.74,
+    "fiber_g": 34.4
+   },
+   "serving": {
+    "unit": "serving",
+    "grams": 10.8,
+    "basis": "source",
+    "note": "CNF 2026 measure \"15 ml\" of record 2511."
+   }
+  },
+  "chicken-biryani": {
+   "source": "fndds-2019-2020",
+   "record": "27243100 (FDC ID 2341967)",
+   "record_name": "Biryani with chicken",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 104.0,
+    "protein_g": 7.15,
+    "carbs_g": 13.6,
+    "fat_g": 2.38,
+    "fiber_g": 1.1
+   },
+   "serving": {
+    "unit": "serving",
+    "grams": 196.0,
+    "basis": "source",
+    "note": "FNDDS 2019-2020 portion \"1 cup\" of record 27243100."
+   }
+  },
+  "chicken-burger": {
+   "source": "fndds-2019-2020",
+   "record": "27545100 (FDC ID 2342463)",
+   "record_name": "Turkey or chicken burger, on white bun",
+   "method": "record",
+   "match": "close",
+   "per_100g": {
+    "energy_kcal": 234.0,
+    "protein_g": 20.0,
+    "carbs_g": 20.7,
+    "fat_g": 7.69,
+    "fiber_g": 0.7
+   },
+   "serving": {
+    "unit": "serving",
+    "grams": 145.0,
+    "basis": "source",
+    "note": "FNDDS 2019-2020 portion \"1 sandwich\" of record 27545100."
+   }
+  },
+  "chicken-keema": {
+   "source": "cnf-2026",
+   "record": "919",
+   "record_name": "Chicken, ground, lean, cooked",
+   "method": "record",
+   "match": "close",
+   "per_100g": {
+    "energy_kcal": 189.0,
+    "protein_g": 23.28,
+    "carbs_g": 0.0,
+    "fat_g": 10.92,
+    "fiber_g": 0.0
+   },
+   "serving": {
+    "unit": "serving",
+    "grams": 75,
+    "basis": "assumed",
+    "note": "No suitable source portion; Canada's Food Guide (2007) Food Guide Serving for cooked meat/fish/poultry = 75 g (2.5 oz)."
+   }
+  },
+  "chicken-thigh": {
+   "source": "cnf-2026",
+   "record": "854",
+   "record_name": "Chicken, broiler, thigh, meat, roasted",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 179.0,
+    "protein_g": 24.76,
+    "carbs_g": 0.0,
+    "fat_g": 8.15,
+    "fiber_g": 0.0
+   },
+   "serving": {
+    "unit": "serving",
+    "grams": 75,
+    "basis": "assumed",
+    "note": "No suitable source portion; Canada's Food Guide (2007) Food Guide Serving for cooked meat/fish/poultry = 75 g (2.5 oz)."
+   }
+  },
+  "chicken-tikka": {
+   "source": "fndds-2019-2020",
+   "record": "24122161 (FDC ID 2341368)",
+   "record_name": "Chicken breast, baked, broiled, or roasted with marinade, skin not eaten, from raw",
+   "method": "record",
+   "match": "close",
+   "per_100g": {
+    "energy_kcal": 175.0,
+    "protein_g": 29.1,
+    "carbs_g": 0.31,
+    "fat_g": 5.38,
+    "fiber_g": 0.0
+   },
+   "serving": {
+    "unit": "serving",
+    "grams": 75,
+    "basis": "assumed",
+    "note": "No suitable source portion; Canada's Food Guide (2007) Food Guide Serving for cooked meat/fish/poultry = 75 g (2.5 oz)."
+   }
+  },
+  "chole": {
+   "source": "fndds-2019-2020",
+   "record": "41302010 (FDC ID 2342890)",
+   "record_name": "Chickpeas, from dried, fat added",
+   "method": "record",
+   "match": "close",
+   "per_100g": {
+    "energy_kcal": 211.0,
+    "protein_g": 8.23,
+    "carbs_g": 25.5,
+    "fat_g": 8.91,
+    "fiber_g": 7.1
+   },
+   "serving": {
+    "unit": "bowl",
+    "grams": 185.0,
+    "basis": "source",
+    "note": "FNDDS 2019-2020 portion \"1 cup\" of record 41302010."
+   }
+  },
+  "coconut-water": {
+   "source": "cnf-2026",
+   "record": "2566",
+   "record_name": "Coconut water (liquid from coconut)",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 19.0,
+    "protein_g": 0.72,
+    "carbs_g": 3.71,
+    "fat_g": 0.2,
+    "fiber_g": 1.1
+   },
+   "serving": {
+    "unit": "cup",
+    "grams": 253.6,
+    "basis": "source",
+    "note": "CNF 2026 measure \"125 ml\" (126.796 g) x 2 of record 2566 (250 mL)."
+   }
+  },
+  "coffee-with-milk": {
+   "source": "fndds-2019-2020",
+   "record": "92101850 (FDC ID 2345944)",
+   "record_name": "Coffee, cafe con leche",
+   "method": "record",
+   "match": "close",
+   "per_100g": {
+    "energy_kcal": 40.0,
+    "protein_g": 1.67,
+    "carbs_g": 5.63,
+    "fat_g": 1.13,
+    "fiber_g": 0.0
+   },
+   "serving": {
+    "unit": "cup",
+    "grams": 248.0,
+    "basis": "source",
+    "note": "FNDDS 2019-2020 portion \"1 cup (8 fl oz)\" of record 92101850."
+   }
+  },
+  "cooking-oil-added": {
+   "source": "cnf-2026",
+   "record": "451",
+   "record_name": "Vegetable oil, canola",
+   "method": "record",
+   "match": "close",
+   "per_100g": {
+    "energy_kcal": 885.0,
+    "protein_g": 0.0,
+    "carbs_g": 0.0,
+    "fat_g": 100.0,
+    "fiber_g": 0.0
+   },
+   "serving": {
+    "unit": "tsp",
+    "grams": 4.6,
+    "basis": "source",
+    "note": "CNF 2026 measure \"5 ml\" of record 451."
+   }
+  },
+  "cottage-cheese": {
+   "source": "cnf-2026",
+   "record": "120",
+   "record_name": "Cheese, cottage, 2% M.F.",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 81.0,
+    "protein_g": 10.45,
+    "carbs_g": 4.76,
+    "fat_g": 2.27,
+    "fiber_g": 0.0
+   },
+   "serving": {
+    "unit": "serving",
+    "grams": 238.8,
+    "basis": "source",
+    "note": "CNF 2026 measure \"250 ml unpacked\" of record 120."
+   }
+  },
+  "cream-added": {
+   "source": "cnf-2026",
+   "record": "138",
+   "record_name": "Cream, whipping, 35% M.F.",
+   "method": "record",
+   "match": "close",
+   "per_100g": {
+    "energy_kcal": 328.0,
+    "protein_g": 2.09,
+    "carbs_g": 2.85,
+    "fat_g": 35.0,
+    "fiber_g": 0.0
+   },
+   "serving": {
+    "unit": "tsp",
+    "grams": 5.0,
+    "basis": "source",
+    "note": "CNF 2026 measure \"15 ml\" (15.088 g) x 0.3333 of record 138 (1 tsp = 1/3 tbsp)."
+   }
+  },
+  "creamy-pasta": {
+   "source": "fndds-2019-2020",
+   "record": "58146382 (FDC ID 2344341)",
+   "record_name": "Pasta with cream sauce, home recipe",
+   "method": "record",
+   "match": "close",
+   "per_100g": {
+    "energy_kcal": 154.0,
+    "protein_g": 4.15,
+    "carbs_g": 16.7,
+    "fat_g": 7.78,
+    "fiber_g": 0.9
+   },
+   "serving": {
+    "unit": "serving",
+    "grams": 250.0,
+    "basis": "source",
+    "note": "FNDDS 2019-2020 portion \"1 cup\" of record 58146382."
+   }
+  },
+  "cucumber-slices": {
+   "source": "cnf-2026",
+   "record": "2363",
+   "record_name": "Cucumber, raw",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 16.0,
+    "protein_g": 0.65,
+    "carbs_g": 3.63,
+    "fat_g": 0.11,
+    "fiber_g": 0.73
+   },
+   "serving": {
+    "unit": "serving",
+    "grams": 62.9,
+    "basis": "source",
+    "note": "CNF 2026 measure \"125 ml slices\" of record 2363."
+   }
+  },
+  "dal-tadka": {
+   "source": "fndds-2019-2020",
+   "record": "41305050 (FDC ID 2342902)",
+   "record_name": "Dal",
+   "method": "record",
+   "match": "close",
+   "per_100g": {
+    "energy_kcal": 145.0,
+    "protein_g": 8.6,
+    "carbs_g": 19.2,
+    "fat_g": 4.31,
+    "fiber_g": 7.5
+   },
+   "serving": {
+    "unit": "bowl",
+    "grams": 240.0,
+    "basis": "source",
+    "note": "FNDDS 2019-2020 portion \"1 cup\" of record 41305050."
+   }
+  },
+  "dates": {
+   "source": "cnf-2026",
+   "record": "5401",
+   "record_name": "Date, medjool",
+   "method": "record",
+   "match": "close",
+   "per_100g": {
+    "energy_kcal": 277.0,
+    "protein_g": 1.81,
+    "carbs_g": 74.97,
+    "fat_g": 0.15,
+    "fiber_g": 6.7
+   },
+   "serving": {
+    "unit": "piece",
+    "grams": 24.0,
+    "basis": "source",
+    "note": "CNF 2026 measure \"1 date pitted\" of record 5401."
+   }
+  },
+  "donut": {
+   "source": "cnf-2026",
+   "record": "3893",
+   "record_name": "Doughnut (donut), cake-type, plain, sugared or glazed",
+   "method": "record",
+   "match": "close",
+   "per_100g": {
+    "energy_kcal": 426.0,
+    "protein_g": 5.2,
+    "carbs_g": 50.8,
+    "fat_g": 22.9,
+    "fiber_g": 1.5
+   },
+   "serving": {
+    "unit": "serving",
+    "grams": 63.0,
+    "basis": "source",
+    "note": "CNF 2026 measure \"1 doughnut (9.5cm dia)\" of record 3893."
+   }
+  },
+  "dosa": {
+   "source": "fndds-2019-2020",
+   "record": "55702100 (FDC ID 2343830)",
+   "record_name": "Dosa, plain",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 210.0,
+    "protein_g": 5.7,
+    "carbs_g": 37.0,
+    "fat_g": 4.05,
+    "fiber_g": 1.8
+   },
+   "serving": {
+    "unit": "serving",
+    "grams": 80.0,
+    "basis": "source",
+    "note": "FNDDS 2019-2020 portion \"1 medium\" of record 55702100."
+   }
+  },
+  "egg-and-toast": {
+   "source": "cnf-2026",
+   "record": "recipe:130+3732",
+   "record_name": "Standard recipe: Egg, hard-cooked (1 large) + Bread, white, commercial, toasted (1 slice)",
+   "method": "recipe",
+   "match": "close",
+   "per_100g": {
+    "energy_kcal": 199.45,
+    "protein_g": 11.12,
+    "carbs_g": 22.7,
+    "fat_g": 7.2,
+    "fiber_g": 1.47
+   },
+   "serving": {
+    "unit": "serving",
+    "grams": 83.0,
+    "basis": "assumed",
+    "note": "1 large egg + 1 slice toast, weights from CNF household measures; the combination is an assumption."
+   },
+   "recipe": [
+    {
+     "name": "Egg, chicken, whole, cooked, boiled in shell, hard-cooked",
+     "grams": 50.0,
+     "source": "cnf-2026",
+     "record": "130"
+    },
+    {
+     "name": "Bread, white, commercial, toasted",
+     "grams": 33.0,
+     "source": "cnf-2026",
+     "record": "3732"
+    }
+   ]
+  },
+  "egg-breakfast-sandwich": {
+   "source": "fndds-2019-2020",
+   "record": "34001300 (FDC ID 2342790)",
+   "record_name": "Egg sandwich on English muffin",
+   "method": "record",
+   "match": "close",
+   "per_100g": {
+    "energy_kcal": 231.0,
+    "protein_g": 11.8,
+    "carbs_g": 20.6,
+    "fat_g": 11.3,
+    "fiber_g": 1.5
+   },
+   "serving": {
+    "unit": "serving",
+    "grams": 135.0,
+    "basis": "source",
+    "note": "FNDDS 2019-2020 portion \"1 regular\" of record 34001300."
+   }
+  },
+  "egg-whites": {
+   "source": "cnf-2026",
+   "record": "6605",
+   "record_name": "Egg, chicken, white, fresh or frozen, cooked",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 48.0,
+    "protein_g": 9.99,
+    "carbs_g": 1.18,
+    "fat_g": 0.0,
+    "fiber_g": 0.0
+   },
+   "serving": {
+    "unit": "egg",
+    "grams": 33.0,
+    "basis": "source",
+    "note": "CNF 2026 measure \"1 large egg white\" of record 6605."
+   }
+  },
+  "elaichi-chai": {
+   "source": "fndds-2019-2020",
+   "record": "92306800 (FDC ID 2346076)",
+   "record_name": "Tea, hot, with milk",
+   "method": "record",
+   "match": "close",
+   "per_100g": {
+    "energy_kcal": 51.0,
+    "protein_g": 1.58,
+    "carbs_g": 8.95,
+    "fat_g": 1.05,
+    "fiber_g": 0.1
+   },
+   "serving": {
+    "unit": "cup",
+    "grams": 240.0,
+    "basis": "source",
+    "note": "FNDDS 2019-2020 portion \"1 cup\" of record 92306800."
+   }
+  },
+  "falafel-wrap": {
+   "source": "fndds-2019-2020",
+   "record": "41901030 (FDC ID 2342960)",
+   "record_name": "Falafel sandwich",
+   "method": "record",
+   "match": "close",
+   "per_100g": {
+    "energy_kcal": 265.0,
+    "protein_g": 6.25,
+    "carbs_g": 27.0,
+    "fat_g": 14.8,
+    "fiber_g": 2.5
+   },
+   "serving": {
+    "unit": "serving",
+    "grams": 215.0,
+    "basis": "source",
+    "note": "FNDDS 2019-2020 portion \"1 sandwich, any size\" of record 41901030."
+   }
+  },
+  "fish-curry": {
+   "source": "fndds-2019-2020",
+   "record": "27150320 (FDC ID 2341884)",
+   "record_name": "Fish curry",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 92.0,
+    "protein_g": 4.93,
+    "carbs_g": 6.58,
+    "fat_g": 5.38,
+    "fiber_g": 1.4
+   },
+   "serving": {
+    "unit": "serving",
+    "grams": 240.0,
+    "basis": "source",
+    "note": "FNDDS 2019-2020 portion \"1 cup\" of record 27150320."
+   }
+  },
+  "flax-seeds": {
+   "source": "cnf-2026",
+   "record": "4528",
+   "record_name": "Seeds, flaxseed (linseed), whole and ground",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 534.0,
+    "protein_g": 18.29,
+    "carbs_g": 28.88,
+    "fat_g": 42.16,
+    "fiber_g": 27.3
+   },
+   "serving": {
+    "unit": "serving",
+    "grams": 10.7,
+    "basis": "source",
+    "note": "CNF 2026 measure \"15 ml whole\" of record 4528."
+   }
+  },
+  "french-fries": {
+   "source": "fndds-2019-2020",
+   "record": "71401031 (FDC ID 2344956)",
+   "record_name": "Potato, french fries, restaurant",
+   "method": "record",
+   "match": "close",
+   "per_100g": {
+    "energy_kcal": 289.0,
+    "protein_g": 3.49,
+    "carbs_g": 37.2,
+    "fat_g": 14.0,
+    "fiber_g": 3.9
+   },
+   "serving": {
+    "unit": "serving",
+    "grams": 145.0,
+    "basis": "source",
+    "note": "FNDDS 2019-2020 portion \"1 medium fast food order\" of record 71401031."
+   }
+  },
+  "fried-eggs": {
+   "source": "cnf-2026",
+   "record": "129",
+   "record_name": "Egg, chicken, whole, cooked, fried",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 193.0,
+    "protein_g": 12.87,
+    "carbs_g": 1.11,
+    "fat_g": 14.81,
+    "fiber_g": 0.0
+   },
+   "serving": {
+    "unit": "egg",
+    "grams": 46.0,
+    "basis": "source",
+    "note": "CNF 2026 measure \"1 large egg\" of record 129."
+   }
+  },
+  "frozen-mixed-vegetables": {
+   "source": "cnf-2026",
+   "record": "2272",
+   "record_name": "Vegetables, mixed, frozen, boiled, drained",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 65.0,
+    "protein_g": 2.86,
+    "carbs_g": 13.09,
+    "fat_g": 0.15,
+    "fiber_g": 2.9
+   },
+   "serving": {
+    "unit": "serving",
+    "grams": 192.3,
+    "basis": "source",
+    "note": "CNF 2026 measure \"250 ml\" of record 2272."
+   }
+  },
+  "fruit-juice": {
+   "source": "fndds-2019-2020",
+   "record": "64100100 (FDC ID 2344809)",
+   "record_name": "Fruit juice, NFS",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 51.0,
+    "protein_g": 0.29,
+    "carbs_g": 12.1,
+    "fat_g": 0.26,
+    "fiber_g": 0.2
+   },
+   "serving": {
+    "unit": "cup",
+    "grams": 248.0,
+    "basis": "source",
+    "note": "FNDDS 2019-2020 portion \"1 fl oz (no ice)\" (31 g) x 8 of record 64100100 (8 fl oz cup)."
+   }
+  },
+  "garlic-naan": {
+   "source": "cnf-2026",
+   "record": "7912",
+   "record_name": "Indian, bread, naan, garlic (includes roasted onion)",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 288.46,
+    "protein_g": 9.08,
+    "carbs_g": 50.64,
+    "fat_g": 5.51,
+    "fiber_g": 3.46
+   },
+   "serving": {
+    "unit": "piece",
+    "grams": 100.1,
+    "basis": "source",
+    "note": "CNF 2026 measure \"1 piece\" of record 7912."
+   }
+  },
+  "ghee-added-to-food": {
+   "source": "fndds-2019-2020",
+   "record": "81204000 (FDC ID 2345725)",
+   "record_name": "Ghee, clarified butter",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 876.0,
+    "protein_g": 0.28,
+    "carbs_g": 0.0,
+    "fat_g": 99.5,
+    "fiber_g": 0.0
+   },
+   "serving": {
+    "unit": "tsp",
+    "grams": 4.7,
+    "basis": "source",
+    "note": "FNDDS 2019-2020 portion \"1 tablespoon\" (14 g) x 0.3333 of record 81204000 (1 tsp = 1/3 tbsp)."
+   }
+  },
+  "ginger-chai": {
+   "source": "fndds-2019-2020",
+   "record": "92306800 (FDC ID 2346076)",
+   "record_name": "Tea, hot, with milk",
+   "method": "record",
+   "match": "close",
+   "per_100g": {
+    "energy_kcal": 51.0,
+    "protein_g": 1.58,
+    "carbs_g": 8.95,
+    "fat_g": 1.05,
+    "fiber_g": 0.1
+   },
+   "serving": {
+    "unit": "cup",
+    "grams": 240.0,
+    "basis": "source",
+    "note": "FNDDS 2019-2020 portion \"1 cup\" of record 92306800."
+   }
+  },
+  "grapes": {
+   "source": "cnf-2026",
+   "record": "1718",
+   "record_name": "Grape, red or green (European type, such as Thompson seedless), adherent skin, raw",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 69.0,
+    "protein_g": 0.72,
+    "carbs_g": 18.1,
+    "fat_g": 0.16,
+    "fiber_g": 1.2
+   },
+   "serving": {
+    "unit": "bowl",
+    "grams": 159.6,
+    "basis": "source",
+    "note": "CNF 2026 measure \"250 ml seedless\" of record 1718."
+   }
+  },
+  "greek-yogurt": {
+   "source": "cnf-2026",
+   "record": "7469",
+   "record_name": "Yogourt (yogurt), Greek style, 2% M.F., plain",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 69.0,
+    "protein_g": 9.71,
+    "carbs_g": 4.0,
+    "fat_g": 2.0,
+    "fiber_g": 0.0
+   },
+   "serving": {
+    "unit": "serving",
+    "grams": 176.8,
+    "basis": "source",
+    "note": "CNF 2026 measure \"175 ml\" of record 7469."
+   }
+  },
+  "green-tea": {
+   "source": "cnf-2026",
+   "record": "7624",
+   "record_name": "Tea, green, brewed",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 1.0,
+    "protein_g": 0.22,
+    "carbs_g": 0.0,
+    "fat_g": 0.0,
+    "fiber_g": 0.0
+   },
+   "serving": {
+    "unit": "cup",
+    "grams": 250.0,
+    "basis": "source",
+    "note": "CNF 2026 measure \"250 ml\" of record 7624."
+   }
+  },
+  "grilled-chicken-breast": {
+   "source": "fndds-2019-2020",
+   "record": "24123301 (FDC ID 2341374)",
+   "record_name": "Chicken breast, grilled without sauce, skin not eaten",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 176.0,
+    "protein_g": 29.6,
+    "carbs_g": 0.0,
+    "fat_g": 5.45,
+    "fiber_g": 0.0
+   },
+   "serving": {
+    "unit": "serving",
+    "grams": 75,
+    "basis": "assumed",
+    "note": "No suitable source portion; Canada's Food Guide (2007) Food Guide Serving for cooked meat/fish/poultry = 75 g (2.5 oz)."
+   }
+  },
+  "grilled-chicken-sandwich": {
+   "source": "fndds-2019-2020",
+   "record": "27540152 (FDC ID 2342450)",
+   "record_name": "Chicken fillet sandwich, grilled, from fast food",
+   "method": "record",
+   "match": "close",
+   "per_100g": {
+    "energy_kcal": 226.0,
+    "protein_g": 21.5,
+    "carbs_g": 19.4,
+    "fat_g": 6.18,
+    "fiber_g": 0.7
+   },
+   "serving": {
+    "unit": "serving",
+    "grams": 140.0,
+    "basis": "source",
+    "note": "FNDDS 2019-2020 portion \"1 regular sandwich\" of record 27540152."
+   }
+  },
+  "grilled-fish": {
+   "source": "fndds-2019-2020",
+   "record": "26100120 (FDC ID 2341640)",
+   "record_name": "Fish, NS as to type, baked or broiled",
+   "method": "record",
+   "match": "close",
+   "per_100g": {
+    "energy_kcal": 208.0,
+    "protein_g": 23.0,
+    "carbs_g": 0.01,
+    "fat_g": 12.4,
+    "fiber_g": 0.0
+   },
+   "serving": {
+    "unit": "serving",
+    "grams": 75,
+    "basis": "assumed",
+    "note": "No suitable source portion; Canada's Food Guide (2007) Food Guide Serving for cooked meat/fish/poultry = 75 g (2.5 oz)."
+   }
+  },
+  "guava": {
+   "source": "cnf-2026",
+   "record": "1578",
+   "record_name": "Guava, common, raw",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 68.0,
+    "protein_g": 2.55,
+    "carbs_g": 14.32,
+    "fat_g": 0.95,
+    "fiber_g": 5.4
+   },
+   "serving": {
+    "unit": "piece",
+    "grams": 55.0,
+    "basis": "source",
+    "note": "CNF 2026 measure \"1 fruit\" of record 1578."
+   }
+  },
+  "honey": {
+   "source": "cnf-2026",
+   "record": "4294",
+   "record_name": "Sweets, honey, strained or extracted",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 304.0,
+    "protein_g": 0.3,
+    "carbs_g": 82.4,
+    "fat_g": 0.0,
+    "fiber_g": 0.2
+   },
+   "serving": {
+    "unit": "tsp",
+    "grams": 7.2,
+    "basis": "source",
+    "note": "CNF 2026 measure \"5 ml\" of record 4294."
+   }
+  },
+  "hummus": {
+   "source": "cnf-2026",
+   "record": "4870",
+   "record_name": "Hummus, commercial",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 237.0,
+    "protein_g": 7.78,
+    "carbs_g": 15.0,
+    "fat_g": 17.82,
+    "fiber_g": 5.5
+   },
+   "serving": {
+    "unit": "serving",
+    "grams": 31.2,
+    "basis": "source",
+    "note": "CNF 2026 measure \"30 ml\" of record 4870."
+   }
+  },
+  "ice-cream": {
+   "source": "cnf-2026",
+   "record": "4163",
+   "record_name": "Dessert, frozen, ice cream, vanilla, 11% M.F.",
+   "method": "record",
+   "match": "close",
+   "per_100g": {
+    "energy_kcal": 208.0,
+    "protein_g": 3.5,
+    "carbs_g": 23.6,
+    "fat_g": 11.0,
+    "fiber_g": 0.7
+   },
+   "serving": {
+    "unit": "bowl",
+    "grams": 69.7,
+    "basis": "source",
+    "note": "CNF 2026 measure \"125 ml\" of record 4163."
+   }
+  },
+  "iced-coffee": {
+   "source": "fndds-2019-2020",
+   "record": "92102450 (FDC ID 2345990)",
+   "record_name": "Iced Coffee, pre-lightened and pre-sweetened",
+   "method": "record",
+   "match": "close",
+   "per_100g": {
+    "energy_kcal": 31.0,
+    "protein_g": 0.25,
+    "carbs_g": 4.94,
+    "fat_g": 1.12,
+    "fiber_g": 0.0
+   },
+   "serving": {
+    "unit": "cup",
+    "grams": 248.0,
+    "basis": "source",
+    "note": "FNDDS 2019-2020 portion \"1 cup (8 fl oz)\" of record 92102450."
+   }
+  },
+  "idli": {
+   "source": "fndds-2019-2020",
+   "record": "55702000 (FDC ID 2343829)",
+   "record_name": "Idli",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 128.0,
+    "protein_g": 6.36,
+    "carbs_g": 25.0,
+    "fat_g": 0.35,
+    "fiber_g": 5.8
+   },
+   "serving": {
+    "unit": "serving",
+    "grams": 38.0,
+    "basis": "source",
+    "note": "FNDDS 2019-2020 portion \"1 item\" of record 55702000."
+   }
+  },
+  "jam": {
+   "source": "cnf-2026",
+   "record": "4295",
+   "record_name": "Sweets, jams and preserves",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 278.0,
+    "protein_g": 0.37,
+    "carbs_g": 68.86,
+    "fat_g": 0.07,
+    "fiber_g": 1.1
+   },
+   "serving": {
+    "unit": "serving",
+    "grams": 20.1,
+    "basis": "source",
+    "note": "CNF 2026 measure \"15 ml\" of record 4295."
+   }
+  },
+  "kala-chana": {
+   "source": "fndds-2019-2020",
+   "record": "41302010 (FDC ID 2342890)",
+   "record_name": "Chickpeas, from dried, fat added",
+   "method": "record",
+   "match": "close",
+   "per_100g": {
+    "energy_kcal": 211.0,
+    "protein_g": 8.23,
+    "carbs_g": 25.5,
+    "fat_g": 8.91,
+    "fiber_g": 7.1
+   },
+   "serving": {
+    "unit": "bowl",
+    "grams": 185.0,
+    "basis": "source",
+    "note": "FNDDS 2019-2020 portion \"1 cup\" of record 41302010."
+   }
+  },
+  "ketchup": {
+   "source": "cnf-2026",
+   "record": "2494",
+   "record_name": "Tomato ketchup (catsup)",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 101.0,
+    "protein_g": 1.04,
+    "carbs_g": 27.4,
+    "fat_g": 0.1,
+    "fiber_g": 1.7
+   },
+   "serving": {
+    "unit": "serving",
+    "grams": 15.2,
+    "basis": "source",
+    "note": "CNF 2026 measure \"15 ml\" of record 2494."
+   }
+  },
+  "kheer": {
+   "source": "fndds-2019-2020",
+   "record": "13210450 (FDC ID 2341089)",
+   "record_name": "Firni, Indian pudding",
+   "method": "record",
+   "match": "close",
+   "per_100g": {
+    "energy_kcal": 144.0,
+    "protein_g": 3.58,
+    "carbs_g": 25.1,
+    "fat_g": 3.1,
+    "fiber_g": 0.3
+   },
+   "serving": {
+    "unit": "bowl",
+    "grams": 260.0,
+    "basis": "source",
+    "note": "FNDDS 2019-2020 portion \"1 cup\" of record 13210450."
+   }
+  },
+  "kiwi": {
+   "source": "cnf-2026",
+   "record": "1585",
+   "record_name": "Kiwi fruit, raw",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 61.0,
+    "protein_g": 1.14,
+    "carbs_g": 14.66,
+    "fat_g": 0.52,
+    "fiber_g": 3.0
+   },
+   "serving": {
+    "unit": "piece",
+    "grams": 69.0,
+    "basis": "source",
+    "note": "CNF 2026 measure \"1 medium fruit\" of record 1585."
+   }
+  },
+  "lachha-paratha": {
+   "source": "cnf-2026",
+   "record": "7251",
+   "record_name": "Bread, Indian, paratha, whole wheat",
+   "method": "record",
+   "match": "close",
+   "per_100g": {
+    "energy_kcal": 326.0,
+    "protein_g": 6.36,
+    "carbs_g": 45.35,
+    "fat_g": 13.2,
+    "fiber_g": 9.6
+   },
+   "serving": {
+    "unit": "piece",
+    "grams": 79.0,
+    "basis": "source",
+    "note": "CNF 2026 measure \"1 piece\" of record 7251."
+   }
+  },
+  "lamb-or-goat-keema": {
+   "source": "cnf-2026",
+   "record": "3640",
+   "record_name": "Lamb, Canadian, ground, cooked",
+   "method": "record",
+   "match": "close",
+   "per_100g": {
+    "energy_kcal": 221.0,
+    "protein_g": 27.11,
+    "carbs_g": 0.0,
+    "fat_g": 12.52,
+    "fiber_g": 0.0
+   },
+   "serving": {
+    "unit": "serving",
+    "grams": 75,
+    "basis": "assumed",
+    "note": "No suitable source portion; Canada's Food Guide (2007) Food Guide Serving for cooked meat/fish/poultry = 75 g (2.5 oz)."
+   }
+  },
+  "latte": {
+   "source": "fndds-2019-2020",
+   "record": "92101900 (FDC ID 2345946)",
+   "record_name": "Coffee, Latte",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 43.0,
+    "protein_g": 2.81,
+    "carbs_g": 4.35,
+    "fat_g": 1.61,
+    "fiber_g": 0.0
+   },
+   "serving": {
+    "unit": "cup",
+    "grams": 240.0,
+    "basis": "source",
+    "note": "FNDDS 2019-2020 portion \"1 cup (8 fl oz)\" of record 92101900."
+   }
+  },
+  "lemon-water": {
+   "source": "cnf-2026",
+   "record": "recipe:2933+1589",
+   "record_name": "Standard recipe: Water, municipal (250 mL) + Lemon juice, raw (1 tbsp)",
+   "method": "recipe",
+   "match": "close",
+   "per_100g": {
+    "energy_kcal": 1.26,
+    "protein_g": 0.02,
+    "carbs_g": 0.4,
+    "fat_g": 0.01,
+    "fiber_g": 0.02
+   },
+   "serving": {
+    "unit": "cup",
+    "grams": 270.2,
+    "basis": "assumed",
+    "note": "250 mL water + 1 tbsp lemon juice, weights from CNF measures; proportions are an assumption."
+   },
+   "recipe": [
+    {
+     "name": "Water, municipal",
+     "grams": 254.7,
+     "source": "cnf-2026",
+     "record": "2933"
+    },
+    {
+     "name": "Lemon juice, raw",
+     "grams": 15.5,
+     "source": "cnf-2026",
+     "record": "1589"
+    }
+   ]
+  },
+  "lobia": {
+   "source": "fndds-2019-2020",
+   "record": "41301010 (FDC ID 2342888)",
+   "record_name": "Blackeyed peas, from dried",
+   "method": "record",
+   "match": "close",
+   "per_100g": {
+    "energy_kcal": 166.0,
+    "protein_g": 7.18,
+    "carbs_g": 19.3,
+    "fat_g": 7.0,
+    "fiber_g": 6.0
+   },
+   "serving": {
+    "unit": "bowl",
+    "grams": 185.0,
+    "basis": "source",
+    "note": "FNDDS 2019-2020 portion \"1 cup\" of record 41301010."
+   }
+  },
+  "mandarin": {
+   "source": "cnf-2026",
+   "record": "1623",
+   "record_name": "Tangerine (mandarin), raw",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 53.0,
+    "protein_g": 0.81,
+    "carbs_g": 13.34,
+    "fat_g": 0.31,
+    "fiber_g": 1.8
+   },
+   "serving": {
+    "unit": "piece",
+    "grams": 88.0,
+    "basis": "source",
+    "note": "CNF 2026 measure \"1 medium fruit (6cm dia)\" of record 1623."
+   }
+  },
+  "mango": {
+   "source": "cnf-2026",
+   "record": "1603",
+   "record_name": "Mango, raw",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 60.0,
+    "protein_g": 0.82,
+    "carbs_g": 14.98,
+    "fat_g": 0.38,
+    "fiber_g": 1.6
+   },
+   "serving": {
+    "unit": "piece",
+    "grams": 207.0,
+    "basis": "source",
+    "note": "CNF 2026 measure \"1 fruit\" of record 1603."
+   }
+  },
+  "masala-chai": {
+   "source": "fndds-2019-2020",
+   "record": "92306800 (FDC ID 2346076)",
+   "record_name": "Tea, hot, with milk",
+   "method": "record",
+   "match": "close",
+   "per_100g": {
+    "energy_kcal": 51.0,
+    "protein_g": 1.58,
+    "carbs_g": 8.95,
+    "fat_g": 1.05,
+    "fiber_g": 0.1
+   },
+   "serving": {
+    "unit": "cup",
+    "grams": 240.0,
+    "basis": "source",
+    "note": "FNDDS 2019-2020 portion \"1 cup\" of record 92306800."
+   }
+  },
+  "masala-omelette": {
+   "source": "fndds-2019-2020",
+   "record": "32130490 (FDC ID 2342713)",
+   "record_name": "Egg omelet or scrambled egg, with vegetables other than dark green and/or tomatoes, fat added",
+   "method": "record",
+   "match": "close",
+   "per_100g": {
+    "energy_kcal": 167.0,
+    "protein_g": 10.6,
+    "carbs_g": 1.5,
+    "fat_g": 13.2,
+    "fiber_g": 0.2
+   },
+   "serving": {
+    "unit": "serving",
+    "grams": 75.0,
+    "basis": "source",
+    "note": "FNDDS 2019-2020 portion \"1 egg\" of record 32130490."
+   }
+  },
+  "masoor-dal": {
+   "source": "fndds-2019-2020",
+   "record": "41305050 (FDC ID 2342902)",
+   "record_name": "Dal",
+   "method": "record",
+   "match": "close",
+   "per_100g": {
+    "energy_kcal": 145.0,
+    "protein_g": 8.6,
+    "carbs_g": 19.2,
+    "fat_g": 4.31,
+    "fiber_g": 7.5
+   },
+   "serving": {
+    "unit": "bowl",
+    "grams": 240.0,
+    "basis": "source",
+    "note": "FNDDS 2019-2020 portion \"1 cup\" of record 41305050."
+   }
+  },
+  "mayonnaise": {
+   "source": "cnf-2026",
+   "record": "531",
+   "record_name": "Salad dressing, mayonnaise, regular",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 680.0,
+    "protein_g": 0.96,
+    "carbs_g": 0.57,
+    "fat_g": 74.85,
+    "fiber_g": 0.0
+   },
+   "serving": {
+    "unit": "serving",
+    "grams": 14.0,
+    "basis": "source",
+    "note": "CNF 2026 measure \"15 ml\" of record 531."
+   }
+  },
+  "milk": {
+   "source": "cnf-2026",
+   "record": "61",
+   "record_name": "Milk, fluid, partly skimmed, 2% M.F.",
+   "method": "record",
+   "match": "close",
+   "per_100g": {
+    "energy_kcal": 47.0,
+    "protein_g": 3.31,
+    "carbs_g": 4.38,
+    "fat_g": 1.84,
+    "fiber_g": 0.0
+   },
+   "serving": {
+    "unit": "serving",
+    "grams": 257.8,
+    "basis": "source",
+    "note": "CNF 2026 measure \"250 ml\" of record 61."
+   }
+  },
+  "milk-burfi": {
+   "source": "fndds-2019-2020",
+   "record": "13252500 (FDC ID 2341103)",
+   "record_name": "Barfi or Burfi, Indian dessert",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 283.0,
+    "protein_g": 5.41,
+    "carbs_g": 40.5,
+    "fat_g": 11.3,
+    "fiber_g": 0.4
+   },
+   "serving": {
+    "unit": "piece",
+    "grams": 45.0,
+    "basis": "source",
+    "note": "FNDDS 2019-2020 portion \"1 piece\" of record 13252500."
+   }
+  },
+  "milk-chai": {
+   "source": "fndds-2019-2020",
+   "record": "92306800 (FDC ID 2346076)",
+   "record_name": "Tea, hot, with milk",
+   "method": "record",
+   "match": "close",
+   "per_100g": {
+    "energy_kcal": 51.0,
+    "protein_g": 1.58,
+    "carbs_g": 8.95,
+    "fat_g": 1.05,
+    "fiber_g": 0.1
+   },
+   "serving": {
+    "unit": "cup",
+    "grams": 240.0,
+    "basis": "source",
+    "note": "FNDDS 2019-2020 portion \"1 cup\" of record 92306800."
+   }
+  },
+  "mixed-fruit-bowl": {
+   "source": "fndds-2019-2020",
+   "record": "63311050 (FDC ID 2344782)",
+   "record_name": "Fruit salad, fresh or raw, including citrus fruits, no dressing",
+   "method": "record",
+   "match": "close",
+   "per_100g": {
+    "energy_kcal": 55.0,
+    "protein_g": 0.69,
+    "carbs_g": 13.3,
+    "fat_g": 0.19,
+    "fiber_g": 1.7
+   },
+   "serving": {
+    "unit": "bowl",
+    "grams": 150.0,
+    "basis": "source",
+    "note": "FNDDS 2019-2020 portion \"1 cup\" of record 63311050."
+   }
+  },
+  "mixed-green-salad": {
+   "source": "fndds-2019-2020",
+   "record": "75143000 (FDC ID 2345342)",
+   "record_name": "Lettuce, salad with assorted vegetables including tomatoes and/or carrots, no dressing",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 21.0,
+    "protein_g": 1.25,
+    "carbs_g": 4.11,
+    "fat_g": 0.23,
+    "fiber_g": 1.4
+   },
+   "serving": {
+    "unit": "serving",
+    "grams": 73.0,
+    "basis": "source",
+    "note": "FNDDS 2019-2020 portion \"1 cup\" of record 75143000."
+   }
+  },
+  "mixed-nuts": {
+   "source": "cnf-2026",
+   "record": "2577",
+   "record_name": "Nuts, mixed nuts, dry roasted with peanuts",
+   "method": "record",
+   "match": "close",
+   "per_100g": {
+    "energy_kcal": 607.0,
+    "protein_g": 19.5,
+    "carbs_g": 22.42,
+    "fat_g": 53.5,
+    "fiber_g": 6.4
+   },
+   "serving": {
+    "unit": "serving",
+    "grams": 34.7,
+    "basis": "source",
+    "note": "CNF 2026 measure \"60 ml\" of record 2577."
+   }
+  },
+  "mixed-vegetable-sabzi": {
+   "source": "fndds-2019-2020",
+   "record": "75440600 (FDC ID 2345594)",
+   "record_name": "Vegetable curry",
+   "method": "record",
+   "match": "close",
+   "per_100g": {
+    "energy_kcal": 84.0,
+    "protein_g": 1.59,
+    "carbs_g": 8.72,
+    "fat_g": 5.23,
+    "fiber_g": 1.8
+   },
+   "serving": {
+    "unit": "bowl",
+    "grams": 240.0,
+    "basis": "source",
+    "note": "FNDDS 2019-2020 portion \"1 cup\" of record 75440600."
+   }
+  },
+  "moong-dal-khichdi": {
+   "source": "fndds-2019-2020",
+   "record": "58160800 (FDC ID 2344517)",
+   "record_name": "Rice, white, with lentils, NS as to fat",
+   "method": "record",
+   "match": "close",
+   "per_100g": {
+    "energy_kcal": 150.0,
+    "protein_g": 5.5,
+    "carbs_g": 21.4,
+    "fat_g": 4.83,
+    "fiber_g": 4.1
+   },
+   "serving": {
+    "unit": "bowl",
+    "grams": 207.0,
+    "basis": "source",
+    "note": "FNDDS 2019-2020 portion \"1 cup\" of record 58160800."
+   }
+  },
+  "muffin": {
+   "source": "cnf-2026",
+   "record": "3916",
+   "record_name": "Muffin, blueberry, commercial",
+   "method": "record",
+   "match": "close",
+   "per_100g": {
+    "energy_kcal": 375.0,
+    "protein_g": 4.49,
+    "carbs_g": 53.0,
+    "fat_g": 16.07,
+    "fiber_g": 1.1
+   },
+   "serving": {
+    "unit": "serving",
+    "grams": 113.0,
+    "basis": "source",
+    "note": "CNF 2026 measure \"1 medium\" of record 3916."
+   }
+  },
+  "oatmeal": {
+   "source": "fndds-2019-2020",
+   "record": "56202960 (FDC ID 2343864)",
+   "record_name": "Oatmeal, NFS",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 76.0,
+    "protein_g": 2.18,
+    "carbs_g": 11.2,
+    "fat_g": 2.63,
+    "fiber_g": 1.7
+   },
+   "serving": {
+    "unit": "serving",
+    "grams": 240.0,
+    "basis": "source",
+    "note": "FNDDS 2019-2020 portion \"1 cup, cooked\" of record 56202960."
+   }
+  },
+  "onion-pakora": {
+   "source": "fndds-2019-2020",
+   "record": "75440400 (FDC ID 2345593)",
+   "record_name": "Pakora",
+   "method": "record",
+   "match": "close",
+   "per_100g": {
+    "energy_kcal": 125.0,
+    "protein_g": 4.92,
+    "carbs_g": 16.2,
+    "fat_g": 4.77,
+    "fiber_g": 3.2
+   },
+   "serving": {
+    "unit": "serving",
+    "grams": 12.0,
+    "basis": "source",
+    "note": "FNDDS 2019-2020 portion \"1 pakora\" of record 75440400."
+   }
+  },
+  "orange": {
+   "source": "cnf-2026",
+   "record": "1722",
+   "record_name": "Orange, all commercial varieties, raw",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 47.0,
+    "protein_g": 0.94,
+    "carbs_g": 11.75,
+    "fat_g": 0.12,
+    "fiber_g": 1.79
+   },
+   "serving": {
+    "unit": "piece",
+    "grams": 131.0,
+    "basis": "source",
+    "note": "CNF 2026 measure \"1 medium (6.7cm dia)\" of record 1722."
+   }
+  },
+  "palak-paneer": {
+   "source": "fndds-2019-2020",
+   "record": "72125310 (FDC ID 2345137)",
+   "record_name": "Palak Paneer",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 100.0,
+    "protein_g": 5.24,
+    "carbs_g": 3.94,
+    "fat_g": 7.06,
+    "fiber_g": 1.0
+   },
+   "serving": {
+    "unit": "serving",
+    "grams": 200.0,
+    "basis": "source",
+    "note": "FNDDS 2019-2020 portion \"1 cup\" of record 72125310."
+   }
+  },
+  "paneer-cubes": {
+   "source": "fndds-2019-2020",
+   "record": "14110050 (FDC ID 2341143)",
+   "record_name": "Cheese, paneer",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 299.0,
+    "protein_g": 15.9,
+    "carbs_g": 22.5,
+    "fat_g": 15.5,
+    "fiber_g": 0.0
+   },
+   "serving": {
+    "unit": "serving",
+    "grams": 30,
+    "basis": "assumed",
+    "note": "No piece/cube measure in the source (only 1 cup = 246 g); 30 g taken as a typical small serving of cubes."
+   }
+  },
+  "papad": {
+   "source": "cnf-2026",
+   "record": "5492",
+   "record_name": "Indian, papad (papadum)",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 371.0,
+    "protein_g": 25.56,
+    "carbs_g": 59.87,
+    "fat_g": 3.25,
+    "fiber_g": 18.6
+   },
+   "serving": {
+    "unit": "serving",
+    "grams": 14.0,
+    "basis": "source",
+    "note": "CNF 2026 measure \"1 large papad\" of record 5492."
+   }
+  },
+  "papaya": {
+   "source": "cnf-2026",
+   "record": "1628",
+   "record_name": "Papaya, raw",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 43.0,
+    "protein_g": 0.47,
+    "carbs_g": 10.82,
+    "fat_g": 0.26,
+    "fiber_g": 1.7
+   },
+   "serving": {
+    "unit": "piece",
+    "grams": 152.0,
+    "basis": "source",
+    "note": "CNF 2026 measure \"1 small (11.4cm long x 7cm dia)\" of record 1628."
+   }
+  },
+  "pasta-with-tomato-sauce": {
+   "source": "fndds-2019-2020",
+   "record": "58146222 (FDC ID 2344316)",
+   "record_name": "Pasta with tomato-based sauce, home recipe",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 106.0,
+    "protein_g": 3.69,
+    "carbs_g": 19.9,
+    "fat_g": 1.2,
+    "fiber_g": 1.8
+   },
+   "serving": {
+    "unit": "serving",
+    "grams": 250.0,
+    "basis": "source",
+    "note": "FNDDS 2019-2020 portion \"1 cup\" of record 58146222."
+   }
+  },
+  "peach": {
+   "source": "cnf-2026",
+   "record": "1728",
+   "record_name": "Peach, raw",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 39.0,
+    "protein_g": 0.91,
+    "carbs_g": 9.54,
+    "fat_g": 0.25,
+    "fiber_g": 1.93
+   },
+   "serving": {
+    "unit": "piece",
+    "grams": 150.0,
+    "basis": "source",
+    "note": "CNF 2026 measure \"1 medium (6.4cm dia)\" of record 1728."
+   }
+  },
+  "peanut-butter": {
+   "source": "cnf-2026",
+   "record": "3414",
+   "record_name": "Peanut butter, smooth type, fat and sugar added",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 589.0,
+    "protein_g": 22.21,
+    "carbs_g": 22.31,
+    "fat_g": 51.36,
+    "fiber_g": 5.6
+   },
+   "serving": {
+    "unit": "serving",
+    "grams": 32.7,
+    "basis": "source",
+    "note": "CNF 2026 measure \"30 ml\" of record 3414."
+   }
+  },
+  "peanut-butter-toast": {
+   "source": "cnf-2026",
+   "record": "recipe:3732+6289",
+   "record_name": "Standard recipe: Bread, white, commercial, toasted (1 slice) + Peanut butter, natural (1 tbsp)",
+   "method": "recipe",
+   "match": "close",
+   "per_100g": {
+    "energy_kcal": 383.75,
+    "protein_g": 14.46,
+    "carbs_g": 43.72,
+    "fat_g": 18.0,
+    "fiber_g": 5.09
+   },
+   "serving": {
+    "unit": "serving",
+    "grams": 48.7,
+    "basis": "assumed",
+    "note": "1 slice toast + 1 tbsp peanut butter, weights from CNF household measures; the amount of peanut butter is an assumption."
+   },
+   "recipe": [
+    {
+     "name": "Bread, white, commercial, toasted",
+     "grams": 33.0,
+     "source": "cnf-2026",
+     "record": "3732"
+    },
+    {
+     "name": "Peanut butter, natural",
+     "grams": 15.7,
+     "source": "cnf-2026",
+     "record": "6289"
+    }
+   ]
+  },
+  "peanuts": {
+   "source": "cnf-2026",
+   "record": "3362",
+   "record_name": "Peanuts, all types, dry roasted",
+   "method": "record",
+   "match": "close",
+   "per_100g": {
+    "energy_kcal": 587.0,
+    "protein_g": 24.35,
+    "carbs_g": 21.26,
+    "fat_g": 49.66,
+    "fiber_g": 8.4
+   },
+   "serving": {
+    "unit": "serving",
+    "grams": 37.0,
+    "basis": "source",
+    "note": "CNF 2026 measure \"60 ml\" of record 3362."
+   }
+  },
+  "pear": {
+   "source": "cnf-2026",
+   "record": "7125",
+   "record_name": "Pear, Bartlett, raw",
+   "method": "record",
+   "match": "close",
+   "per_100g": {
+    "energy_kcal": 63.0,
+    "protein_g": 0.39,
+    "carbs_g": 15.01,
+    "fat_g": 0.16,
+    "fiber_g": 3.1
+   },
+   "serving": {
+    "unit": "piece",
+    "grams": 177.0,
+    "basis": "source",
+    "note": "CNF 2026 measure \"1 medium\" of record 7125."
+   }
+  },
+  "pistachios": {
+   "source": "cnf-2026",
+   "record": "2588",
+   "record_name": "Nuts, pistachio nuts, dry roasted",
+   "method": "record",
+   "match": "close",
+   "per_100g": {
+    "energy_kcal": 572.0,
+    "protein_g": 21.05,
+    "carbs_g": 28.28,
+    "fat_g": 45.82,
+    "fiber_g": 10.3
+   },
+   "serving": {
+    "unit": "serving",
+    "grams": 31.2,
+    "basis": "source",
+    "note": "CNF 2026 measure \"60 ml\" of record 2588."
+   }
+  },
+  "pizza-slice": {
+   "source": "cnf-2026",
+   "record": "6425",
+   "record_name": "Fast foods, pizza, cheese, regular crust",
+   "method": "record",
+   "match": "close",
+   "per_100g": {
+    "energy_kcal": 266.0,
+    "protein_g": 11.39,
+    "carbs_g": 33.33,
+    "fat_g": 9.69,
+    "fiber_g": 2.3
+   },
+   "serving": {
+    "unit": "serving",
+    "grams": 107.0,
+    "basis": "source",
+    "note": "CNF 2026 measure \"1/8 of a 14''pizza\" of record 6425."
+   }
+  },
+  "plain-basmati-rice": {
+   "source": "cnf-2026",
+   "record": "4523",
+   "record_name": "Grains, rice, white, long-grain, regular, cooked",
+   "method": "record",
+   "match": "close",
+   "per_100g": {
+    "energy_kcal": 130.0,
+    "protein_g": 2.69,
+    "carbs_g": 28.17,
+    "fat_g": 0.28,
+    "fiber_g": 0.42
+   },
+   "serving": {
+    "unit": "bowl",
+    "grams": 166.9,
+    "basis": "source",
+    "note": "CNF 2026 measure \"250 ml\" of record 4523."
+   }
+  },
+  "plain-dahi": {
+   "source": "cnf-2026",
+   "record": "6961",
+   "record_name": "Yogourt (yogurt), 2-3.9% M.F., plain",
+   "method": "record",
+   "match": "close",
+   "per_100g": {
+    "energy_kcal": 50.0,
+    "protein_g": 4.6,
+    "carbs_g": 3.4,
+    "fat_g": 1.98,
+    "fiber_g": 0.0
+   },
+   "serving": {
+    "unit": "serving",
+    "grams": 185.2,
+    "basis": "source",
+    "note": "CNF 2026 measure \"175 ml\" of record 6961."
+   }
+  },
+  "plain-naan": {
+   "source": "cnf-2026",
+   "record": "6606",
+   "record_name": "Indian, bread, naan",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 288.81,
+    "protein_g": 8.92,
+    "carbs_g": 50.02,
+    "fat_g": 5.89,
+    "fiber_g": 2.79
+   },
+   "serving": {
+    "unit": "piece",
+    "grams": 90.0,
+    "basis": "source",
+    "note": "CNF 2026 measure \"1 small\" of record 6606."
+   }
+  },
+  "plain-omelette": {
+   "source": "cnf-2026",
+   "record": "133",
+   "record_name": "Egg, chicken, whole, cooked, scrambled or omelet",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 153.0,
+    "protein_g": 10.39,
+    "carbs_g": 3.05,
+    "fat_g": 11.39,
+    "fiber_g": 0.0
+   },
+   "serving": {
+    "unit": "serving",
+    "grams": 61.0,
+    "basis": "source",
+    "note": "CNF 2026 measure \"1 large egg\" of record 133."
+   }
+  },
+  "plain-paratha": {
+   "source": "cnf-2026",
+   "record": "7251",
+   "record_name": "Bread, Indian, paratha, whole wheat",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 326.0,
+    "protein_g": 6.36,
+    "carbs_g": 45.35,
+    "fat_g": 13.2,
+    "fiber_g": 9.6
+   },
+   "serving": {
+    "unit": "piece",
+    "grams": 79.0,
+    "basis": "source",
+    "note": "CNF 2026 measure \"1 piece\" of record 7251."
+   }
+  },
+  "plain-toast": {
+   "source": "cnf-2026",
+   "record": "3732",
+   "record_name": "Bread, white, commercial, toasted",
+   "method": "record",
+   "match": "close",
+   "per_100g": {
+    "energy_kcal": 288.0,
+    "protein_g": 10.08,
+    "carbs_g": 54.28,
+    "fat_g": 2.93,
+    "fiber_g": 3.7
+   },
+   "serving": {
+    "unit": "serving",
+    "grams": 33.0,
+    "basis": "source",
+    "note": "CNF 2026 measure \"1 slice\" of record 3732."
+   }
+  },
+  "pomegranate": {
+   "source": "cnf-2026",
+   "record": "1667",
+   "record_name": "Pomegranate, raw",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 83.0,
+    "protein_g": 1.67,
+    "carbs_g": 18.7,
+    "fat_g": 1.17,
+    "fiber_g": 4.0
+   },
+   "serving": {
+    "unit": "piece",
+    "grams": 282.0,
+    "basis": "source",
+    "note": "CNF 2026 measure \"1 fruit (10cm diam.)\" of record 1667."
+   }
+  },
+  "popcorn": {
+   "source": "fndds-2019-2020",
+   "record": "54403001 (FDC ID 2343699)",
+   "record_name": "Popcorn, NFS",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 538.0,
+    "protein_g": 8.69,
+    "carbs_g": 56.0,
+    "fat_g": 31.1,
+    "fiber_g": 10.1
+   },
+   "serving": {
+    "unit": "serving",
+    "grams": 14.0,
+    "basis": "source",
+    "note": "FNDDS 2019-2020 portion \"1 cup, popped\" of record 54403001."
+   }
+  },
+  "pumpkin-seeds": {
+   "source": "cnf-2026",
+   "record": "2517",
+   "record_name": "Seeds, pumpkin and squash seed kernels, roasted",
+   "method": "record",
+   "match": "close",
+   "per_100g": {
+    "energy_kcal": 574.0,
+    "protein_g": 29.84,
+    "carbs_g": 14.71,
+    "fat_g": 49.05,
+    "fiber_g": 6.5
+   },
+   "serving": {
+    "unit": "serving",
+    "grams": 57.6,
+    "basis": "source",
+    "note": "CNF 2026 measure \"60 ml\" of record 2517."
+   }
+  },
+  "punjabi-chicken-curry": {
+   "source": "fndds-2019-2020",
+   "record": "27146150 (FDC ID 2341861)",
+   "record_name": "Chicken curry",
+   "method": "record",
+   "match": "close",
+   "per_100g": {
+    "energy_kcal": 106.0,
+    "protein_g": 6.47,
+    "carbs_g": 6.47,
+    "fat_g": 6.45,
+    "fiber_g": 1.4
+   },
+   "serving": {
+    "unit": "serving",
+    "grams": 240.0,
+    "basis": "source",
+    "note": "FNDDS 2019-2020 portion \"1 cup\" of record 27146150."
+   }
+  },
+  "punjabi-samosa": {
+   "source": "cnf-2026",
+   "record": "6751",
+   "record_name": "Indian, samosa, vegetarian",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 301.0,
+    "protein_g": 5.33,
+    "carbs_g": 30.38,
+    "fat_g": 17.87,
+    "fiber_g": 1.92
+   },
+   "serving": {
+    "unit": "serving",
+    "grams": 100.0,
+    "basis": "source",
+    "note": "CNF 2026 measure \"1 samosa\" of record 6751."
+   }
+  },
+  "puri": {
+   "source": "fndds-2019-2020",
+   "record": "51300180 (FDC ID 2343194)",
+   "record_name": "Bread, puri",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 409.0,
+    "protein_g": 6.84,
+    "carbs_g": 39.2,
+    "fat_g": 24.9,
+    "fiber_g": 3.5
+   },
+   "serving": {
+    "unit": "piece",
+    "grams": 36.0,
+    "basis": "source",
+    "note": "FNDDS 2019-2020 portion \"1 puri (approx 4-4/5\" dia)\" of record 51300180."
+   }
+  },
+  "quinoa-bowl": {
+   "source": "cnf-2026",
+   "record": "5917",
+   "record_name": "Grains, quinoa, cooked",
+   "method": "record",
+   "match": "close",
+   "per_100g": {
+    "energy_kcal": 120.0,
+    "protein_g": 4.4,
+    "carbs_g": 21.3,
+    "fat_g": 1.92,
+    "fiber_g": 2.8
+   },
+   "serving": {
+    "unit": "bowl",
+    "grams": 195.5,
+    "basis": "source",
+    "note": "CNF 2026 measure \"250 ml\" of record 5917."
+   }
+  },
+  "raisins": {
+   "source": "cnf-2026",
+   "record": "1745",
+   "record_name": "Raisin, seedless (sultana)",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 299.0,
+    "protein_g": 3.07,
+    "carbs_g": 79.18,
+    "fat_g": 0.46,
+    "fiber_g": 3.61
+   },
+   "serving": {
+    "unit": "bowl",
+    "grams": 36.8,
+    "basis": "source",
+    "note": "CNF 2026 measure \"60 ml unpacked\" of record 1745."
+   }
+  },
+  "rajma": {
+   "source": "fndds-2019-2020",
+   "record": "41106010 (FDC ID 2342855)",
+   "record_name": "Kidney beans, from dried, fat added",
+   "method": "record",
+   "match": "close",
+   "per_100g": {
+    "energy_kcal": 177.0,
+    "protein_g": 8.06,
+    "carbs_g": 21.2,
+    "fat_g": 6.97,
+    "fiber_g": 6.9
+   },
+   "serving": {
+    "unit": "bowl",
+    "grams": 185.0,
+    "basis": "source",
+    "note": "FNDDS 2019-2020 portion \"1 cup\" of record 41106010."
+   }
+  },
+  "roast-chicken": {
+   "source": "fndds-2019-2020",
+   "record": "24102060 (FDC ID 2341342)",
+   "record_name": "Chicken, NS as to part, rotisserie, skin eaten",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 196.0,
+    "protein_g": 25.1,
+    "carbs_g": 0.1,
+    "fat_g": 10.6,
+    "fiber_g": 0.0
+   },
+   "serving": {
+    "unit": "serving",
+    "grams": 75,
+    "basis": "assumed",
+    "note": "No suitable source portion; Canada's Food Guide (2007) Food Guide Serving for cooked meat/fish/poultry = 75 g (2.5 oz)."
+   }
+  },
+  "rusk": {
+   "source": "cnf-2026",
+   "record": "3868",
+   "record_name": "Cracker, rusk toast",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 407.0,
+    "protein_g": 13.5,
+    "carbs_g": 72.3,
+    "fat_g": 7.2,
+    "fiber_g": 6.3
+   },
+   "serving": {
+    "unit": "serving",
+    "grams": 10.0,
+    "basis": "source",
+    "note": "CNF 2026 measure \"1 cracker\" of record 3868."
+   }
+  },
+  "salad-dressing": {
+   "source": "cnf-2026",
+   "record": "532",
+   "record_name": "Salad dressing, Italian, regular",
+   "method": "record",
+   "match": "close",
+   "per_100g": {
+    "energy_kcal": 240.0,
+    "protein_g": 0.41,
+    "carbs_g": 12.12,
+    "fat_g": 21.12,
+    "fiber_g": 0.0
+   },
+   "serving": {
+    "unit": "tsp",
+    "grams": 5.0,
+    "basis": "source",
+    "note": "CNF 2026 measure \"15 ml\" (14.899 g) x 0.3333 of record 532 (1 tsp = 1/3 tbsp)."
+   }
+  },
+  "salmon-fillet": {
+   "source": "cnf-2026",
+   "record": "3183",
+   "record_name": "Fish, salmon, atlantic, farmed, baked or broiled",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 206.0,
+    "protein_g": 22.1,
+    "carbs_g": 0.0,
+    "fat_g": 12.35,
+    "fiber_g": 0.0
+   },
+   "serving": {
+    "unit": "serving",
+    "grams": 75,
+    "basis": "assumed",
+    "note": "No suitable source portion; Canada's Food Guide (2007) Food Guide Serving for cooked meat/fish/poultry = 75 g (2.5 oz)."
+   }
+  },
+  "scrambled-eggs": {
+   "source": "cnf-2026",
+   "record": "133",
+   "record_name": "Egg, chicken, whole, cooked, scrambled or omelet",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 153.0,
+    "protein_g": 10.39,
+    "carbs_g": 3.05,
+    "fat_g": 11.39,
+    "fiber_g": 0.0
+   },
+   "serving": {
+    "unit": "egg",
+    "grams": 61.0,
+    "basis": "source",
+    "note": "CNF 2026 measure \"1 large egg\" of record 133."
+   }
+  },
+  "soft-drink": {
+   "source": "fndds-2019-2020",
+   "record": "92400000 (FDC ID 2346106)",
+   "record_name": "Soft drink, NFS",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 42.0,
+    "protein_g": 0.0,
+    "carbs_g": 10.4,
+    "fat_g": 0.25,
+    "fiber_g": 0.0
+   },
+   "serving": {
+    "unit": "cup",
+    "grams": 248.0,
+    "basis": "source",
+    "note": "FNDDS 2019-2020 portion \"1 fl oz (no ice)\" (31 g) x 8 of record 92400000 (8 fl oz cup)."
+   }
+  },
+  "sports-drink": {
+   "source": "cnf-2026",
+   "record": "5962",
+   "record_name": "Sports drink, fruit flavour, ready-to-drink",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 26.0,
+    "protein_g": 0.0,
+    "carbs_g": 6.43,
+    "fat_g": 0.0,
+    "fiber_g": 0.0
+   },
+   "serving": {
+    "unit": "cup",
+    "grams": 257.8,
+    "basis": "source",
+    "note": "CNF 2026 measure \"250 ml\" of record 5962."
+   }
+  },
+  "strawberries": {
+   "source": "cnf-2026",
+   "record": "1749",
+   "record_name": "Strawberry, raw",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 33.0,
+    "protein_g": 0.67,
+    "carbs_g": 7.68,
+    "fat_g": 0.3,
+    "fiber_g": 2.24
+   },
+   "serving": {
+    "unit": "bowl",
+    "grams": 160.6,
+    "basis": "source",
+    "note": "CNF 2026 measure \"250 ml halves\" of record 1749."
+   }
+  },
+  "sugar-added": {
+   "source": "cnf-2026",
+   "record": "4318",
+   "record_name": "Sweets, sugars, granulated (white)",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 387.0,
+    "protein_g": 0.0,
+    "carbs_g": 99.8,
+    "fat_g": 0.0,
+    "fiber_g": 0.0
+   },
+   "serving": {
+    "unit": "tsp",
+    "grams": 4.2,
+    "basis": "source",
+    "note": "CNF 2026 measure \"5 ml\" of record 4318."
+   }
+  },
+  "tandoori-roti": {
+   "source": "cnf-2026",
+   "record": "7250",
+   "record_name": "Indian, bread, chapati or roti, whole wheat",
+   "method": "record",
+   "match": "close",
+   "per_100g": {
+    "energy_kcal": 303.36,
+    "protein_g": 9.92,
+    "carbs_g": 48.05,
+    "fat_g": 7.94,
+    "fiber_g": 8.09
+   },
+   "serving": {
+    "unit": "piece",
+    "grams": 43.0,
+    "basis": "source",
+    "note": "CNF 2026 measure \"1 piece\" of record 7250."
+   }
+  },
+  "tofu-stir-fry": {
+   "source": "fndds-2019-2020",
+   "record": "41812510 (FDC ID 2342954)",
+   "record_name": "Tofu and vegetables excluding carrots, broccoli, and dark-green leafy; no potatoes, with soy-based sauce",
+   "method": "record",
+   "match": "close",
+   "per_100g": {
+    "energy_kcal": 92.0,
+    "protein_g": 4.2,
+    "carbs_g": 4.37,
+    "fat_g": 6.93,
+    "fiber_g": 0.9
+   },
+   "serving": {
+    "unit": "serving",
+    "grams": 217.0,
+    "basis": "source",
+    "note": "FNDDS 2019-2020 portion \"1 cup\" of record 41812510."
+   }
+  },
+  "toor-dal": {
+   "source": "fndds-2019-2020",
+   "record": "41305050 (FDC ID 2342902)",
+   "record_name": "Dal",
+   "method": "record",
+   "match": "close",
+   "per_100g": {
+    "energy_kcal": 145.0,
+    "protein_g": 8.6,
+    "carbs_g": 19.2,
+    "fat_g": 4.31,
+    "fiber_g": 7.5
+   },
+   "serving": {
+    "unit": "bowl",
+    "grams": 240.0,
+    "basis": "source",
+    "note": "FNDDS 2019-2020 portion \"1 cup\" of record 41305050."
+   }
+  },
+  "turkey-slices": {
+   "source": "cnf-2026",
+   "record": "5702",
+   "record_name": "Deli-meat, turkey breast, oven roasted, sliced",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 109.0,
+    "protein_g": 21.18,
+    "carbs_g": 1.7,
+    "fat_g": 1.34,
+    "fiber_g": 0.5
+   },
+   "serving": {
+    "unit": "serving",
+    "grams": 19.2,
+    "basis": "source",
+    "note": "CNF 2026 measure \"1 slice\" of record 5702."
+   }
+  },
+  "unsweetened-almond-beverage": {
+   "source": "cnf-2026",
+   "record": "7802",
+   "record_name": "Plant-based beverage, almond beverage, plain, unsweetened, fortified, refrigerated and/or shelf-stable",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 15.0,
+    "protein_g": 0.41,
+    "carbs_g": 1.37,
+    "fat_g": 0.9,
+    "fiber_g": 0.4
+   },
+   "serving": {
+    "unit": "serving",
+    "grams": 247.2,
+    "basis": "source",
+    "note": "CNF 2026 measure \"250 ml\" of record 7802."
+   }
+  },
+  "unsweetened-soy-beverage": {
+   "source": "cnf-2026",
+   "record": "6330",
+   "record_name": "Plant-based beverage, soy beverage, plain, unsweetened, fortified, refrigerated and/or shelf-stable",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 32.0,
+    "protein_g": 2.73,
+    "carbs_g": 2.25,
+    "fat_g": 1.39,
+    "fiber_g": 0.6
+   },
+   "serving": {
+    "unit": "serving",
+    "grams": 250.9,
+    "basis": "source",
+    "note": "CNF 2026 measure \"250 ml\" of record 6330."
+   }
+  },
+  "vegetable-biryani": {
+   "source": "fndds-2019-2020",
+   "record": "58160000 (FDC ID 2344473)",
+   "record_name": "Biryani with vegetables",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 109.0,
+    "protein_g": 1.93,
+    "carbs_g": 17.9,
+    "fat_g": 3.2,
+    "fiber_g": 1.2
+   },
+   "serving": {
+    "unit": "bowl",
+    "grams": 172.0,
+    "basis": "source",
+    "note": "FNDDS 2019-2020 portion \"1 cup\" of record 58160000."
+   }
+  },
+  "vegetable-burger": {
+   "source": "fndds-2019-2020",
+   "record": "41901010 (FDC ID 2342958)",
+   "record_name": "Veggie burger, on bun",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 224.0,
+    "protein_g": 13.0,
+    "carbs_g": 30.8,
+    "fat_g": 5.2,
+    "fiber_g": 3.5
+   },
+   "serving": {
+    "unit": "serving",
+    "grams": 160.0,
+    "basis": "source",
+    "note": "FNDDS 2019-2020 portion \"1 sandwich\" of record 41901010."
+   }
+  },
+  "vegetable-pakora": {
+   "source": "fndds-2019-2020",
+   "record": "75440400 (FDC ID 2345593)",
+   "record_name": "Pakora",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 125.0,
+    "protein_g": 4.92,
+    "carbs_g": 16.2,
+    "fat_g": 4.77,
+    "fiber_g": 3.2
+   },
+   "serving": {
+    "unit": "serving",
+    "grams": 12.0,
+    "basis": "source",
+    "note": "FNDDS 2019-2020 portion \"1 pakora\" of record 75440400."
+   }
+  },
+  "walnuts": {
+   "source": "cnf-2026",
+   "record": "2590",
+   "record_name": "Nuts, walnuts, English or Persian",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 655.0,
+    "protein_g": 15.23,
+    "carbs_g": 13.71,
+    "fat_g": 65.21,
+    "fiber_g": 6.7
+   },
+   "serving": {
+    "unit": "serving",
+    "grams": 29.7,
+    "basis": "source",
+    "note": "CNF 2026 measure \"60 ml chopped\" of record 2590."
+   }
+  },
+  "water": {
+   "source": "cnf-2026",
+   "record": "2933",
+   "record_name": "Water, municipal",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 0.0,
+    "protein_g": 0.0,
+    "carbs_g": 0.0,
+    "fat_g": 0.0,
+    "fiber_g": 0.0
+   },
+   "serving": {
+    "unit": "cup",
+    "grams": 254.7,
+    "basis": "source",
+    "note": "CNF 2026 measure \"250 ml\" of record 2933."
+   }
+  },
+  "watermelon": {
+   "source": "cnf-2026",
+   "record": "1691",
+   "record_name": "Watermelon, raw",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 30.0,
+    "protein_g": 0.61,
+    "carbs_g": 7.55,
+    "fat_g": 0.15,
+    "fiber_g": 0.4
+   },
+   "serving": {
+    "unit": "piece",
+    "grams": 128.0,
+    "basis": "source",
+    "note": "CNF 2026 measure \"1 wedge yields\" of record 1691."
+   }
+  },
+  "whole-wheat-roti": {
+   "source": "cnf-2026",
+   "record": "7250",
+   "record_name": "Indian, bread, chapati or roti, whole wheat",
+   "method": "record",
+   "match": "exact",
+   "per_100g": {
+    "energy_kcal": 303.36,
+    "protein_g": 9.92,
+    "carbs_g": 48.05,
+    "fat_g": 7.94,
+    "fiber_g": 8.09
+   },
+   "serving": {
+    "unit": "piece",
+    "grams": 43.0,
+    "basis": "source",
+    "note": "CNF 2026 measure \"1 piece\" of record 7250."
+   }
+  },
+  "yogurt-with-granola": {
+   "source": "fndds-2019-2020",
+   "record": "11446000 (FDC ID 2340830)",
+   "record_name": "Yogurt parfait, low fat, with fruit",
+   "method": "record",
+   "match": "close",
+   "per_100g": {
+    "energy_kcal": 84.0,
+    "protein_g": 3.36,
+    "carbs_g": 15.9,
+    "fat_g": 1.01,
+    "fiber_g": 1.1
+   },
+   "serving": {
+    "unit": "serving",
+    "grams": 150.0,
+    "basis": "source",
+    "note": "FNDDS 2019-2020 portion \"Quantity not specified\" of record 11446000."
+   }
+  }
+ }
+}

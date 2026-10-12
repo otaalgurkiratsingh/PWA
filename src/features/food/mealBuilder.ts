@@ -13,6 +13,14 @@ import type {
   SourceKind,
 } from '@shared/contracts';
 
+
+/** Attribution kept with values copied from a public dataset. */
+function licenseFor(kind: SourceKind): string | null {
+  if (kind === 'usda_fdc') return 'CC0 1.0 (USDA FoodData Central)';
+  if (kind === 'cnf') return 'Canadian Nutrient File, Health Canada, 2026. Not endorsed by Health Canada.';
+  if (kind === 'open_food_facts') return 'Open Food Facts contributors, ODbL 1.0 (openfoodfacts.org)';
+  return null;
+}
 export interface NutrientForm {
   energy_kcal: string;
   protein_g: string;
@@ -30,6 +38,8 @@ export interface IngredientForm {
   grams: string;
   per100: NutrientForm;
   source_kind: SourceKind;
+  /** Dataset record for values picked from the ingredient list (kept with the food). */
+  source_ref?: string | null;
 }
 
 export interface MealForm {
@@ -156,7 +166,7 @@ export function buildMeal(a: BuildArgs): BuildResult {
   if (f.kind === 'food') {
     const per = nutrientsFrom(f.per100) as Nutrients;
     const prev = prevItem?.kind === 'food' ? a.foods.get(prevItem.food_version_id) : undefined;
-    const source = { kind: f.source_kind, ref: f.source_ref.trim() || null, version: null, license: f.source_kind === 'usda_fdc' ? 'CC0 1.0 (USDA FoodData Central)' : null, note: null };
+    const source = { kind: f.source_kind, ref: f.source_ref.trim() || null, version: null, license: licenseFor(f.source_kind), note: null };
     const unchanged = prev && same(prev.per_100g, per) && prev.preparation_state === f.preparation_state && same(prev.source, source) && prev.name === f.name.trim();
     let fv: FoodVersion;
     if (prev && unchanged) fv = prev;
@@ -187,7 +197,7 @@ export function buildMeal(a: BuildArgs): BuildResult {
           name: ing.name.trim(),
           preparation_state: ing.state,
           per_100g: nutrientsFrom(ing.per100) as Nutrients,
-          source: { kind: ing.source_kind, ref: null, version: null, license: ing.source_kind === 'usda_fdc' ? 'CC0 1.0 (USDA FoodData Central)' : null, note: null },
+          source: { kind: ing.source_kind, ref: ing.source_ref ?? null, version: null, license: licenseFor(ing.source_kind), note: ing.source_ref ? 'Standard values from the ingredient list.' : null },
           assumptions: [],
         };
         outFoods.push(nv);

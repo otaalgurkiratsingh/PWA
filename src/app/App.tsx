@@ -6,6 +6,7 @@ import { Sheet } from '@/core/design/ui';
 import { watchSystemTheme } from '@/core/design/theme';
 import { formatLongDate } from '@/core/time/localDate';
 import { NotificationsScreen } from '@/features/settings/NotificationsScreen';
+import { TrainerFab } from '@/features/coach/Trainer';
 import { AnimatedMark, LaunchSplash } from '@/core/design/BrandLogo';
 import { AccessScreen, WelcomeScreen } from '@/features/auth/WelcomeScreen';
 import { ChatScreen } from '@/features/coach/ChatScreen';
@@ -133,7 +134,7 @@ function Shell() {
 
 function AppShell() {
   const route = useRoute();
-  const { profile } = useJournal();
+  const { profile, timer } = useJournal();
   useEffect(() => {
     document.title = `${TITLES[route.name]} · TrainLuma`;
     window.scrollTo({ top: 0 });
@@ -164,6 +165,7 @@ function AppShell() {
         <div key={`${profile.id}:${route.name}:${route.param ?? ''}`}>{screen}</div>
       </main>
       {!focused ? <RestDock /> : null}
+      {isTab && !timer ? <TrainerFab /> : null}
       {!focused ? (
         <nav className="bottom-nav" aria-label="Main">
           <ul>

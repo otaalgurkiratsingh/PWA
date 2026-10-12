@@ -2,12 +2,53 @@
 
 **App:** TrainLuma (renamed from Rozana on 2026-10-10; new TL logo).
 **Phase:** V2 food, AI onboarding and text AI Coach (`docs/spec/CLAUDE_CODE_FOOD_AND_AI_ONBOARDING_UPDATE_V2.md`), built on the approved redesign.
-**Last updated:** 2026-10-10 · Branch `claude/meal-workout-journal-phase-0-pepxc3`
+**Last updated:** 2026-10-12 · Branch `claude/meal-workout-journal-phase-0-pepxc3`
 **Live credentials used:** none. Nothing was published, billed or shared, and nobody was invited.
 
 > "Implemented" is not "tested", and "tested here" is not "tested on your phone or your live Supabase project". Each row below says which.
 
-## What changed in this pass
+## Pass 3 (2026-10-12): reminders, standard nutrition, barcodes, recipes, exercise library, AI trainer
+
+**Also found and fixed:** a `.gitignore` rule (`photos/`) had kept `src/core/photos` and `src/features/photos` out of git since pass 2, so a clean checkout (Netlify) failed to build and the live site stayed on the old "Rozana" version. The rule now covers only the repo root. A fresh clone builds.
+
+| Area | Done |
+|---|---|
+| **Reminders** | Settings → Notifications: daily motivation at a chosen time, and a gym reminder 10/15/30/45 min before gym time on chosen days ("Legs in 15 minutes"). Shows when the next ones arrive. A test notification. "Hide details on the lock screen". A one-time invite card on Today. Built on Web Push: payloads are end-to-end encrypted to the device (RFC 8291, implemented with WebCrypto, checked against the `web-push` library and the RFC test vector), VAPID-signed, sent by a new `notify` Edge Function that pg_cron calls every 5 minutes. Migration `0004`: `push_subscriptions` and `notification_prefs` (owner-only RLS, real time zones only), once-per-day claims, service-only sender RPCs, and devices and preferences removed the moment access ends. The motivation text uses the same rules as the "How you're doing" card, from backed-up records. |
+| **Standard nutrition** | 145 of 293 list foods now start with standard values and serving weights: 91 from the Canadian Nutrient File (Health Canada, 2026) and 54 from USDA FNDDS. Each is named on the food, with the record id and attribution. The picker shows kcal per serving, and the add sheet shows kcal/protein/carbs/fat. The person's own weighed serving overrides the standard weight. 69 values from the Indian Nutrient Databank are left out until its licence is confirmed (see Blocked). The other 79 foods have no honest match yet and stay "not set". |
+| **Barcode scanning** | Food → Choose food → scan button. The camera uses the built-in BarcodeDetector (Chrome on Android) or ZXing (Safari), loaded only when scanning. Typing the numbers also works. Check digits are validated and UPC-E is expanded. Lookup is on Open Food Facts; only the barcode number is sent. The product's label values are shown per serving, with servings and meal slot, and added in one tap. A product scanned before is reused without a lookup. Not found leads to "Add from the label". CSP `connect-src` adds only `https://world.openfoodfacts.org`. |
+| **Personal recipes** | "My recipe" in the meal editor now has **Add from ingredient list**: 73 everyday ingredients (atta, besan, dals, rice, ghee, oils, milk, dahi, paneer, chicken, onion, sarson, palak…) with Canadian Nutrient File values (paneer from USDA), searchable in Punjabi and English. Weigh each ingredient and the cooked pot, and the per-portion estimate appears. List foods with standard values suggest switching to "My recipe" for a closer estimate. |
+| **Exercise library** | 823 exercises: 789 from free-exercise-db (public domain) plus 34 common moves written for TrainLuma. Each has its muscle group, equipment, level and how-to steps. The picker has muscle chips, an equipment filter, search by name or alias ("RDL"), popular first, and a How-to sheet. The 49 built-in exercises keep their ids and are still the only ones AI plans may use. |
+| **AI trainer** | Name your trainer and pick one of 10 original avatars: two abstract "AI" marks (glow orb, bloom) and eight characters (buddy, spark, panda, kitty, bear, sher, robot, sprout) that blink. A floating trainer button on every main tab opens the chat. The chat header shows the trainer's name and avatar, with a typing indicator of three bouncing dots. Today says "Ask {name}". The demo now has a working chat with clearly labelled sample replies (not AI). The name and look are saved in the profile and sync. |
+| **Look and feel** | Launch splash: the TL logo builds itself over the brand gradient, then the wordmark rises (about 1.6 s, once per launch, skipped with reduced motion, never blocks taps). A redesigned sign-in screen. Favicons and `favicon.ico` are rendered from the logo under new file names. The installed app applies new versions at launch (never mid-workout), and versioned icon URLs refresh home-screen icons. |
+| **Health** | Water on Today: one tap per 250 ml glass, against a 2 L goal. |
+| **Bug fixes (review)** | Day rollover/timezone (the header flipped days; Food logged to yesterday after midnight), plan rep inputs ("8"→"810") and decimal weights ("62.5"→625), workouts compared with later sessions, "lighter" shown for reps-only and timed exercises, blank steps saved as 0, horizontal scrolling at 200% text (headers, segmented controls, set table, Settings and Coach buttons, chat starter chips), "Not logged" shown when nutrition was unknown, heatmap number contrast. |
+
+### Checks run in pass 3 (2026-10-12)
+
+| Check | Result |
+|---|---|
+| `npm run check` (typecheck, lint, unit tests, build, secret scan) | **pass** · 191 tests (2 skipped generators) · secret scan over 267 files + history + dist |
+| `npm run test:db` (4 migrations) | **71/71** (12 new: devices, preferences, time zones, due windows incl. after-midnight gym time and DST, once-per-day claims, service-only RPCs, context holds only own records, clean-up on revoke) |
+| `npm run smoke:ai` | **18/18** |
+| `npm run smoke:notify` (real `notify` function in Deno vs. mock Supabase + mock push service; the harness decrypts what was sent) | **10/10** |
+| Web Push interop (scratch, not in repo) | our encryption decrypts with `http_ece`; `web-push` output decrypts with ours; RFC 8291 §5 vector matches |
+| `deno check` both functions · prompt `--check` | pass · up to date |
+| Playwright (demo + auth harness) | **42/42** (new: reminders panel + test notification, reminders saved to own row, AI trainer naming + demo chat, barcode lookup/add/reuse, recipe from ingredient list, exercise library filters + how-to, motivation card) |
+| 200% text, 390 px: horizontal overflow | none on Today, Food, Workout, Progress, Settings, Notifications, Chat, Coach, Meal editor, Plan editor |
+
+### Blocked in pass 3
+- **Indian Nutrient Databank values (69 dishes):** no licence is declared, and its raw values derive from ICMR-NIN's copyrighted Indian Food Composition Tables. Left out. If the authors grant permission, they can be added from the research files.
+- **Open Food Facts, Health Canada and USDA sites** are unreachable from the build container. Barcode lookups are tested against a mock; the nutrition data came from published dataset mirrors on GitHub (two byte-identical CNF 2026 mirrors).
+
+### Not yet verified in pass 3
+- **Real push delivery** through Google (FCM) and Apple, the lock-screen look, and whether iOS shows reminders (it needs the app on the Home Screen, iOS 16.4+). The pg_cron + pg_net call to `notify` and the Vault secret on the live project.
+- **Camera scanning on real phones:** BarcodeDetector on Android Chrome; ZXing on iPhone Safari; low light; small or curved packs.
+- **Real Open Food Facts answers** for Canadian products (coverage varies; values are volunteer-entered).
+- **Standard values against real home cooking:** they are reference records; family recipes differ, which is why "My recipe" is offered.
+
+## Pass 2 (2026-10-10)
+
+### What changed in pass 2
 
 | Area | Done |
 |---|---|

@@ -4,11 +4,15 @@
 
 **TrainLuma** (formerly Rozana) is a private, phone-first meal and workout journal for a few invited adults. It is a hobby project, not a commercial product, and has no public sign-up.
 
-**Status:** V2 adds a 293-food Punjabi Canadian food list with original pictures, personalised onboarding with optional photos and an AI-drafted plan you approve, and a text AI Coach. The redesign is complete and runs locally. It has a light, calm interface, editable workout plans, natural meal logging, email-code sign-in with approved membership, cloud backup/sync, and an AI coach behind an authenticated backend. Live sign-in, backup and AI need the owner's one-time setup (Supabase, email sender, paid Gemini key). Until then the app offers a clearly labelled demo. See [`docs/BUILD_STATUS.md`](docs/BUILD_STATUS.md) for exactly what has been tested.
+**Status (2026-10-12):** meals, workouts, health basics and a personal AI trainer in one app. New: phone reminders (daily motivation + a heads-up before gym time), standard nutrition on 145 list foods (Canadian Nutrient File / USDA), barcode scanning (Open Food Facts), personal recipes from a 73-ingredient list, an 823-exercise library with how-to steps, a trainer you name and dress up, water tracking, an animated launch and a new sign-in screen. Earlier: V2 adds a 293-food Punjabi Canadian food list with original pictures, personalised onboarding with optional photos and an AI-drafted plan you approve, and a text AI Coach. The redesign is complete and runs locally. It has a light, calm interface, editable workout plans, natural meal logging, email-code sign-in with approved membership, cloud backup/sync, and an AI coach behind an authenticated backend. Live sign-in, backup and AI need the owner's one-time setup (Supabase, email sender, paid Gemini key). Until then the app offers a clearly labelled demo. See [`docs/BUILD_STATUS.md`](docs/BUILD_STATUS.md) for exactly what has been tested.
 
 | Welcome | Today | Food | Workout | Progress | Coach |
 |---|---|---|---|---|---|
 | ![](docs/screenshots/390-01-welcome.png) | ![](docs/screenshots/390-03-today.png) | ![](docs/screenshots/390-04-food.png) | ![](docs/screenshots/390-10-active-workout.png) | ![](docs/screenshots/390-11-progress.png) | ![](docs/screenshots/390-23-coach-review.png) |
+
+| Trainer chat | Reminders | Barcode | Exercise how-to |
+|---|---|---|---|
+| ![](docs/screenshots/39-trainer-chat.png) | ![](docs/screenshots/38-notifications.png) | ![](docs/screenshots/40-barcode-product.png) | ![](docs/screenshots/41-exercise-how-to.png) |
 
 ## Requirements
 - Node.js **22.12+** (tested with 22.22.0) and npm 10. `.nvmrc` pins 22. All dependency versions are pinned and `package-lock.json` is committed.

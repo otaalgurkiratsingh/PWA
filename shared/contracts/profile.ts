@@ -74,6 +74,18 @@ export const TrainingProfile = z.object({
 });
 export type TrainingProfile = z.infer<typeof TrainingProfile>;
 
+/** The person's own name and look for their AI trainer (personal touch only; changes no advice). */
+export const CoachAvatarId = z.enum(['orb', 'bloom', 'buddy', 'spark', 'panda', 'kitty', 'bear', 'sher', 'bot', 'sprout']);
+export type CoachAvatarId = z.infer<typeof CoachAvatarId>;
+export const CoachPersona = z.object({
+  name: z.string().trim().min(1).max(24),
+  avatar: CoachAvatarId,
+  /** Null until the person has chosen (the app then offers "Meet your trainer"). */
+  chosen_at: z.string().nullable(),
+});
+export type CoachPersona = z.infer<typeof CoachPersona>;
+export const DEFAULT_COACH: CoachPersona = { name: 'Luma', avatar: 'orb', chosen_at: null };
+
 export const LocalProfile = z.object({
   id: z.string().min(1),
   nickname: z.string().min(1).max(40),
@@ -90,6 +102,7 @@ export const LocalProfile = z.object({
   training: TrainingProfile.nullable().default(null),
   /** Incremented whenever planning answers change; drafts generated for an older version must be regenerated. */
   profile_version: z.number().int().nonnegative().default(0),
+  coach: CoachPersona.default(DEFAULT_COACH),
   onboarded_at: z.string().nullable().default(null),
   updated_at: z.string().nullable().default(null),
 });

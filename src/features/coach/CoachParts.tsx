@@ -42,8 +42,13 @@ export function CoachGate({ children, header = null }: { children: ReactNode; he
   if (mode === 'demo') {
     return (
       <>{header}<div className="card coach">
-        <EmptyState icon="sparkle" tone="coach" title="AI Coach works with your own journal" action={<button className="btn" onClick={exitDemo}>Leave demo and sign in</button>}>
-          It reads only your own signed-in records, never demo data, and says which days it used and what’s missing.
+        <EmptyState icon="sparkle" tone="coach" title="AI Coach works with your own journal" action={
+          <div className="stack-sm">
+            <button className="btn" onClick={() => navigate('chat', 'new')}>Try the demo chat</button>
+            <button className="btn secondary" onClick={exitDemo}>Leave demo and sign in</button>
+          </div>
+        }>
+          With your account it reads only your own records, never demo data, and says which days it used and what’s missing.
         </EmptyState>
       </div></>
     );

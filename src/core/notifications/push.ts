@@ -101,8 +101,8 @@ export async function testNotification(prefs: NotificationPrefs): Promise<void> 
   const title = prefs.hide_details ? 'TrainLuma' : 'You’re all set';
   const opts: NotificationOptions = {
     body: prefs.hide_details ? 'Reminders are on.' : 'This is how your reminders will look.',
-    icon: '/icons/icon-192.png?v=tl1',
-    badge: '/icons/icon-192.png?v=tl1',
+    icon: '/icons/icon-192.png?v=tl3',
+    badge: '/icons/icon-192.png?v=tl3',
     tag: 'trainluma-test',
     data: { url: '/#/today' },
   };

@@ -1,3 +1,4 @@
+import { LOGO } from './logoPaths';
 import type { Equipment } from '@shared/contracts';
 
 /** Original line icons. Always paired with a visible label or an accessible name. */
@@ -86,15 +87,12 @@ export function EquipmentArt({ equipment, size = 34 }: { equipment: Equipment | 
 export function Mark({ size = 32 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 512 512" aria-hidden="true">
-      <defs>
-        <linearGradient id="tl-bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#0057FF" /><stop offset="1" stopColor="#0A1FB8" /></linearGradient>
-        <linearGradient id="tl-l" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#B9F8E4" /><stop offset="1" stopColor="#22DCD4" /></linearGradient>
-      </defs>
-      <rect width="512" height="512" rx="120" fill="url(#tl-bg)" />
-      <rect x="100" y="128" width="266" height="77" rx="38.5" fill="#FFFFFF" />
-      <rect x="185" y="150" width="71" height="235" rx="35.5" fill="#FFFFFF" />
-      <rect x="271" y="223" width="65" height="159" rx="32.5" fill="url(#tl-l)" />
-      <rect x="271" y="318" width="162" height="64" rx="32" fill="url(#tl-l)" />
+      <rect width="512" height="512" rx="112" fill={LOGO.tile} />
+      <g transform="translate(91 120.4) scale(0.5437)">
+        <path d={LOGO.tBar} fill={LOGO.blue} />
+        <path d={LOGO.tStem} fill={LOGO.blue} />
+        <path d={LOGO.l} fill={LOGO.mint} />
+      </g>
     </svg>
   );
 }

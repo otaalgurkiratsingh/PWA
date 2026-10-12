@@ -1831,7 +1831,8 @@ table.data td {
 }
 
 /* ---------- brand mark animation ---------- */
-.tl-mark rect {
+.tl-mark rect,
+.tl-mark path {
   transform-box: fill-box;
 }
 .tl-mark.play .tl-tile {
@@ -1876,17 +1877,27 @@ table.data td {
   position: fixed;
   inset: 0;
   z-index: 1000;
-  pointer-events: none;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 18px;
-  background: radial-gradient(120% 80% at 50% 0%, #1f6bff 0%, #0a2fd0 45%, #071a7a 100%);
+  width: 100%;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  background: #030b1b;
   color: #fff;
-  transition: opacity 380ms ease, transform 380ms ease;
+  transition: opacity 400ms ease, transform 400ms ease;
+}
+.launch-splash .ls-video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
 }
 .launch-splash.leave {
+  pointer-events: none;
   opacity: 0;
   transform: scale(1.04);
 }
@@ -1911,7 +1922,7 @@ table.data td {
 }
 .launch-splash .ls-word span,
 .welcome.premium h1 span {
-  color: #7ff0d8;
+  color: #7ae3ce;
 }
 .launch-splash .ls-tag {
   position: relative;
@@ -1940,7 +1951,7 @@ table.data td {
   overflow: hidden;
   padding: calc(env(safe-area-inset-top) + 14px) var(--gutter) 64px;
   color: #fff;
-  background: radial-gradient(130% 90% at 80% 0%, #2b7bff 0%, #0b3be0 45%, #071c86 100%);
+  background: radial-gradient(130% 90% at 80% 0%, #1e62e1 0%, #14348f 42%, #0c132a 100%);
   border-radius: 0 0 32px 32px;
 }
 .welcome.premium .w-hero::after {
@@ -1951,7 +1962,7 @@ table.data td {
   width: 280px;
   height: 280px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(34, 220, 212, 0.32), transparent 65%);
+  background: radial-gradient(circle, rgba(122, 227, 206, 0.3), transparent 65%);
   pointer-events: none;
 }
 .brand.on-dark,
@@ -2395,4 +2406,16 @@ ol.how-to {
 }
 .coach-actions .btn span {
   overflow-wrap: anywhere;
+}
+
+.launch-splash .ls-skip {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(env(safe-area-inset-bottom) + 28px);
+  text-align: center;
+  font-size: var(--fs-small);
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.55);
+  animation: ls-up 500ms 1200ms ease both;
 }

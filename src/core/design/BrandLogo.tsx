@@ -1,4 +1,5 @@
-import { useEffect, useId, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { LOGO } from './logoPaths';
 
 /**
  * The TrainLuma TL mark, drawn in parts so it can assemble itself: the T bar sweeps in,
@@ -6,60 +7,87 @@ import { useEffect, useId, useState } from 'react';
  * (and the reduced-motion rule in app.css turns every animation off anyway).
  */
 export function AnimatedMark({ size = 96, animate = true, tile = true }: { size?: number; animate?: boolean; tile?: boolean }) {
-  const id = useId().replace(/:/g, '');
   return (
     <svg className={`tl-mark${animate ? ' play' : ''}`} width={size} height={size} viewBox="0 0 512 512" aria-hidden="true">
-      <defs>
-        <linearGradient id={`${id}bg`} x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#0057FF" /><stop offset="1" stopColor="#0A1FB8" /></linearGradient>
-        <linearGradient id={`${id}l`} x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#B9F8E4" /><stop offset="1" stopColor="#22DCD4" /></linearGradient>
-      </defs>
-      {tile ? <rect className="tl-tile" width="512" height="512" rx="120" fill={`url(#${id}bg)`} /> : null}
-      <rect className="tl-bar" x="100" y="128" width="266" height="77" rx="38.5" fill="#FFFFFF" />
-      <rect className="tl-stem" x="185" y="150" width="71" height="235" rx="35.5" fill="#FFFFFF" />
-      <rect className="tl-lv" x="271" y="223" width="65" height="159" rx="32.5" fill={`url(#${id}l)`} />
-      <rect className="tl-lh" x="271" y="318" width="162" height="64" rx="32" fill={`url(#${id}l)`} />
+      {tile ? <rect className="tl-tile" width="512" height="512" rx="112" fill={LOGO.tile} /> : null}
+      <g transform="translate(91 120.4) scale(0.5437)">
+        <path className="tl-bar" d={LOGO.tBar} fill={LOGO.blue} />
+        <path className="tl-stem" d={LOGO.tStem} fill={LOGO.blue} />
+        <path className="tl-lv" d={LOGO.l} fill={LOGO.mint} />
+      </g>
     </svg>
   );
 }
 
 const SEEN = 'trainluma.splashSeen';
+const INTRO_MS = 8600;
+
+function shouldShow(): boolean {
+  try {
+    // Automated browsers (tests, screenshots) and repeat opens in the same session skip the intro.
+    if (navigator.webdriver) return false;
+    return !sessionStorage.getItem(SEEN);
+  } catch {
+    return true;
+  }
+}
 
 /**
- * Launch splash: the logo assembles over the brand gradient, the wordmark rises, then it fades away.
- * Purely visual (aria-hidden, pointer-events: none), so it never blocks a tap or a screen reader.
- * Shown once per app launch (tab session).
+ * Launch intro: the owner's TrainLuma logo animation (an 8.6-second muted clip: neon outline → fill →
+ * glow → app icon with wordmark), then a soft fade into
+ * the app. Tap anywhere to skip. With reduced motion, a still logo shows briefly instead. If the
+ * video can't play, the vector mark assembles itself as before. Once per app launch (tab session).
  */
 export function LaunchSplash() {
-  const [initial] = useState<'show' | 'gone'>(() => {
-    try {
-      return sessionStorage.getItem(SEEN) ? 'gone' : 'show';
-    } catch {
-      return 'show';
-    }
-  });
+  const [initial] = useState<'show' | 'gone'>(() => (shouldShow() ? 'show' : 'gone'));
   const [phase, setPhase] = useState<'show' | 'leave' | 'gone'>(initial);
+  const [fallback, setFallback] = useState(false);
+  const reduce = typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  const leave = useCallback(() => setPhase((p) => (p === 'show' ? 'leave' : p)), []);
+
   useEffect(() => {
     if (initial === 'gone') return;
     try {
       sessionStorage.setItem(SEEN, '1');
     } catch {
-      // private mode: the splash simply shows again next time
+      // private mode: the intro simply shows again next time
     }
-    const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-    const leave = window.setTimeout(() => setPhase('leave'), reduce ? 250 : 1250);
-    const gone = window.setTimeout(() => setPhase('gone'), reduce ? 400 : 1650);
-    return () => {
-      window.clearTimeout(leave);
-      window.clearTimeout(gone);
-    };
-  }, [initial]);
+    // Safety net: never hold the app longer than the clip (plus a little slack for slow starts).
+    const t = window.setTimeout(leave, reduce ? 450 : INTRO_MS + 1200);
+    return () => window.clearTimeout(t);
+  }, [initial, reduce, leave]);
+
+  useEffect(() => {
+    if (phase !== 'leave') return;
+    const t = window.setTimeout(() => setPhase('gone'), 420);
+    return () => window.clearTimeout(t);
+  }, [phase]);
+
+  useEffect(() => {
+    if (!fallback) return;
+    const t = window.setTimeout(leave, 1500);
+    return () => window.clearTimeout(t);
+  }, [fallback, leave]);
+
   if (phase === 'gone') return null;
   return (
-    <div className={`launch-splash${phase === 'leave' ? ' leave' : ''}`} aria-hidden="true">
-      <div className="ls-glow" />
-      <AnimatedMark size={112} />
-      <div className="ls-word">Train<span>Luma</span></div>
-      <div className="ls-tag">Eat well · Train smart · Glow up</div>
-    </div>
+    <button type="button" className={`launch-splash${phase === 'leave' ? ' leave' : ''}`} onClick={leave} aria-label="Skip intro">
+      {reduce ? (
+        <AnimatedMark size={120} animate={false} />
+      ) : fallback ? (
+        <>
+          <span className="ls-glow" />
+          <AnimatedMark size={112} />
+          <span className="ls-word">Train<span>Luma</span></span>
+        </>
+      ) : (
+        <video className="ls-video" poster="/intro/trainluma-intro-poster.jpg" autoPlay muted playsInline preload="auto" aria-hidden="true"
+          onEnded={leave} onError={() => setFallback(true)}>
+          <source src="/intro/trainluma-intro.webm" type="video/webm" />
+          <source src="/intro/trainluma-intro.mp4" type="video/mp4" onError={() => setFallback(true)} />
+        </video>
+      )}
+      {!reduce && !fallback ? <span className="ls-skip" aria-hidden="true">Tap to skip</span> : null}
+    </button>
   );
 }

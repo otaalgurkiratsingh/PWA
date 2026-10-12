@@ -1,0 +1,455 @@
+/* Luma Insights, milestones and the year recap. Builds on tokens.css + app.css (cards, tags, buttons). */
+
+.ins-screen {
+  gap: 16px;
+}
+.ins-center {
+  text-align: center;
+}
+.ins-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ---------- week switcher ---------- */
+.ins-switch {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px;
+  border-radius: var(--r-lg);
+  background: var(--card-2);
+}
+.ins-switch .icon-btn {
+  background: var(--card);
+}
+.ins-switch-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+/* ---------- hero (brand gradient, readable in light and dark) ---------- */
+.ins-hero {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  padding: 24px 22px;
+  border-radius: var(--r-xl);
+  color: #ffffff;
+  background:
+    radial-gradient(120% 90% at 100% 0%, rgb(127 227 215 / 38%), transparent 55%),
+    radial-gradient(100% 80% at 0% 100%, rgb(160 140 255 / 30%), transparent 60%),
+    linear-gradient(160deg, #1f6bff 0%, #0f3fc4 55%, #071a7a 100%);
+  box-shadow: 0 10px 30px rgb(7 26 122 / 28%);
+  animation: ins-in var(--t-sheet) var(--ease) both;
+}
+.ins-hero .grow {
+  min-width: min(100%, 11rem);
+}
+.ins-hero-eyebrow {
+  font-size: var(--fs-label);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgb(255 255 255 / 80%);
+}
+.ins-hero-big {
+  margin-top: 6px;
+  font-size: 1.375rem;
+  font-weight: 700;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+.ins-hero-big .num {
+  display: block;
+  font-size: 3.5rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+.ins-hero-sub,
+.ins-hero-line {
+  margin-top: 6px;
+  color: rgb(255 255 255 / 86%);
+  font-size: var(--fs-small);
+}
+.ins-hero-line {
+  font-size: 1.0625rem;
+  font-weight: 650;
+  color: #ffffff;
+}
+.ins-hero-year {
+  min-height: 200px;
+}
+
+/* ---------- consistency ring ---------- */
+.ins-ring {
+  flex: none;
+}
+.ins-ring circle {
+  fill: none;
+  stroke-width: 10;
+}
+.ins-ring-track {
+  stroke: rgb(255 255 255 / 22%);
+}
+.ins-ring-fill {
+  stroke: #7fe3d7;
+  stroke-linecap: round;
+  transition: stroke-dasharray var(--t-sheet) var(--ease);
+}
+.ins-ring-text {
+  fill: #ffffff;
+  font-size: 22px;
+  font-weight: 800;
+}
+
+/* ---------- tiles ---------- */
+.ins-pair {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 9.5rem), 1fr));
+  gap: 12px;
+}
+.ins-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  animation: ins-in var(--t-sheet) var(--ease) both;
+  animation-delay: 60ms;
+}
+.ins-tile-big {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+.ins-tile-big small {
+  font-size: var(--fs-small);
+  font-weight: 600;
+  color: var(--text-2);
+  letter-spacing: 0;
+}
+.ins-protein {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.ins-protein .small {
+  color: var(--text);
+}
+.ins-note {
+  margin-top: 4px;
+  padding: 10px 12px;
+  border-radius: var(--r-sm);
+  background: var(--warn-bg);
+  color: var(--warn-ink) !important;
+}
+
+/* ---------- lists ---------- */
+.ins-list {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+.ins-list li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 6px 0;
+  overflow-wrap: anywhere;
+}
+.ins-list li + li {
+  border-top: 1px solid var(--border);
+}
+.card.train .ins-list li + li {
+  border-top-color: var(--train-strong);
+}
+.ins-pr-icon,
+.ins-rank {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  background: var(--warn-bg);
+  color: var(--warn-ink);
+  font-weight: 800;
+}
+.ins-rank {
+  background: var(--train-strong);
+  color: var(--train-ink);
+}
+
+/* ---------- "Luma noticed…" ---------- */
+.ins-noticed {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  animation: ins-in var(--t-sheet) var(--ease) both;
+  animation-delay: 120ms;
+}
+.ins-noticed .eyebrow {
+  font-size: var(--fs-label);
+}
+.ins-noticed-text {
+  margin-top: 4px;
+  font-size: 1.125rem;
+  font-weight: 700;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+.ins-signoff {
+  display: block;
+  margin-top: 6px;
+  font-size: var(--fs-label);
+  font-weight: 650;
+  color: var(--coach-ink);
+}
+.ins-signoff::before {
+  content: '— ';
+}
+.ins-share {
+  min-height: 52px;
+}
+
+/* ---------- not yet earned ---------- */
+.ins-unearned {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-align: center;
+  align-items: center;
+  padding-block: 28px;
+}
+.ins-unearned h2 {
+  font-size: 1.1875rem;
+  line-height: 1.3;
+  max-width: 22rem;
+}
+.ins-dots {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+.ins-dots span {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid var(--primary);
+  background: transparent;
+}
+.ins-dots span.on {
+  background: var(--primary);
+}
+
+/* ---------- story preview ---------- */
+.ins-preview-frame {
+  align-self: center;
+  width: min(100%, 300px);
+  aspect-ratio: 9 / 16;
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  background: linear-gradient(160deg, #1f6bff, #071a7a);
+  box-shadow: var(--shadow-2);
+}
+.ins-preview-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.ins-preview-loading {
+  height: 100%;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  text-align: center;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+/* ---------- streak pill ---------- */
+.ins-streaks {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.ins-streak {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 4px 12px;
+  border-radius: var(--r-pill);
+  background: var(--food);
+  color: var(--food-ink);
+  font-size: var(--fs-label);
+  font-weight: 700;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+.ins-streak.frozen {
+  background: var(--primary-soft);
+  color: var(--primary-soft-ink);
+}
+.ins-streak.fresh {
+  background: var(--train);
+  color: var(--train-ink);
+}
+
+/* ---------- milestone celebration ---------- */
+.ins-celebrate {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 0 4px;
+  text-align: center;
+}
+.ins-celebrate-badge {
+  position: relative;
+  z-index: 1;
+  width: 132px;
+  height: 132px;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  background: linear-gradient(160deg, #1f6bff, #071a7a);
+  box-shadow: 0 10px 28px rgb(31 107 255 / 35%), 0 0 0 8px var(--primary-soft);
+  animation: ins-pop 560ms cubic-bezier(0.2, 0.9, 0.3, 1.3) both;
+}
+.ins-celebrate-num {
+  font-size: 3rem;
+  font-weight: 800;
+  line-height: 1;
+}
+.ins-celebrate-unit {
+  font-size: var(--fs-small);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.ins-celebrate-lead {
+  position: relative;
+  z-index: 1;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  max-width: 24rem;
+}
+.ins-trainer-note {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+}
+.ins-trainer-note .bubble {
+  max-width: none;
+  flex: 1;
+  min-width: 0;
+}
+.ins-confetti {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.ins-confetti span {
+  position: absolute;
+  top: -12px;
+  left: calc(var(--i) * 5.4% + 2%);
+  width: 8px;
+  height: 14px;
+  border-radius: 2px;
+  background: var(--primary);
+  opacity: 0;
+  animation: ins-fall 1800ms cubic-bezier(0.3, 0.6, 0.4, 1) forwards;
+  animation-delay: calc(var(--i) * 45ms);
+}
+.ins-confetti span:nth-child(3n + 1) {
+  background: #7fe3d7;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+.ins-confetti span:nth-child(3n + 2) {
+  background: #ffb547;
+}
+.ins-confetti span:nth-child(4n) {
+  background: #c4b5fd;
+}
+.ins-confetti span:nth-child(odd) {
+  animation-duration: 2200ms;
+}
+
+@keyframes ins-fall {
+  0% {
+    opacity: 1;
+    transform: translateY(0) rotate(0deg);
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(260px) rotate(540deg);
+  }
+}
+@keyframes ins-pop {
+  from {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+@keyframes ins-in {
+  from {
+    transform: translateY(8px);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ins-hero,
+  .ins-tile,
+  .ins-noticed,
+  .ins-celebrate-badge {
+    animation: none;
+  }
+  .ins-ring-fill {
+    transition: none;
+  }
+  /* Confetti stays as a still, scattered decoration. */
+  .ins-confetti span {
+    animation: none;
+    opacity: 0.85;
+    top: calc(var(--i) * 17% - (var(--i) * var(--i) * 0.9%));
+    transform: rotate(calc(var(--i) * 37deg));
+  }
+}

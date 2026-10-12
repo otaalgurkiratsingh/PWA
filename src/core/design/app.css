@@ -2378,3 +2378,21 @@ ol.how-to {
   text-align: left;
   max-width: 100%;
 }
+
+/* Trainer card actions: buttons share the row and wrap (long trainer names, large text) instead of overlapping. */
+.coach-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+}
+.coach-actions .btn {
+  flex: 1 1 auto;
+  min-width: 0;
+  white-space: normal;
+  text-align: center;
+  padding-block: 8px;
+}
+.coach-actions .btn span {
+  overflow-wrap: anywhere;
+}

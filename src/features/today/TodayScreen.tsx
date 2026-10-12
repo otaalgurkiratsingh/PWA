@@ -174,11 +174,11 @@ export function TodayScreen() {
           <span className="grow">
             <span className="eyebrow">Your AI trainer</span>
             <span style={{ display: 'block', fontWeight: 700, fontSize: '1.0625rem' }}>Ask {trainer.name} about your week</span>
-            <span className="small" style={{ color: 'var(--coach-ink)' }}>{mode === 'demo' ? 'Try the demo chat with sample replies' : 'Answers from your own logs. You decide on every change.'}</span>
+            <span className="small" style={{ display: 'block', color: 'var(--coach-ink)', marginTop: 2 }}>{mode === 'demo' ? 'Try the demo chat with sample replies' : 'Answers from your own logs. You decide on every change.'}</span>
           </span>
         </div>
-        <div className="row" style={{ marginTop: 14 }}>
-          <button className="btn grow" onClick={() => navigate('chat', 'new')}><Icon name="sparkle" size={18} /> Chat with {trainer.name}</button>
+        <div className="coach-actions">
+          <button className="btn" onClick={() => navigate('chat', 'new')}><Icon name="sparkle" size={18} /> <span>Chat with {trainer.name}</span></button>
           <button className="btn secondary" onClick={() => navigate('coach')}>Review & more</button>
         </div>
       </div>

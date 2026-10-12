@@ -525,6 +525,18 @@ test.describe('AI trainer', () => {
     await page.goto('/#/today');
     await expect(page.getByRole('button', { name: 'Chat with Veer', exact: true })).toBeVisible();
     await expect(page.getByRole('button', { name: /^Chat with Veer, your AI trainer/ })).toBeVisible();
+    // The trainer card's buttons never overlap its text or overflow (long names, big text).
+    for (const size of ['100%', '200%']) {
+      await page.addStyleTag({ content: `html{font-size:${size} !important}` });
+      const bad = await page.evaluate(() => {
+        const c = document.querySelector('.card.coach')!;
+        const r = (e: Element) => e.getBoundingClientRect();
+        const btns = [...c.querySelectorAll('.coach-actions .btn')];
+        const txt = c.querySelector('.small')!;
+        return btns.some((b) => r(b).top < r(txt).bottom - 1 || b.scrollWidth > b.clientWidth + 1);
+      });
+      expect(bad, size).toBe(false);
+    }
   });
 });
 

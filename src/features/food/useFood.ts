@@ -3,6 +3,7 @@ import type { FoodVersion, MealEntry, MealPreset, MealSlot } from '@shared/contr
 import { useJournal, useQuery } from '@/app/JournalContext';
 import { StorageWriteError } from '@/core/database/journal';
 import type { NutritionLibrary } from '@/domain/nutrition/calc';
+import { track, trackFoodLogged, type InputMethod } from '@/core/analytics/analytics';
 import { buildEntry, describeQuantity } from './mealActions';
 import type { BuildResult } from './mealBuilder';
 
@@ -19,7 +20,7 @@ export function useLibrary() {
 export function sortPresets(presets: readonly MealPreset[], recent: readonly MealEntry[]): MealPreset[] {
   const counts = new Map<string, number>();
   for (const e of recent) if (e.preset_id) counts.set(e.preset_id, (counts.get(e.preset_id) ?? 0) + 1);
-  return [...presets].sort(
+  return presets.filter((p) => p.kind !== 'quick' && !p.deleted_at).sort(
     (a, b) => Number(b.favorite ?? false) - Number(a.favorite ?? false) || (counts.get(b.id) ?? 0) - (counts.get(a.id) ?? 0) || a.name.localeCompare(b.name),
   );
 }
@@ -48,7 +49,7 @@ export function useMealLogging() {
   );
 
   const logPreset = useCallback(
-    async (preset: MealPreset, multiplier = 1, opts: { slot?: MealSlot; date?: string; newFoods?: readonly FoodVersion[] } = {}) => {
+    async (preset: MealPreset, multiplier = 1, opts: { slot?: MealSlot; date?: string; newFoods?: readonly FoodVersion[]; method?: InputMethod; quiet?: boolean } = {}) => {
       if (!nutrition) return null;
       try {
         // Foods saved a moment ago (e.g. picked from the food list) are not in the loaded library yet.
@@ -61,7 +62,9 @@ export function useMealLogging() {
         });
         await journal.commit('meal_entries', entry);
         refresh();
-        notify({ kind: 'info', message: `Added ${preset.name} · ${describeQuantity(preset, multiplier)}`, action: { label: 'Undo', run: () => void undo(entry.id, preset.name) } });
+        trackFoodLogged(opts.method ?? 'usual', { dish_id: preset.dish_id ?? undefined, kind: preset.kind ?? 'meal', items: preset.items.length, slot: entry.slot });
+        if (preset.dish_id && preset.items.length > 1) track('combo_logged', { dish_id: preset.dish_id });
+        if (!opts.quiet) notify({ kind: 'info', message: `Added ${preset.name} · ${describeQuantity(preset, multiplier)}`, action: { label: 'Undo', run: () => void undo(entry.id, preset.name) } });
         return entry;
       } catch (e) {
         notify({ kind: 'error', message: saveErrorMessage(e) });

@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import type { FoodVersion, MealPreset, PreparationState, SourceKind } from '@shared/contracts';
 import { useJournal } from '@/app/JournalContext';
-import { goBack } from '@/app/router';
+import { goBack, navigate } from '@/app/router';
 import { newId } from '@/core/ids';
 import { ART_CHOICES, FoodArt } from '@/core/design/foodArt';
 import { hasCatalogueArt } from '@/core/design/catalogueArt';
@@ -9,6 +9,7 @@ import { Icon } from '@/core/design/icons';
 import { PhotoCropper } from '@/core/design/PhotoCropper';
 import { Section, Segmented, Sheet, Toggle } from '@/core/design/ui';
 import { batchNutrients, formatTotal, portionNutrients } from '@/domain/nutrition/calc';
+import { LEGACY_REFERENCE_VALUES } from '@/core/config/dataPolicy';
 import { IngredientPicker, ingredientForm } from './IngredientPicker';
 import { buildMeal, emptyMealForm, emptyNutrients, formFromPreset, nutrientsFrom, UNIT_OPTIONS, validateMealForm, type IngredientForm, type MealForm, type NutrientForm } from './mealBuilder';
 import { MEAL_DRAFT_KEY } from './PhotoSheet';
@@ -248,9 +249,15 @@ function MealEditorForm({ existing, initial }: { existing: MealPreset | null; in
                 onRemove={() => set({ ingredients: form.ingredients.filter((_, k) => k !== i) })} />
             ))}
             <div className="row wrap">
-              <button className="btn sm" onClick={() => setPickingIngredient(true)}>
-                <Icon name="search" size={18} /> Add from ingredient list
-              </button>
+              {LEGACY_REFERENCE_VALUES ? (
+                <button className="btn sm" onClick={() => setPickingIngredient(true)}>
+                  <Icon name="search" size={18} /> Add from ingredient list
+                </button>
+              ) : (
+                <button className="btn sm" onClick={() => navigate('recipe', 'new')}>
+                  <Icon name="search" size={18} /> Build from the food database
+                </button>
+              )}
               <button className="btn secondary sm" onClick={() => set({ ingredients: [...form.ingredients, { key: newId(), food_version_id: null, name: '', state: 'raw', grams: '', per100: emptyNutrients(), source_kind: 'label' }] })}>
                 <Icon name="plus" size={18} /> Add ingredient
               </button>

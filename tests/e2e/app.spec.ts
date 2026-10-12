@@ -287,27 +287,26 @@ test.describe('food list (catalogue)', () => {
     await page.getByRole('button', { name: /Choose food/ }).click();
     const dialog = page.getByRole('dialog', { name: 'Choose food' });
     await expect(dialog.getByRole('button', { name: 'Popular' })).toHaveAttribute('aria-pressed', 'true');
-    // Aliases and spellings
+    // Aliases and spellings: "chapati" is a database dish now (real numbers), shown once.
     await dialog.getByLabel('Search foods').fill('chapati');
-    await expect(dialog.getByRole('button', { name: 'Whole-wheat roti' })).toBeVisible();
+    await expect(dialog.getByRole('button', { name: /^Chapati \/ Roti, 81 kcal/ })).toBeVisible();
+    await expect(dialog.getByRole('button', { name: 'Whole-wheat roti' })).toHaveCount(0);
+    // A list food with no database values yet still works, honestly marked unknown.
     await dialog.getByLabel('Search foods').fill('sabji');
-    await expect(dialog.getByRole('button', { name: 'Mixed vegetable sabzi' })).toBeVisible();
-    await dialog.getByLabel('Search foods').fill('daal makhani');
-    await dialog.getByRole('button', { name: 'Dal makhani' }).click();
-    const add = page.getByRole('dialog', { name: 'Dal makhani' });
+    await dialog.getByRole('button', { name: 'Mixed vegetable sabzi' }).click();
+    const add = page.getByRole('dialog', { name: 'Mixed vegetable sabzi' });
     await expect(add.getByText(/Nutrition not set yet/)).toBeVisible();
     await add.getByRole('button', { name: 'Breakfast' }).click();
     await add.getByRole('button', { name: 'Add 1 bowl' }).click();
-    await expect(page.getByText(/Added Dal makhani/)).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Edit Dal makhani' })).toBeVisible();
-    await page.getByRole('button', { name: 'Edit Dal makhani' }).click();
-    const entry = page.getByRole('dialog', { name: 'Dal makhani' });
+    await expect(page.getByText(/Added Mixed vegetable sabzi/)).toBeVisible();
+    await page.getByRole('button', { name: 'Edit Mixed vegetable sabzi' }).click();
+    const entry = page.getByRole('dialog', { name: 'Mixed vegetable sabzi' });
     await entry.getByText('Details').click();
     await expect(entry.getByText(/not weighed · Unknown · Unknown/)).toBeVisible();
     await page.keyboard.press('Escape');
     // Now it is one of the person's meals, with the catalogue picture.
-    await expect(page.getByRole('button', { name: /^Dal makhani, 1 bowl/ })).toBeVisible();
-    await expect(page.locator('svg[data-art="dal-makhani"]').first()).toBeVisible();
+    await expect(page.getByRole('button', { name: /^Mixed vegetable sabzi, 1 bowl/ })).toBeVisible();
+    await expect(page.locator('svg[data-art="mixed-vegetable-sabzi"]').first()).toBeVisible();
     const after = await page.evaluate(async () => new Promise<number>((resolve) => {
       const req = indexedDB.open('rozana-journal-demo-a');
       req.onsuccess = () => { const c = req.result.transaction('presets').objectStore('presets').count(); c.onsuccess = () => { resolve(c.result); req.result.close(); }; };
@@ -316,9 +315,9 @@ test.describe('food list (catalogue)', () => {
     // Picking it again from the list reuses the same meal.
     await page.getByRole('button', { name: 'Add food' }).click();
     await page.getByRole('button', { name: /Choose food/ }).click();
-    await page.getByLabel('Search foods').fill('makhani');
-    await page.getByRole('dialog', { name: 'Choose food' }).getByRole('button', { name: 'Dal makhani, in your meals' }).click();
-    await expect(page.getByRole('dialog', { name: 'Dal makhani' }).getByText(/Usual: 1 bowl/)).toBeVisible();
+    await page.getByLabel('Search foods').fill('mix veg');
+    await page.getByRole('dialog', { name: 'Choose food' }).getByRole('button', { name: 'Mixed vegetable sabzi, in your meals' }).click();
+    await expect(page.getByRole('dialog', { name: 'Mixed vegetable sabzi' }).getByText(/Usual: 1 bowl/)).toBeVisible();
   });
 
   test('categories, All foods and empty search', async ({ page }) => {
@@ -329,10 +328,15 @@ test.describe('food list (catalogue)', () => {
     await dialog.getByRole('button', { name: 'Chai & drinks' }).click();
     await expect(dialog.getByRole('button', { name: 'Masala chai' })).toBeVisible();
     await dialog.getByRole('button', { name: 'All foods' }).click();
-    await expect(dialog.locator('.lazy-row')).toHaveCount(293);
+    // List foods that are the same dish as a database entry are shown once, as the database dish.
+    const rows = await dialog.locator('.lazy-row').count();
+    expect(rows).toBeGreaterThan(250);
+    expect(rows).toBeLessThan(293);
+    // Never a dead end: quick-add, your own recipe and "request it" are offered.
     await dialog.getByLabel('Search foods').fill('zzqx');
-    await expect(dialog.getByText(/No foods match/)).toBeVisible();
-    await expect(dialog.getByRole('button', { name: 'Create a meal' })).toBeVisible();
+    await expect(dialog.getByText('A close guess beats a skipped meal.')).toBeVisible();
+    await expect(dialog.getByRole('button', { name: /Quick-add calories/ })).toBeVisible();
+    await expect(dialog.getByRole('button', { name: /Create your own recipe/ }).first()).toBeVisible();
   });
 });
 
@@ -585,25 +589,26 @@ test.describe('barcode', () => {
 });
 
 test.describe('personal recipe', () => {
-  test('build dal from the ingredient list: values filled in, only grams and the cooked weight to weigh', async ({ page }) => {
+  test('the meal editor’s recipe mode leads to the food-database recipe builder (values come from the database)', async ({ page }) => {
     await enterDemo(page, 'meal/new');
     await page.getByPlaceholder('e.g. Dal tadka').fill('Mummy’s dal');
     await page.getByRole('radio', { name: 'My recipe' }).or(page.getByRole('button', { name: 'My recipe' })).first().click();
-    const add = async (q: string, name: RegExp, grams: string) => {
-      await page.getByRole('button', { name: 'Add from ingredient list' }).click();
-      await page.getByLabel('Search ingredients').fill(q);
-      await page.getByRole('dialog', { name: 'Add an ingredient' }).getByRole('button', { name }).click();
-      await page.getByRole('textbox', { name: /grams$/ }).last().fill(grams);
-    };
-    await add('toor', /^Toor dal/, '200');
-    await add('desi ghee', /^Ghee/, '15');
-    await add('pyaz', /^Onion/, '100');
-    await expect(page.getByText(/Standard values per 100 g \(.+ kcal\) from the Canadian Nutrient File/).first()).toBeVisible();
-    await page.getByLabel('Cooked batch weight (g)').fill('900');
-    await page.getByLabel(/^1 \w+ weighs \(g\)/).fill('250');
-    await expect(page.locator('.notice').filter({ hasText: 'Usual portion ≈' })).toContainText('kcal');
-    await page.getByRole('button', { name: 'Save meal' }).last().click();
-    await expect(page.getByRole('status').getByText(/saved|Saved/)).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Add from ingredient list' })).toHaveCount(0); // earlier reference list is off by policy
+    await page.getByRole('button', { name: 'Build from the food database' }).click();
+    await expect(page.getByRole('heading', { name: 'Create your own recipe' })).toBeVisible();
+    await page.getByLabel('Recipe name').fill('Mummy’s dal');
+    await page.getByRole('button', { name: 'Add from food database' }).click();
+    await page.getByLabel('Search the food database').fill('moong');
+    await page.getByRole('dialog', { name: 'Add from food database' }).getByRole('button', { name: /^Moong dal\s*50 kcal/ }).click();
+    await page.getByRole('button', { name: 'My own ingredient' }).click();
+    const own = page.getByRole('dialog', { name: 'My own ingredient' });
+    await own.getByLabel('Name').fill('Desi ghee (label)');
+    await own.getByLabel('Grams in the whole recipe').fill('10');
+    await own.getByLabel('Calories').fill('900');
+    await own.getByRole('button', { name: 'Add ingredient' }).click();
+    await expect(page.locator('.recipe-preview .macro-grid')).toContainText('165 kcal'); // 75 + 90
+    await page.getByRole('button', { name: 'Save to My recipes' }).click();
+    await expect(page.getByRole('status').getByText(/Saved “Mummy’s dal” to My recipes/)).toBeVisible();
   });
 });
 
@@ -624,5 +629,81 @@ test.describe('exercise library', () => {
     await page.screenshot({ path: 'docs/screenshots/41-exercise-how-to.png' });
     await how.getByRole('button', { name: /^Add / }).click();
     await expect(page.getByText(/Bulgarian/i).first()).toBeVisible();
+  });
+});
+
+test.describe('Phase 1: TrainLuma food database', () => {
+  const openPicker = async (page: Page) => {
+    await enterDemo(page, 'food');
+    await page.getByRole('button', { name: 'Add food' }).click();
+    await page.getByRole('button', { name: /Choose food/ }).click();
+  };
+
+  test('search "rajma" → dish with kcal + protein → serving selector scales → logged with real numbers', async ({ page }) => {
+    await openPicker(page);
+    await page.getByLabel('Search foods').fill('rajmah');
+    const row = page.getByRole('button', { name: /^Rajma curry, 216 kcal, 9 grams protein per 1 katori/ });
+    await expect(row).toBeVisible();
+    await row.click();
+    const sheet = page.getByRole('dialog', { name: 'Rajma curry' });
+    await expect(sheet.locator('.macro-grid.big')).toContainText('216 kcal');
+    await sheet.getByRole('button', { name: '2×' }).click();
+    await expect(sheet.locator('.macro-grid.big')).toContainText('431 kcal');
+    await sheet.getByLabel('Or exact grams').fill('100');
+    await expect(sheet.locator('.macro-grid.big')).toContainText('144 kcal');
+    await expect(sheet.getByText(/Nutrition: Indian Nutrient Databank/)).toBeVisible();
+    await sheet.getByRole('button', { name: /^Log / }).click();
+    await expect(page.getByRole('status').getByText(/Added Rajma curry/)).toBeVisible();
+  });
+
+  test('combo logs all components in one tap; Tier-2 and quarantined dishes never appear', async ({ page }) => {
+    await openPicker(page);
+    await page.getByLabel('Search foods').fill('sarson makki');
+    await page.getByRole('button', { name: /^Sarson da saag \+ makki di roti, 581 kcal/ }).click();
+    const sheet = page.getByRole('dialog', { name: /Sarson da saag/ });
+    await expect(sheet.getByText(/Sarson ka saag 150 g \+ Makki ki roti 170 g/)).toBeVisible();
+    await sheet.getByRole('button', { name: /^Log / }).click();
+    await expect(page.getByRole('status').getByText(/Added Sarson da saag \+ makki di roti/)).toBeVisible();
+    // Quarantined kadhi pakoda and Tier-2 dishes (samosa, plain kadhi) are hidden; the fallback offers a way on.
+    await page.getByRole('button', { name: 'Add food' }).click();
+    await page.getByRole('button', { name: /Choose food/ }).click();
+    for (const q of ['kadhi pakoda', 'samosa']) {
+      await page.getByLabel('Search foods').fill(q);
+      await expect(page.locator('.dish-row')).toHaveCount(0);
+    }
+    await expect(page.getByText('A close guess beats a skipped meal.')).toBeVisible();
+    await expect(page.getByRole('button', { name: /Quick-add calories/ })).toBeVisible();
+    await page.getByRole('button', { name: 'Can’t find it? Request it' }).click();
+    await expect(page.getByRole('status').filter({ hasText: 'Got it — we’ll add it.' })).toBeVisible();
+  });
+
+  test('restaurant card: typical-values label and 1-tap signature dish logging; chains show official items', async ({ page }) => {
+    await openPicker(page);
+    await page.getByLabel('Search foods').fill('tandoori flame');
+    const card = page.locator('.restaurant-card').filter({ hasText: 'Tandoori Flame' });
+    await expect(card.getByText('Typical values — this restaurant’s recipe will differ.')).toBeVisible();
+    await card.getByRole('button', { name: 'Log Butter chicken (typical values)' }).click();
+    await expect(page.getByRole('status').getByText(/Added Butter chicken/)).toBeVisible();
+    await page.getByLabel('Search foods').fill('tim hortons');
+    await expect(page.locator('.restaurant-card').filter({ hasText: 'Tim Hortons' }).getByText(/Double-Double Coffee \(Medium\)/)).toBeVisible();
+    await expect(page.locator('.launch-splash')).toHaveCount(0);
+    await page.screenshot({ path: 'docs/screenshots/42-restaurant-card.png' });
+  });
+
+  test('make it mine: clone a dish, change grams, see the delta, save to My recipes', async ({ page }) => {
+    await openPicker(page);
+    await page.getByLabel('Search foods').fill('rajma');
+    await page.getByRole('button', { name: /^Rajma curry,/ }).click();
+    await page.getByRole('button', { name: /Make it mine/ }).click();
+    await expect(page.getByRole('heading', { name: 'Make it mine' })).toBeVisible();
+    await page.getByLabel('Rajma curry exact grams').fill('100');
+    await expect(page.locator('.delta-line')).toHaveText('−72 kcal, −3 g protein per serving vs the standard Rajma curry.');
+    await page.getByRole('button', { name: 'Add from food database' }).click();
+    await page.getByLabel('Search the food database').fill('roti');
+    await page.getByRole('dialog', { name: 'Add from food database' }).getByRole('button', { name: /^Chapati \/ Roti/ }).click();
+    await expect(page.locator('.recipe-preview .macro-grid')).toContainText('225 kcal'); // 143.7 + 80.9
+    await page.screenshot({ path: 'docs/screenshots/43-make-it-mine.png' });
+    await page.getByRole('button', { name: 'Save to My recipes' }).click();
+    await expect(page.getByRole('status').getByText(/Saved “My rajma curry” to My recipes/)).toBeVisible();
   });
 });

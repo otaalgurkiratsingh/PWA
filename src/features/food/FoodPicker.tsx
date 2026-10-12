@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { MealPreset, MealSlot } from '@shared/contracts';
 import { perServing, shortSource, type StandardNutrition } from '@shared/catalogue/standardNutrition';
 import { CATEGORY_IDS, searchCatalogue, canonicalTokens, type CatalogueFood, type CatalogueIndex, type CategoryId } from '@shared/catalogue/catalogue';
@@ -9,7 +9,13 @@ import { CatalogueArt } from '@/core/design/catalogueArt';
 import { FoodArt } from '@/core/design/foodArt';
 import { Icon } from '@/core/design/icons';
 import { Segmented, Sheet, Stepper, Toggle } from '@/core/design/ui';
+import { searchDishes, searchRestaurants, tokens, type Dish } from '@shared/fooddb/foodDb';
+import { useQuery } from '@/app/JournalContext';
+import { track, type InputMethod } from '@/core/analytics/analytics';
+import { LEGACY_REFERENCE_VALUES } from '@/core/config/dataPolicy';
+import { addDays } from '@/domain/metrics/metrics';
 import { BarcodeSheet } from './BarcodeSheet';
+import { DishRow, DishSheet, NoResultPanel, QuickAddSheet, RestaurantCard, useFoodDb } from './DishParts';
 import { existingPresetFor, presetFromCatalogue, visibleFor } from './catalogueFood';
 import { SLOT_LABEL, describeAmount, describeQuantity } from './mealActions';
 import { CATEGORY_SHORT, useCatalogue } from './useCatalogue';
@@ -27,7 +33,7 @@ function PresetRow({ p, onPick }: { p: MealPreset; onPick: () => void }) {
   return (
     <button className="ex-row" onClick={onPick}>
       <span className="ex-art" style={{ background: 'var(--food)', overflow: 'hidden' }}><FoodArt icon={p.icon} photo={p.photo} catalogueId={p.catalogue_id} size={52} label={p.name} /></span>
-      <span className="grow"><span className="er-name">{p.name}</span><br /><span className="er-sub">{describeQuantity(p, 1)}</span></span>
+      <span className="grow"><span className="er-name">{p.kind === 'recipe' || p.kind === 'template' ? <span className="my-badge">My</span> : null}{p.name}</span><br /><span className="er-sub">{p.kind === 'recipe' ? 'My recipe · ' : p.kind === 'template' ? 'Template · ' : ''}{describeQuantity(p, 1)}</span></span>
       <Icon name="chevronRight" />
     </button>
   );
@@ -45,6 +51,18 @@ function CatalogueRow({ f, mine, onPick, std }: { f: CatalogueFood; mine: MealPr
       {mine ? <Icon name="star" size={18} /> : <Icon name="plus" size={20} />}
     </button>
   );
+}
+
+/** T9: one dish_searched per settled query (and dish_searched_no_result with the text). */
+function useSearchAnalytics(query: string, results: number) {
+  useEffect(() => {
+    if (query.length < 2) return;
+    const t = window.setTimeout(() => {
+      track('dish_searched', { q_len: query.length, results });
+      if (results === 0) track('dish_searched_no_result', { text: query });
+    }, 1200);
+    return () => window.clearTimeout(t);
+  }, [query, results]);
 }
 
 /**
@@ -66,6 +84,11 @@ export function FoodPicker({ presets, date, slot, onPickPreset, onClose, initial
   const [showHidden, setShowHidden] = useState(false);
   const [adding, setAdding] = useState<CatalogueFood | null>(null);
   const [scanning, setScanning] = useState(false);
+  const { db } = useFoodDb();
+  const [vegOnly, setVegOnly] = useState(false);
+  const [dish, setDish] = useState<{ d: Dish; restaurant: string | null; method: InputMethod } | null>(null);
+  const [quick, setQuick] = useState(false);
+  const recent = useQuery((j) => j.mealsBetween(addDays(date, -30), date), [date]);
   const weekday = weekdayOf(date);
   const prefs = profile.food_prefs;
 
@@ -90,7 +113,24 @@ export function FoodPicker({ presets, date, slot, onPickPreset, onClose, initial
     return { foods: shown, hidden: pool.length - shown.length };
   }, [index, query, chip, showHidden, prefs, weekday]);
 
+  const usage = useMemo(() => {
+    const byPreset = new Map(presets.map((p) => [p.id, p.dish_id]));
+    const m = new Map<string, number>();
+    for (const e of recent ?? []) { const id = e.preset_id ? byPreset.get(e.preset_id) : null; if (id) m.set(id, (m.get(id) ?? 0) + 1); }
+    return m;
+  }, [presets, recent]);
+  const hour = new Date().getHours();
+  const dishes = useMemo(() => (db ? searchDishes(db, query, { vegOnly, hour, usage, limit: query ? 40 : 12 }) : []), [db, query, vegOnly, hour, usage]);
+  const places = useMemo(() => (db && query ? searchRestaurants(db, query) : []), [db, query]);
+  // A list food that is the same dish as a database entry is shown once (as the database dish).
+  const dbNames = useMemo(() => new Set((db?.publicDishes ?? []).flatMap((d) => [d.name, ...d.aliases].map((x) => tokens(x).join(' ')))), [db]);
+  const extraFoods = listed.foods.filter((f) => ![f.name, ...f.aliases].some((x) => dbNames.has(tokens(x).join(' '))));
+  const nothing = !!query && !!db && dishes.length === 0 && places.length === 0 && myMatches.length === 0;
+  useSearchAnalytics(query, dishes.length + places.length + myMatches.length);
+
   if (scanning) return <BarcodeSheet date={date} initialSlot={slot} onClose={onClose} />;
+  if (quick) return <QuickAddSheet date={date} initialSlot={slot} initialName={query} onClose={onClose} />;
+  if (dish && db) return <DishSheet d={dish.d} db={db} date={date} initialSlot={slot} method={dish.method} restaurant={dish.restaurant} onClose={onClose} />;
   if (adding && index) {
     return <CatalogueAddSheet food={adding} index={index} date={date} initialSlot={slot} onClose={onClose} onBack={() => setAdding(null)} />;
   }
@@ -118,8 +158,30 @@ export function FoodPicker({ presets, date, slot, onPickPreset, onClose, initial
           </div>
         ) : null}
 
+        {places.length && db ? (
+          <div className="stack-sm">
+            <h3 className="picker-head">Restaurants</h3>
+            {places.map((h) => <RestaurantCard key={h.id} hit={h} db={db} date={date} slot={slot} onOpen={(d, restaurant) => setDish({ d, restaurant, method: 'restaurant' })} />)}
+          </div>
+        ) : null}
+
         <div className="stack-sm">
-          <h3 className="picker-head">{query ? 'All foods' : 'Food list'}</h3>
+          <div className="row between">
+            <h3 className="picker-head">{query ? 'Dishes' : 'Suggested now'}</h3>
+            <button className="chip" aria-pressed={vegOnly} onClick={() => setVegOnly((v) => !v)}><span className="diet-dot veg" aria-hidden="true" /> Veg only</button>
+          </div>
+          {!db ? <div className="skeleton" /> : dishes.length ? (
+            <div className="list-divided">
+              {dishes.map((h) => <DishRow key={h.dish.id} d={h.dish} badge={h.dish.components?.length ? 'Combo' : undefined}
+                onPick={() => setDish({ d: h.dish, restaurant: null, method: query ? 'search' : 'suggestion' })} />)}
+            </div>
+          ) : null}
+          {nothing && db ? <NoResultPanel q={query} db={db} vegOnly={vegOnly} onOpenDish={(d) => setDish({ d, restaurant: null, method: 'closest_match' })} onQuickAdd={() => setQuick(true)} /> : null}
+          {!nothing ? <button className="link" style={{ alignSelf: 'flex-start' }} onClick={() => setQuick(true)}><Icon name="plus" size={16} /> Quick-add calories</button> : null}
+        </div>
+
+        <div className="stack-sm" hidden={!!query && extraFoods.length === 0}>
+          <h3 className="picker-head">{query ? 'More foods (no values yet)' : 'More foods'}</h3>
           {!query ? (
             <div className="chips" role="group" aria-label="Food categories">
               {(['popular', ...CATEGORY_IDS, 'all'] as Chip[]).map((c) => (
@@ -131,7 +193,7 @@ export function FoodPicker({ presets, date, slot, onPickPreset, onClose, initial
           ) : null}
           {failed ? <p className="small muted">The food list couldn’t load. Your own meals still work.</p> : !index ? <div className="skeleton" /> : (
             <div className="list-divided">
-              {listed.foods.map((f) => <CatalogueRow key={f.id} f={f} std={index.standard.get(f.id)} mine={existingPresetFor(index, presets, f.id)} onPick={() => pick(f)} />)}
+              {extraFoods.map((f) => <CatalogueRow key={f.id} f={f} std={LEGACY_REFERENCE_VALUES ? index.standard.get(f.id) : undefined} mine={existingPresetFor(index, presets, f.id)} onPick={() => pick(f)} />)}
             </div>
           )}
           {listed.hidden > 0 ? (
@@ -139,13 +201,13 @@ export function FoodPicker({ presets, date, slot, onPickPreset, onClose, initial
               {listed.hidden} more hidden by your food choices · Show
             </button>
           ) : null}
-          {index && query && listed.foods.length === 0 && myMatches.length === 0 ? (
-            <p className="muted small" style={{ padding: '8px 0' }}>No foods match “{query}”. Create it as your own meal.</p>
-          ) : null}
         </div>
 
-        <button className="btn secondary" onClick={() => { onClose(); navigate('meal', 'new'); }}><Icon name="plus" size={18} /> Create a meal</button>
-        <p className="label">Calories on list foods are standard estimates from the Canadian Nutrient File (Health Canada, 2026) or USDA FoodData Central, not endorsed by either. Replace them with your own recipe or a package label any time.</p>
+        <div className="stack-sm">
+          <button className="btn secondary" onClick={() => { onClose(); navigate('recipe', 'new'); }}><Icon name="edit" size={18} /> Create your own recipe</button>
+          <button className="btn secondary" onClick={() => { onClose(); navigate('meal', 'new'); }}><Icon name="plus" size={18} /> Add a food from its label</button>
+        </div>
+        <p className="label">Dish values come from the TrainLuma food database (Indian Food Composition Tables, ICMR-NIN; INDB; brands’ official Canadian nutrition). “More foods” have pictures but no values yet — log a close dish, quick-add, or add your recipe.</p>
       </div>
     </Sheet>
   );
@@ -165,7 +227,7 @@ function CatalogueAddSheet({ food, index, date, initialSlot, onClose, onBack }: 
   const [keep, setKeep] = useState(true);
   const [busy, setBusy] = useState(false);
   const allergies = profile.food_prefs.allergies;
-  const std = index.standard.get(food.id) ?? null;
+  const std = LEGACY_REFERENCE_VALUES ? (index.standard.get(food.id) ?? null) : null;
   const typed = grams.trim() ? Number(grams.replace(',', '.')) : null;
   const unitGrams = typed && typed > 0 ? typed : std && std.serving.unit === unit ? std.serving.grams : null;
   const est = std && unitGrams ? perServing(std, unitGrams * qty) : null;

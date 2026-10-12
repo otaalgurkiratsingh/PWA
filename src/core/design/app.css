@@ -2419,3 +2419,124 @@ ol.how-to {
   color: rgba(255, 255, 255, 0.55);
   animation: ls-up 500ms 1200ms ease both;
 }
+
+/* ---------- TrainLuma food database ---------- */
+.diet-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  border: 1.5px solid currentColor;
+  position: relative;
+  vertical-align: 1px;
+  flex: none;
+}
+.diet-dot::after {
+  content: '';
+  position: absolute;
+  inset: 1.5px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.diet-dot.veg { color: #16a34a; }
+.diet-dot.egg { color: #d97706; }
+.diet-dot.nonveg { color: #b45309; }
+.dish-row .er-name {
+  overflow-wrap: anywhere;
+}
+.dish-nums {
+  display: grid;
+  grid-template-columns: auto;
+  justify-items: end;
+  line-height: 1.1;
+  flex: none;
+  text-align: right;
+}
+.dish-nums b {
+  font-size: 1rem;
+  font-weight: 750;
+}
+.dish-nums small {
+  font-size: 0.6875rem;
+  color: var(--text-2);
+  margin-bottom: 4px;
+}
+.macro-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(84px, 1fr));
+  gap: 6px 12px;
+  color: var(--text-2);
+  font-size: var(--fs-small);
+}
+.macro-grid b {
+  color: var(--text);
+  margin-right: 2px;
+}
+.macro-grid.big span:first-child b {
+  font-size: 1.75rem;
+}
+.macro-grid.big b {
+  font-size: 1.25rem;
+}
+.typical-label {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  padding: 10px 12px;
+  border-radius: var(--r-sm);
+  background: var(--card-2);
+  color: var(--text-2);
+  font-size: var(--fs-small);
+}
+.typical-label svg {
+  flex: none;
+  margin-top: 2px;
+}
+.restaurant-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.rc-item {
+  padding: 6px 0;
+  gap: 10px;
+}
+.rc-item .link {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.no-result .choice {
+  text-align: left;
+}
+.review-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 4px;
+}
+.ingredient-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.recipe-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.delta-line {
+  margin: 0;
+  font-weight: 650;
+  color: var(--train-ink);
+}
+.my-badge {
+  display: inline-block;
+  margin-right: 6px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 0.6875rem;
+  font-weight: 750;
+  vertical-align: 2px;
+  background: var(--primary-soft);
+  color: var(--primary-soft-ink);
+}

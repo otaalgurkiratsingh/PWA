@@ -7,6 +7,9 @@ import { watchSystemTheme } from '@/core/design/theme';
 import { formatLongDate } from '@/core/time/localDate';
 import { NotificationsScreen } from '@/features/settings/NotificationsScreen';
 import { TrainerFab } from '@/features/coach/Trainer';
+import { configureAnalytics } from '@/core/analytics/analytics';
+import { DataReviewScreen } from '@/features/food/DataReview';
+import { RecipeBuilderScreen } from '@/features/food/RecipeBuilder';
 import { AnimatedMark, LaunchSplash } from '@/core/design/BrandLogo';
 import { AccessScreen, WelcomeScreen } from '@/features/auth/WelcomeScreen';
 import { ChatScreen } from '@/features/coach/ChatScreen';
@@ -29,7 +32,7 @@ import { applyUpdate, onUpdateReady, updateFoundAtLaunch } from './serviceWorker
 
 const TITLES: Record<RouteName, string> = {
   today: 'Today', food: 'Food', workout: 'Workout', progress: 'Progress', settings: 'Settings', coach: 'AI Coach', chat: 'AI Coach chat', draft: 'Plan draft',
-  plan: 'Edit plan', meal: 'Meal', photos: 'Progress photos', answers: 'Planning answers', notifications: 'Notifications',
+  plan: 'Edit plan', meal: 'Meal', photos: 'Progress photos', answers: 'Planning answers', notifications: 'Notifications', recipe: 'My recipe', insights: 'Luma Insights', year: 'Your year', circles: 'Circles', invite: 'Invite friends', 'data-review': 'Data verification', quicklog: 'Log',
 };
 const NAV_ICON: Record<(typeof TABS)[number], IconName> = { today: 'today', food: 'food', workout: 'workout', progress: 'progress' };
 
@@ -134,7 +137,8 @@ function Shell() {
 
 function AppShell() {
   const route = useRoute();
-  const { profile, timer } = useJournal();
+  const { profile, timer, journal, mode } = useJournal();
+  useEffect(() => configureAnalytics({ ownerId: journal.ownerId, mode, timezone: profile.timezone }), [journal.ownerId, mode, profile.timezone]);
   useEffect(() => {
     document.title = `${TITLES[route.name]} · TrainLuma`;
     window.scrollTo({ top: 0 });
@@ -153,6 +157,8 @@ function AppShell() {
     case 'photos': screen = <PhotosScreen />; break;
     case 'answers': screen = <PlanningWizard mode="edit" />; break;
     case 'notifications': screen = <NotificationsScreen />; break;
+    case 'recipe': screen = <RecipeBuilderScreen param={route.param} />; break;
+    case 'data-review': screen = <DataReviewScreen />; break;
     case 'plan': screen = <PlanEditor />; break;
     case 'meal': screen = <MealEditor presetId={route.param} />; break;
     default: screen = <TodayScreen />;

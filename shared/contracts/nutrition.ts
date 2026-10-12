@@ -19,6 +19,8 @@ export const SourceKind = z.enum([
   'usda_fdc', // USDA FoodData Central record (public domain / CC0)
   'cnf', // Canadian Nutrient File record (Health Canada)
   'open_food_facts', // Open Food Facts product (ODbL), found by barcode
+  'trainluma_db', // TrainLuma food database (indian_dishes.json): ICMR-NIN IFCT / INDB / official brand data
+  'quick_add', // a calorie number the person typed for a quick log (no dish)
   'label', // product nutrition label entered by the user
   'user_recipe', // calculated from user-confirmed recipe
   'generic_assumption', // clearly-identified generic assumption
@@ -125,6 +127,27 @@ export const MealPreset = AggregateBase.extend({
   catalogue_id: CatalogueRef,
   /** Seed version at creation, e.g. "punjabi-canadian-starter@2026-10-09-v2". */
   catalogue_version: z.string().max(80).nullable().optional(),
+  /** TrainLuma food database dish this meal was created from (indian_dishes.json id). */
+  dish_id: z.string().max(60).nullable().optional(),
+  /**
+   * meal: an ordinary usual meal · template: a saved multi-item meal ("My typical breakfast") ·
+   * recipe: the person's own recipe (§6) · quick: a one-off quick-add (never listed).
+   */
+  kind: z.enum(['meal', 'template', 'recipe', 'quick']).optional(),
+  /** The person's own recipe (§6). Nutrition is always derived from these ingredients, never typed in. */
+  recipe: z.object({
+    servings_count: z.number().int().min(1).max(50),
+    ingredients: z.array(z.object({
+      /** A dish from the TrainLuma food database … */
+      dish_id: z.string().max(60).nullable(),
+      /** … or the person's own ingredient, with values they read off a label (or none: unknown). */
+      custom_name: z.string().max(60).nullable(),
+      grams: PositiveQty,
+      custom_per_100g: Nutrients.nullable().optional(),
+    })).min(1).max(40),
+    /** "Make it mine": the database dish this recipe was cloned from (for the delta line). */
+    created_from: z.string().max(60).nullable(),
+  }).optional(),
 });
 export type MealPreset = z.infer<typeof MealPreset>;
 

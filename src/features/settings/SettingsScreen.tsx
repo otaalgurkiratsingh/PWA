@@ -13,6 +13,9 @@ import { applyTheme, readTheme, type Theme } from '@/core/design/theme';
 import { formatTime } from '@/core/time/localDate';
 import { saveErrorMessage } from '@/features/food/useFood';
 import { CoachAvatar } from '@/core/design/CoachAvatar';
+import { ATTRIBUTION } from '@shared/fooddb/foodDb';
+import { setShareUsage, shareUsageEnabled } from '@/core/analytics/analytics';
+import { LEGACY_REFERENCE_VALUES } from '@/core/config/dataPolicy';
 import { TrainerSheet, useTrainer } from '@/features/coach/Trainer';
 
 const GOALS: { value: Goal; label: string }[] = [
@@ -46,6 +49,7 @@ export function SettingsScreen() {
   const conflicts = useQuery((j) => j.conflicts(), [conflictsCount]);
   const [theme, setTheme] = useState<Theme>(readTheme);
   const trainer = useTrainer();
+  const [shareUsage, setShareUsageState] = useState(() => shareUsageEnabled(journal.ownerId));
   const [trainerOpen, setTrainerOpen] = useState(false);
   const [sheet, setSheet] = useState<'signout' | 'delete' | 'restore' | null>(null);
   const [pending, setPending] = useState(0);
@@ -198,7 +202,17 @@ export function SettingsScreen() {
             <button className="btn ghost sm" onClick={async () => setPersisted((await navigator.storage?.persist?.()) ?? false)}>Ask this browser to keep my data</button>
           ) : null}
           <span className="label">Exports are JSON files with your meals, recipes, plans, workouts and settings. Clearing this site’s data removes anything not exported or backed up.</span>
-          <span className="label">Data sources: food values from the Canadian Nutrient File (Health Canada, 2026) and USDA FoodData Central; barcode products from Open Food Facts (ODbL); exercises from free-exercise-db (public domain). TrainLuma isn’t affiliated with or endorsed by any of them.</span>
+        </div>
+      </Section>
+
+      <Section title="Data sources">
+        <div className="card stack-sm">
+          <span className="label">{ATTRIBUTION} Packaged foods by barcode: Open Food Facts (ODbL). Exercises: free-exercise-db (public domain).{LEGACY_REFERENCE_VALUES ? ' Earlier reference values: Canadian Nutrient File (Health Canada, 2026) and USDA FoodData Central.' : ''} TrainLuma isn’t affiliated with or endorsed by any of them. Restaurant dishes show typical values — each restaurant’s recipe will differ.</span>
+          <button className="link" onClick={() => navigate('data-review')}>Dishes still being verified <Icon name="chevronRight" size={16} /></button>
+          {mode === 'account' ? (
+            <Toggle label="Share usage stats with the owner" checked={shareUsage} onChange={(v) => { setShareUsage(journal.ownerId, v); setShareUsageState(v); }}
+              description="Which features get used (e.g. how a meal was logged, searches that found nothing) so the beta can improve. Never your meals, workouts or notes." />
+          ) : null}
         </div>
       </Section>
 

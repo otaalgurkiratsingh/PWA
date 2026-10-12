@@ -1,0 +1,4333 @@
+{
+ "meta": {
+  "name": "TrainLuma Indian Food DB v1",
+  "dishes": 130,
+  "tier1_complete": 72,
+  "tier2_partial": 58,
+  "units": "per_100g and per_serving; kcal, protein_g, carbs_g, fat_g, fiber_g",
+  "licenses": "INDB: no license listed (research project; underlying data ICMR-NIN IFCT 2017 govt. data + UK CoFID + USDA) — verify before commercial launch. IFCT values: factual nutrition data via mealPlan.fit (attribute 'Indian Food Composition Tables (ICMR-NIN)'). Kaggle mirror of INDB is CC BY-SA 4.0.",
+  "built": "2026-10-12",
+  "restaurants": 25,
+  "restaurant_nutrition_verified": 0,
+  "restaurant_mapping_policy": "No GTA Indian restaurant publishes nutrition data (verified 2026-10-12). dish_mappings point signature dishes at Tier-1 DB dishes as TYPICAL values only; the app must label them 'typical values — this restaurant's recipe will differ'. Never present as restaurant-verified.",
+  "chain_restaurant_items": 24,
+  "chain_sources": "Tim Hortons Nutrition Guide (Canadian Edition, July 2026); McDonald's Canada official product pages/nutrition calculator; Pizza Pizza official medium-pizza nutrition table. All Oct 2026. Osmow's official nutrition calculator (Oct 2026). A&W Canada official site (cal/fat/protein only — Tier 2); KFC Canada W8 PDF; Popeyes Canada 2025 Nutrition Guide; Wendy's Canada menu; Starbucks Canada product page; Mary Brown's July 2026 nutritionals."
+ },
+ "dishes": [
+  {
+   "id": "asc096",
+   "name": "Chapati / Roti",
+   "name_local": "Roti",
+   "category": "breads",
+   "aliases": [
+    "roti",
+    "chapati / roti"
+   ],
+   "serving_label": "1 chapati",
+   "serving_g": 40,
+   "per_100g": {
+    "kcal": 202.3,
+    "protein_g": 5.9,
+    "carbs_g": 35.6,
+    "fat_g": 3.6,
+    "fiber_g": 6.3
+   },
+   "per_serving": {
+    "kcal": 80.9,
+    "protein_g": 2.4,
+    "carbs_g": 14.2,
+    "fat_g": 1.4,
+    "fiber_g": 2.5
+   },
+   "source": "INDB (Indian Nutrient Databank) — per-100g values; serving computed",
+   "tier": 1,
+   "needs_review": false
+  },
+  {
+   "id": "asc150",
+   "name": "Makki ki roti",
+   "name_local": "Makki di roti",
+   "category": "breads",
+   "aliases": [
+    "makki di roti",
+    "makki ki roti"
+   ],
+   "serving_label": "1 roti",
+   "serving_g": 85,
+   "per_100g": {
+    "kcal": 264.0,
+    "protein_g": 3.5,
+    "carbs_g": 24.2,
+    "fat_g": 16.8,
+    "fiber_g": 5.2
+   },
+   "per_serving": {
+    "kcal": 224.4,
+    "protein_g": 3.0,
+    "carbs_g": 20.6,
+    "fat_g": 14.3,
+    "fiber_g": 4.4
+   },
+   "source": "INDB (Indian Nutrient Databank) — per-100g values; serving computed",
+   "tier": 1,
+   "needs_review": false
+  },
+  {
+   "id": "asc097",
+   "name": "Plain paratha",
+   "name_local": "Parantha",
+   "category": "breads",
+   "aliases": [
+    "parantha",
+    "plain paratha"
+   ],
+   "serving_label": "1 paratha",
+   "serving_g": 60,
+   "per_100g": {
+    "kcal": 298.3,
+    "protein_g": 5.1,
+    "carbs_g": 30.7,
+    "fat_g": 16.9,
+    "fiber_g": 5.4
+   },
+   "per_serving": {
+    "kcal": 179.0,
+    "protein_g": 3.1,
+    "carbs_g": 18.4,
+    "fat_g": 10.1,
+    "fiber_g": 3.2
+   },
+   "source": "INDB (Indian Nutrient Databank) — per-100g values; serving computed",
+   "tier": 1,
+   "needs_review": false
+  },
+  {
+   "id": "asc098",
+   "name": "Aloo paratha",
+   "name_local": "Aloo da parantha",
+   "category": "breads",
+   "aliases": [
+    "aloo da parantha",
+    "aloo paratha"
+   ],
+   "serving_label": "1 paratha",
+   "serving_g": 80,
+   "per_100g": {
+    "kcal": 205.0,
+    "protein_g": 3.7,
+    "carbs_g": 23.9,
+    "fat_g": 10.2,
+    "fiber_g": 4.2
+   },
+   "per_serving": {
+    "kcal": 164.0,
+    "protein_g": 3.0,
+    "carbs_g": 19.1,
+    "fat_g": 8.2,
+    "fiber_g": 3.4
+   },
+   "source": "INDB (Indian Nutrient Databank) — per-100g values; serving computed",
+   "tier": 1,
+   "needs_review": false
+  },
+  {
+   "id": "asc105",
+   "name": "Paneer paratha",
+   "name_local": "Paneer da parantha",
+   "category": "breads",
+   "aliases": [
+    "paneer da parantha",
+    "paneer paratha"
+   ],
+   "serving_label": "1 paratha",
+   "serving_g": 80,
+   "per_100g": {
+    "kcal": 263.0,
+    "protein_g": 8.0,
+    "carbs_g": 24.3,
+    "fat_g": 14.6,
+    "fiber_g": 4.0
+   },
+   "per_serving": {
+    "kcal": 210.4,
+    "protein_g": 6.4,
+    "carbs_g": 19.4,
+    "fat_g": 11.7,
+    "fiber_g": 3.2
+   },
+   "source": "INDB (Indian Nutrient Databank) — per-100g values; serving computed",
+   "tier": 1,
+   "needs_review": false
+  },
+  {
+   "id": "asc099",
+   "name": "Mooli paratha",
+   "name_local": "Mooli da parantha",
+   "category": "breads",
+   "aliases": [
+    "mooli da parantha",
+    "mooli paratha"
+   ],
+   "serving_label": "1 paratha",
+   "serving_g": 80,
+   "per_100g": {
+    "kcal": 183.5,
+    "protein_g": 3.3,
+    "carbs_g": 20.5,
+    "fat_g": 9.5,
+    "fiber_g": 4.3
+   },
+   "per_serving": {
+    "kcal": 146.8,
+    "protein_g": 2.6,
+    "carbs_g": 16.4,
+    "fat_g": 7.6,
+    "fiber_g": 3.4
+   },
+   "source": "INDB (Indian Nutrient Databank) — per-100g values; serving computed",
+   "tier": 1,
+   "needs_review": false
+  },
+  {
+   "id": "asc100",
+   "name": "Gobhi paratha",
+   "name_local": "Gobhi da parantha",
+   "category": "breads",
+   "aliases": [
+    "gobhi da parantha",
+    "gobhi paratha"
+   ],
+   "serving_label": "1 paratha",
+   "serving_g": 80,
+   "per_100g": {
+    "kcal": 178.1,
+    "protein_g": 3.7,
+    "carbs_g": 18.8,
+    "fat_g": 9.5,
+    "fiber_g": 4.7
+   },
+   "per_serving": {
+    "kcal": 142.5,
+    "protein_g": 3.0,
+    "carbs_g": 15.0,
+    "fat_g": 7.6,
+    "fiber_g": 3.8
+   },
+   "source": "INDB (Indian Nutrient Databank) — per-100g values; serving computed",
+   "tier": 1,
+   "needs_review": false
+  },
+  {
+   "id": "asc101",
+   "name": "Dal paratha",
+   "name_local": "Dal da parantha",
+   "category": "breads",
+   "aliases": [
+    "dal da parantha",
+    "dal paratha"
+   ],
+   "serving_label": "1 paratha",
+   "serving_g": 80,
+   "per_100g": {
+    "kcal": 268.2,
+    "protein_g": 6.8,
+    "carbs_g": 30.0,
+    "fat_g": 13.1,
+    "fiber_g": 6.5
+   },
+   "per_serving": {
+    "kcal": 214.6,
+    "protein_g": 5.4,
+    "carbs_g": 24.0,
+    "fat_g": 10.5,
+    "fiber_g": 5.2
+   },
+   "source": "INDB (Indian Nutrient Databank) — per-100g values; serving computed",
+   "tier": 1,
+   "needs_review": false
+  },
+  {
+   "id": "asc142",
+   "name": "Naan",
+   "name_local": "Naan",
+   "category": "breads",
+   "aliases": [
+    "naan",
+    "naan"
+   ],
+   "serving_label": "1 naan",
+   "serving_g": 55,
+   "per_100g": {
+    "kcal": 286.4,
+    "protein_g": 8.1,
+    "carbs_g": 51.8,
+    "fat_g": 5.0,
+    "fiber_g": 1.9
+   },
+   "per_serving": {
+    "kcal": 157.5,
+    "protein_g": 4.5,
+    "carbs_g": 28.5,
+    "fat_g": 2.8,
+    "fiber_g": 1.0
+   },
+   "source": "INDB (Indian Nutrient Databank) — per-100g values; serving computed",
+   "tier": 1,
+   "needs_review": false
+  },
+  {
+   "id": "asc112",
+   "name": "Tandoori paratha",
+   "name_local": "Tandoori parantha",
+   "category": "breads",
+   "aliases": [
+    "tandoori parantha",
+    "tandoori paratha"
+   ],
+   "serving_label": "1 paratha",
+   "serving_g": 55,
+   "per_100g": {
+    "kcal": 295.4,
+    "protein_g": 5.1,
+    "carbs_g": 30.7,
+    "fat_g": 16.5,
+    "fiber_g": 5.4
+   },
+   "per_serving": {
+    "kcal": 162.5,
+    "protein_g": 2.8,
+    "carbs_g": 16.9,
+    "fat_g": 9.1,
+    "fiber_g": 3.0
+   },
+   "source": "INDB (Indian Nutrient Databank) — per-100g values; serving computed",
+   "tier": 1,
+   "needs_review": false
+  },
+  {
+   "id": "asc151",
+   "name": "Moong dal",
+   "name_local": "Moong di dal",
+   "category": "dals",
+   "aliases": [
+    "moong di dal",
+    "moong dal"
+   ],
+   "serving_label": "1 katori (150g)",
+   "serving_g": 150,
+   "per_100g": {
+    "kcal": 50.0,
+    "protein_g": 2.7,
+    "carbs_g": 5.9,
+    "fat_g": 1.7,
+    "fiber_g": 1.2
+   },
+   "per_serving": {
+    "kcal": 75.0,
+    "protein_g": 4.1,
+    "carbs_g": 8.9,
+    "fat_g": 2.5,
+    "fiber_g": 1.8
+   },
+   "source": "INDB (Indian Nutrient Databank) — per-100g values; serving computed",
+   "tier": 1,
+   "needs_review": false
+  },
+  {
+   "id": "asc152",
+   "name": "Urad dal",
+   "name_local": "Urad di dal",
+   "category": "dals",
+   "aliases": [
+    "urad di dal",
+    "urad dal"
+   ],
+   "serving_label": "1 katori (150g)",
+   "serving_g": 150,
+   "per_100g": {
+    "kcal": 61.3,
+    "protein_g": 2.5,
+    "carbs_g": 5.8,
+    "fat_g": 3.0,
+    "fiber_g": 1.5
+   },
+   "per_serving": {
+    "kcal": 91.9,
+    "protein_g": 3.8,
+    "carbs_g": 8.7,
+    "fat_g": 4.5,
+    "fiber_g": 2.2
+   },
+   "source": "INDB (Indian Nutrient Databank) — per-100g values; serving computed",
+   "tier": 1,
+   "needs_review": false
+  },
+  {
+   "id": "asc153",
+   "name": "Chana dal with ghiya",
+   "name_local": "Chana dal",
+   "category": "dals",
+   "aliases": [
+    "chana dal",
+    "chana dal with ghiya"
+   ],
+   "serving_label": "1 katori (150g)",
+   "serving_g": 150,
+   "per_100g": {
+    "kcal": 73.3,
+    "protein_g": 2.8,
+    "carbs_g": 7.1,
+    "fat_g": 3.6,
+    "fiber_g": 2.7
+   },
+   "per_serving": {
+    "kcal": 109.9,
+    "protein_g": 4.2,
+    "carbs_g": 10.6,
+    "fat_g": 5.4,
+    "fiber_g": 4.1
+   },
+   "source": "INDB (Indian Nutrient Databank) — per-100g values; serving computed",
+   "tier": 1,
+   "needs_review": false
+  },
+  {
+   "id": "osr139",
+   "name": "Dal makhani",
+   "name_local": "Dal makhani",
+   "category": "dals",
+   "aliases": [
+    "dal makhani",
+    "dal makhani"
+   ],
+   "serving_label": "1 katori (150g)",
+   "serving_g": 150,
+   "per_100g": {
+    "kcal": 74.0,
+    "protein_g": 3.3,
+    "carbs_g": 8.0,
+    "fat_g": 3.1,
+    "fiber_g": 2.3
+   },
+   "per_serving": {
+    "kcal": 111.0,
+    "protein_g": 4.9,
+    "carbs_g": 12.0,
+    "fat_g": 4.7,
+    "fiber_g": 3.4
+   },
+   "source": "INDB (Indian Nutrient Databank) — per-100g values; serving computed",
+   "tier": 1,
+   "needs_review": false
+  },
+  {
+   "id": "asc160",
+   "name": "Moti mahal dal",
+   "name_local": "Dal",
+   "category": "dals",
+   "aliases": [
+    "dal",
+    "moti mahal dal"
+   ],
+   "serving_label": "1 katori (150g)",
+   "serving_g": 150,
+   "per_100g": {
+    "kcal": 103.1,
+    "protein_g": 3.9,
+    "carbs_g": 8.7,
+    "fat_g": 5.7,
+    "fiber_g": 3.4
+   },
+   "per_serving": {
+    "kcal": 154.6,
+    "protein_g": 5.8,
+    "carbs_g": 13.0,
+    "fat_g": 8.6,
+    "fiber_g": 5.1
+   },
+   "source": "INDB (Indian Nutrient Databank) — per-100g values; serving computed",
+   "tier": 1,
+   "needs_review": false
+  },
+  {
+   "id": "asc165",
+   "name": "Rajma curry",
+   "name_local": "Rajma",
+   "category": "curries_veg",
+   "aliases": [
+    "rajma",
+    "rajma curry"
+   ],
+   "serving_label": "1 katori (150g)",
+   "serving_g": 150,
+   "per_100g": {
+    "kcal": 143.7,
+    "protein_g": 6.0,
+    "carbs_g": 16.4,
+    "fat_g": 5.8,
+    "fiber_g": 5.8
+   },
+   "per_serving": {
+    "kcal": 215.5,
+    "protein_g": 9.0,
+    "carbs_g": 24.6,
+    "fat_g": 8.7,
+    "fiber_g": 8.7
+   },
+   "source": "INDB (Indian Nutrient Databank) — per-100g values; serving computed",
+   "tier": 1,
+   "needs_review": false
+  },
+  {
+   "id": "asc191",
+   "name": "Matar paneer",
+   "name_local": "Matar paneer",
+   "category": "curries_veg",
+   "aliases": [
+    "matar paneer",
+    "matar paneer"
+   ],
+   "serving_label": "1 katori (150g)",
+   "serving_g": 150,
+   "per_100g": {
+    "kcal": 134.8,
+    "protein_g": 6.6,
+    "carbs_g": 9.3,
+    "fat_g": 7.8,
+    "fiber_g": 3.3
+   },
+   "per_serving": {
+    "kcal": 202.2,
+    "protein_g": 9.9,
+    "carbs_g": 14.0,
+    "fat_g": 11.7,
+    "fiber_g": 4.9
+   },
+   "source": "INDB (Indian Nutrient Databank) — per-100g values; serving computed",
+   "tier": 1,
+   "needs_review": false
+  },
+  {
+   "id": "asc195",
+   "name": "Paneer curry",
+   "name_local": "Paneer",
+   "category": "curries_veg",
+   "aliases": [
+    "paneer",
+    "paneer curry"
+   ],
+   "serving_label": "1 katori (150g)",
+   "serving_g": 150,
+   "per_100g": {
+    "kcal": 176.5,
+    "protein_g": 7.8,
+    "carbs_g": 8.4,
+    "fat_g": 12.4,
+    "fiber_g": 1.4
+   },
+   "per_serving": {
+    "kcal": 264.8,
+    "protein_g": 11.7,
+    "carbs_g": 12.6,
+    "fat_g": 18.6,
+    "fiber_g": 2.1
+   },
+   "source": "INDB (Indian Nutrient Databank) — per-100g values; serving computed",
+   "tier": 1,
+   "needs_review": false
+  },
+  {
+   "id": "asc215",
+   "name": "Palak paneer",
+   "name_local": "Palak paneer",
+   "category": "curries_veg",
+   "aliases": [
+    "palak paneer",
+    "palak paneer"
+   ],
+   "serving_label": "1 katori (150g)",
+   "serving_g": 150,
+   "per_100g": {
+    "kcal": 77.7,
+    "protein_g": 4.0,
+    "carbs_g": 4.4,
+    "fat_g": 4.8,
+    "fiber_g": 1.9
+   },
+   "per_serving": {
+    "kcal": 116.6,
+    "protein_g": 6.0,
+    "carbs_g": 6.6,
+    "fat_g": 7.2,
+    "fiber_g": 2.8
+   },
+   "source": "INDB (Indian Nutrient Databank) — per-100g values; serving computed",
+   "tier": 1,
+   "needs_review": false
+  },
+  {
+   "id": "asc221",
+   "name": "Shahi paneer",
+   "name_local": "Shahi paneer",
+   "category": "curries_veg",
+   "aliases": [
+    "shahi paneer",
+    "shahi paneer"
+   ],
+   "serving_label": "1 katori (150g)",
+   "serving_g": 150,
+   "per_100g": {
+    "kcal": 156.5,
+    "protein_g": 5.1,
+    "carbs_g": 6.6,
+    "fat_g": 12.3,
+    "fiber_g": 1.4
+   },
+   "per_serving": {
+    "kcal": 234.8,
+    "protein_g": 7.6,
+    "carbs_g": 9.9,
+    "fat_g": 18.5,
+    "fiber_g": 2.1
+   },
+   "source": "INDB (Indian Nutrient Databank) — per-100g values; serving computed",
+   "tier": 1,
+   "needs_review": false
+  },
+  {
+   "id": "asc177",
+   "name": "Baingan bharta",
+   "name_local": "Baingan da bharta",
+   "category": "curries_veg",
+   "aliases": [
+    "baingan da bharta",
+    "baingan bharta"
+   ],
+   "serving_label": "1 katori (150g)",
+   "serving_g": 150,
+   "per_100g": {
+    "kcal": 65.1,
+    "protein_g": 1.4,
+    "carbs_g": 4.4,
+    "fat_g": 4.5,
+    "fiber_g": 3.3
+   },
+   "per_serving": {
+    "kcal": 97.6,
+    "protein_g": 2.1,
+    "carbs_g": 6.6,
+    "fat_g": 6.8,
+    "fiber_g": 4.9
+   },
+   "source": "INDB (Indian Nutrient Databank) — per-100g values; serving computed",
+   "tier": 1,
+   "needs_review": false
+  },
+  {
+   "id": "bfp269",
+   "name": "Bhindi",
+   "name_local": "Bhindi",
+   "category": "curries_veg",
+   "aliases": [
+    "bhindi",
+    "bhindi"
+   ],
+   "serving_label": "1 katori (150g)",
+   "serving_g": 150,
+   "per_100g": {
+    "kcal": 110.8,
+    "protein_g": 1.8,
+    "carbs_g": 4.5,
+    "fat_g": 9.3,
+    "fiber_g": 3.6
+   },
+   "per_serving": {
+    "kcal": 166.2,
+    "protein_g": 2.7,
+    "carbs_g": 6.8,
+    "fat_g": 14.0,
+    "fiber_g": 5.4
+   },
+   "source": "INDB (Indian Nutrient Databank) — per-100g values; serving computed",
+   "tier": 1,
+   "needs_review": false
+  },
+  {
+   "id": "asc217",
+   "name": "Sarson ka saag",
+   "name_local": "Sarson da saag",
+   "category": "curries_veg",
+   "aliases": [
+    "sarson da saag",
+    "sarson ka saag"
+   ],
+   "serving_label": "1 katori (150g)",
+   "serving_g": 150,
+   "per_100g": {
+    "kcal": 87.8,
+    "protein_g": 3.0,
+    "carbs_g": 5.3,
+    "fat_g": 5.9,
+    "fiber_g": 3.7
+   },
+   "per_serving": {
+    "kcal": 131.7,
+    "protein_g": 4.5,
+    "carbs_g": 7.9,
+    "fat_g": 8.9,
+    "fiber_g": 5.6
+   },
+   "source": "INDB (Indian Nutrient Databank) — per-100g values; serving computed",
+   "tier": 1,
+   "needs_review": false
+  },
+  {
+   "id": "bfp240",
+   "name": "Egg curry",
+   "name_local": "Anda curry",
+   "category": "curries_nonveg",
+   "aliases": [
+    "anda curry",
+    "egg curry"
+   ],
+   "serving_label": "1 katori (150g)",
+   "serving_g": 150,
+   "per_100g": {
+    "kcal": 117.5,
+    "protein_g": 5.4,
+    "carbs_g": 4.0,
+    "fat_g": 8.8,
+    "fiber_g": 2.1
+   },
+   "per_serving": {
+    "kcal": 176.2,
+    "protein_g": 8.1,
+    "carbs_g": 6.0,
+    "fat_g": 13.2,
+    "fiber_g": 3.2
+   },
+   "source": "INDB (Indian Nutrient Databank) — per-100g values; serving computed",
+   "tier": 1,
+   "needs_review": false
+  },
+  {
+   "id": "asc246",
+   "name": "Fish curry",
+   "name_local": "Machli curry",
+   "category": "curries_nonveg",
+   "aliases": [
+    "machli curry",
+    "fish curry"
+   ],
+   "serving_label": "1 katori (150g)",
+   "serving_g": 150,
+   "per_100g": {
+    "kcal": 111.1,
+    "protein_g": 8.8,
+    "carbs_g": 3.8,
+    "fat_g": 6.7,
+    "fiber_g": 1.9
+   },
+   "per_serving": {
+    "kcal": 166.6,
+    "protein_g": 13.2,
+    "carbs_g": 5.7,
+    "fat_g": 10.1,
+    "fiber_g": 2.8
+   },
+   "source": "INDB (Indian Nutrient Databank) — per-100g values; serving computed",
+   "tier": 1,
+   "needs_review": false
+  },
+  {
+   "id": "asc242",
+   "name": "Butter chicken",
+   "name_local": "Butter chicken",
+   "category": "curries_nonveg",
+   "aliases": [
+    "butter chicken",
+    "butter chicken"
+   ],
+   "serving_label": "1 katori (150g)",
+   "serving_g": 150,
+   "per_100g": {
+    "kcal": 137.0,
+    "protein_g": 10.9,
+    "carbs_g": 3.7,
+    "fat_g": 8.7,
+    "fiber_g": 1.3
+   },
+   "per_serving": {
+    "kcal": 205.5,
+    "protein_g": 16.4,
+    "carbs_g": 5.6,
+    "fat_g": 13.0,
+    "fiber_g": 2.0
+   },
+   "source": "INDB (Indian Nutrient Databank) — per-100g values; serving computed",
+   "tier": 1,
+   "needs_review": false
+  },
+  {
+   "id": "asc113",
+   "name": "Boiled rice",
+   "name_local": "Chawal",
+   "category": "rice",
+   "aliases": [
+    "chawal",
+    "boiled rice"
+   ],
+   "serving_label": "1 plate (300g)",
+   "serving_g": 300,
+   "per_100g": {
+    "kcal": 117.2,
+    "protein_g": 2.6,
+    "carbs_g": 25.7,
+    "fat_g": 0.2,
+    "fiber_g": 1.2
+   },
+   "per_serving": {
+    "kcal": 351.6,
+    "protein_g": 7.8,
+    "carbs_g": 77.1,
+    "fat_g": 0.6,
+    "fiber_g": 3.6
+   },
+   "source": "INDB (Indian Nutrient Databank) — per-100g values; serving computed",
+   "tier": 1,
+   "needs_review": false
+  },
+  {
+   "id": "asc114",
+   "name": "Plain pulao",
+   "name_local": "Pulao",
+   "category": "rice",
+   "aliases": [
+    "pulao",
+    "plain pulao"
+   ],
+   "serving_label": "1 plate (300g)",
+   "serving_g": 300,
+   "per_100g": {
+    "kcal": 140.2,
+    "protein_g": 2.3,
+    "carbs_g": 21.8,
+    "fat_g": 4.6,
+    "fiber_g": 1.7
+   },
+   "per_serving": {
+    "kcal": 420.6,
+    "protein_g": 6.9,
+    "carbs_g": 65.4,
+    "fat_g": 13.8,
+    "fiber_g": 5.1
+   },
+   "source": "INDB (Indian Nutrient Databank) — per-100g values; serving computed",
+   "tier": 1,
+   "needs_review": false
+  },
+  {
+   "id": "asc115",
+   "name": "Veg pulao",
+   "name_local": "Veg pulao",
+   "category": "rice",
+   "aliases": [
+    "veg pulao",
+    "veg pulao"
+   ],
+   "serving_label": "1 plate (300g)",
+   "serving_g": 300,
+   "per_100g": {
+    "kcal": 113.0,
+    "protein_g": 2.7,
+    "carbs_g": 17.5,
+    "fat_g": 3.3,
+    "fiber_g": 2.7
+   },
+   "per_serving": {
+    "kcal": 339.0,
+    "protein_g": 8.1,
+    "carbs_g": 52.5,
+    "fat_g": 9.9,
+    "fiber_g": 8.1
+   },
+   "source": "INDB (Indian Nutrient Databank) — per-100g values; serving computed",
+   "tier": 1,
+   "needs_review": false
+  },
+  {
+   "id": "asc123",
+   "name": "Veg biryani",
+   "name_local": "Veg biryani",
+   "category": "rice",
+   "aliases": [
+    "veg biryani",
+    "veg biryani"
+   ],
+   "serving_label": "1 plate (300g)",
+   "serving_g": 300,
+   "per_100g": {
+    "kcal": 174.6,
+    "protein_g": 3.2,
+    "carbs_g": 18.6,
+    "fat_g": 9.5,
+    "fiber_g": 3.3
+   },
+   "per_serving": {
+    "kcal": 523.8,
+    "protein_g": 9.6,
+    "carbs_g": 55.8,
+    "fat_g": 28.5,
+    "fiber_g": 9.9
+   },
+   "source": "INDB (Indian Nutrient Databank) — per-100g values; serving computed",
+   "tier": 1,
+   "needs_review": false
+  },
+  {
+   "id": "asc122",
+   "name": "Mutton biryani",
+   "name_local": "Mutton biryani",
+   "category": "rice",
+   "aliases": [
+    "mutton biryani",
+    "mutton biryani"
+   ],
+   "serving_label": "1 plate (300g)",
+   "serving_g": 300,
+   "per_100g": {
+    "kcal": 190.8,
+    "protein_g": 7.4,
+    "carbs_g": 22.5,
+    "fat_g": 7.7,
+    "fiber_g": 2.4
+   },
+   "per_serving": {
+    "kcal": 572.4,
+    "protein_g": 22.2,
+    "carbs_g": 67.5,
+    "fat_g": 23.1,
+    "fiber_g": 7.2
+   },
+   "source": "INDB (Indian Nutrient Databank) — per-100g values; serving computed",
+   "tier": 1,
+   "needs_review": false
+  },
+  {
+   "id": "asc126",
+   "name": "Curd rice",
+   "name_local": "Dahi chawal",
+   "category": "rice",
+   "aliases": [
+    "dahi chawal",
+    "curd rice"
+   ],
+   "serving_label": "1 plate (300g)",
+   "serving_g": 300,
+   "per_100g": {
+    "kcal": 195.7,
+    "protein_g": 5.8,
+    "carbs_g": 32.9,
+    "fat_g": 4.3,
+    "fiber_g": 2.1
+   },
+   "per_serving": {
+    "kcal": 587.1,
+    "protein_g": 17.4,
+    "carbs_g": 98.7,
+    "fat_g": 12.9,
+    "fiber_g": 6.3
+   },
+   "source": "INDB (Indian Nutrient Databank) — per-100g values; serving computed",
+   "tier": 1,
+   "needs_review": false
+  },
+  {
+   "id": "asc295",
+   "name": "Gajar ka halwa",
+   "name_local": "Gajar da halwa",
+   "category": "sweets",
+   "aliases": [
+    "gajar da halwa",
+    "gajar ka halwa"
+   ],
+   "serving_label": "1 katori (100g)",
+   "serving_g": 100,
+   "per_100g": {
+    "kcal": 172.6,
+    "protein_g": 3.1,
+    "carbs_g": 18.5,
+    "fat_g": 9.7,
+    "fiber_g": 2.7
+   },
+   "per_serving": {
+    "kcal": 172.6,
+    "protein_g": 3.1,
+    "carbs_g": 18.5,
+    "fat_g": 9.7,
+    "fiber_g": 2.7
+   },
+   "source": "INDB (Indian Nutrient Databank) — per-100g values; serving computed",
+   "tier": 1,
+   "needs_review": false
+  },
+  {
+   "id": "asc299",
+   "name": "Moong dal halwa",
+   "name_local": "Moong dal halwa",
+   "category": "sweets",
+   "aliases": [
+    "moong dal halwa",
+    "moong dal halwa"
+   ],
+   "serving_label": "1 katori (100g)",
+   "serving_g": 100,
+   "per_100g": {
+    "kcal": 349.8,
+    "protein_g": 8.4,
+    "carbs_g": 40.2,
+    "fat_g": 17.7,
+    "fiber_g": 2.6
+   },
+   "per_serving": {
+    "kcal": 349.8,
+    "protein_g": 8.4,
+    "carbs_g": 40.2,
+    "fat_g": 17.7,
+    "fiber_g": 2.6
+   },
+   "source": "INDB (Indian Nutrient Databank) — per-100g values; serving computed",
+   "tier": 1,
+   "needs_review": false
+  },
+  {
+   "id": "asc282",
+   "name": "Rice kheer",
+   "name_local": "Kheer",
+   "category": "sweets",
+   "aliases": [
+    "kheer",
+    "rice kheer"
+   ],
+   "serving_label": "1 katori (150g)",
+   "serving_g": 150,
+   "per_100g": {
+    "kcal": 75.0,
+    "protein_g": 2.3,
+    "carbs_g": 10.0,
+    "fat_g": 3.0,
+    "fiber_g": 0.2
+   },
+   "per_serving": {
+    "kcal": 112.5,
+    "protein_g": 3.4,
+    "carbs_g": 15.0,
+    "fat_g": 4.5,
+    "fiber_g": 0.3
+   },
+   "source": "INDB (Indian Nutrient Databank) — per-100g values; serving computed",
+   "tier": 1,
+   "needs_review": false
+  },
+  {
+   "id": "asc343",
+   "name": "Besan ladoo",
+   "name_local": "Besan de ladoo",
+   "category": "sweets",
+   "aliases": [
+    "besan de ladoo",
+    "besan ladoo"
+   ],
+   "serving_label": "1 piece (40g)",
+   "serving_g": 40,
+   "per_100g": {
+    "kcal": 476.9,
+    "protein_g": 8.9,
+    "carbs_g": 62.6,
+    "fat_g": 22.8,
+    "fiber_g": 4.4
+   },
+   "per_serving": {
+    "kcal": 190.8,
+    "protein_g": 3.6,
+    "carbs_g": 25.0,
+    "fat_g": 9.1,
+    "fiber_g": 1.8
+   },
+   "source": "INDB (Indian Nutrient Databank) — per-100g values; serving computed",
+   "tier": 1,
+   "needs_review": false
+  },
+  {
+   "id": "bfp393",
+   "name": "Rasmalai",
+   "name_local": "Rasmalai",
+   "category": "sweets",
+   "aliases": [
+    "rasmalai",
+    "rasmalai"
+   ],
+   "serving_label": "1 piece (150g)",
+   "serving_g": 150,
+   "per_100g": {
+    "kcal": 135.5,
+    "protein_g": 1.6,
+    "carbs_g": 29.2,
+    "fat_g": 2.1,
+    "fiber_g": 0.1
+   },
+   "per_serving": {
+    "kcal": 203.2,
+    "protein_g": 2.4,
+    "carbs_g": 43.8,
+    "fat_g": 3.2,
+    "fiber_g": 0.2
+   },
+   "source": "INDB (Indian Nutrient Databank) — per-100g values; serving computed",
+   "tier": 1,
+   "needs_review": false
+  },
+  {
+   "id": "asc001",
+   "name": "Garam chai",
+   "name_local": "Chai",
+   "category": "beverages",
+   "aliases": [
+    "chai",
+    "garam chai"
+   ],
+   "serving_label": "1 cup (120ml)",
+   "serving_g": 120,
+   "per_100g": {
+    "kcal": 16.1,
+    "protein_g": 0.4,
+    "carbs_g": 2.6,
+    "fat_g": 0.5,
+    "fiber_g": 0
+   },
+   "per_serving": {
+    "kcal": 19.3,
+    "protein_g": 0.5,
+    "carbs_g": 3.1,
+    "fat_g": 0.6,
+    "fiber_g": 0.0
+   },
+   "source": "INDB (Indian Nutrient Databank) — per-100g values; serving computed",
+   "tier": 1,
+   "needs_review": false
+  },
+  {
+   "id": "asc021",
+   "name": "Sweet lassi",
+   "name_local": "Meethi lassi",
+   "category": "beverages",
+   "aliases": [
+    "meethi lassi",
+    "sweet lassi"
+   ],
+   "serving_label": "1 glass (250ml)",
+   "serving_g": 250,
+   "per_100g": {
+    "kcal": 35.7,
+    "protein_g": 1.3,
+    "carbs_g": 6.5,
+    "fat_g": 0.7,
+    "fiber_g": 0
+   },
+   "per_serving": {
+    "kcal": 89.2,
+    "protein_g": 3.2,
+    "carbs_g": 16.2,
+    "fat_g": 1.8,
+    "fiber_g": 0.0
+   },
+   "source": "INDB (Indian Nutrient Databank) — per-100g values; serving computed",
+   "tier": 1,
+   "needs_review": false
+  },
+  {
+   "id": "asc022",
+   "name": "Salted lassi",
+   "name_local": "Namkeen lassi",
+   "category": "beverages",
+   "aliases": [
+    "namkeen lassi",
+    "salted lassi"
+   ],
+   "serving_label": "1 glass (250ml)",
+   "serving_g": 250,
+   "per_100g": {
+    "kcal": 18.8,
+    "protein_g": 1.4,
+    "carbs_g": 1.9,
+    "fat_g": 0.7,
+    "fiber_g": 0.0
+   },
+   "per_serving": {
+    "kcal": 47.0,
+    "protein_g": 3.5,
+    "carbs_g": 4.8,
+    "fat_g": 1.8,
+    "fiber_g": 0.0
+   },
+   "source": "INDB (Indian Nutrient Databank) — per-100g values; serving computed",
+   "tier": 1,
+   "needs_review": false
+  },
+  {
+   "id": "asc016",
+   "name": "Banana milkshake",
+   "name_local": "Kele da milkshake",
+   "category": "beverages",
+   "aliases": [
+    "kele da milkshake",
+    "banana milkshake"
+   ],
+   "serving_label": "1 glass (250ml)",
+   "serving_g": 250,
+   "per_100g": {
+    "kcal": 65.3,
+    "protein_g": 1.8,
+    "carbs_g": 9.1,
+    "fat_g": 2.4,
+    "fiber_g": 0.3
+   },
+   "per_serving": {
+    "kcal": 163.2,
+    "protein_g": 4.5,
+    "carbs_g": 22.8,
+    "fat_g": 6.0,
+    "fiber_g": 0.8
+   },
+   "source": "INDB (Indian Nutrient Databank) — per-100g values; serving computed",
+   "tier": 1,
+   "needs_review": false
+  },
+  {
+   "id": "asc017",
+   "name": "Mango milkshake",
+   "name_local": "Aam da milkshake",
+   "category": "beverages",
+   "aliases": [
+    "aam da milkshake",
+    "mango milkshake"
+   ],
+   "serving_label": "1 glass (250ml)",
+   "serving_g": 250,
+   "per_100g": {
+    "kcal": 56.9,
+    "protein_g": 1.7,
+    "carbs_g": 7.2,
+    "fat_g": 2.3,
+    "fiber_g": 0.3
+   },
+   "per_serving": {
+    "kcal": 142.2,
+    "protein_g": 4.2,
+    "carbs_g": 18.0,
+    "fat_g": 5.8,
+    "fiber_g": 0.8
+   },
+   "source": "INDB (Indian Nutrient Databank) — per-100g values; serving computed",
+   "tier": 1,
+   "needs_review": false
+  },
+  {
+   "id": "asc144",
+   "name": "Idli",
+   "name_local": "Idli",
+   "category": "breakfast",
+   "aliases": [
+    "idli",
+    "idli"
+   ],
+   "serving_label": "1 piece (40g)",
+   "serving_g": 40,
+   "per_100g": {
+    "kcal": 137.5,
+    "protein_g": 4.6,
+    "carbs_g": 28.2,
+    "fat_g": 0.3,
+    "fiber_g": 2.3
+   },
+   "per_serving": {
+    "kcal": 55.0,
+    "protein_g": 1.8,
+    "carbs_g": 11.3,
+    "fat_g": 0.1,
+    "fiber_g": 0.9
+   },
+   "source": "INDB (Indian Nutrient Databank) — per-100g values; serving computed",
+   "tier": 1,
+   "needs_review": false
+  },
+  {
+   "id": "asc146",
+   "name": "Masala dosa",
+   "name_local": "Masala dosa",
+   "category": "breakfast",
+   "aliases": [
+    "masala dosa",
+    "masala dosa"
+   ],
+   "serving_label": "1 dosa (200g)",
+   "serving_g": 200,
+   "per_100g": {
+    "kcal": 164.6,
+    "protein_g": 3.3,
+    "carbs_g": 19.6,
+    "fat_g": 7.8,
+    "fiber_g": 2.5
+   },
+   "per_serving": {
+    "kcal": 329.2,
+    "protein_g": 6.6,
+    "carbs_g": 39.2,
+    "fat_g": 15.6,
+    "fiber_g": 5.0
+   },
+   "source": "INDB (Indian Nutrient Databank) — per-100g values; serving computed",
+   "tier": 1,
+   "needs_review": false
+  },
+  {
+   "id": "bfp039",
+   "name": "Suji upma",
+   "name_local": "Upma",
+   "category": "breakfast",
+   "aliases": [
+    "upma",
+    "suji upma"
+   ],
+   "serving_label": "1 katori (150g)",
+   "serving_g": 150,
+   "per_100g": {
+    "kcal": 147.9,
+    "protein_g": 3.3,
+    "carbs_g": 16.3,
+    "fat_g": 7.5,
+    "fiber_g": 3.2
+   },
+   "per_serving": {
+    "kcal": 221.9,
+    "protein_g": 4.9,
+    "carbs_g": 24.5,
+    "fat_g": 11.2,
+    "fiber_g": 4.8
+   },
+   "source": "INDB (Indian Nutrient Databank) — per-100g values; serving computed",
+   "tier": 1,
+   "needs_review": false
+  },
+  {
+   "id": "bfp044",
+   "name": "Poha",
+   "name_local": "Poha",
+   "category": "breakfast",
+   "aliases": [
+    "poha",
+    "poha"
+   ],
+   "serving_label": "1 katori (150g)",
+   "serving_g": 150,
+   "per_100g": {
+    "kcal": 294.5,
+    "protein_g": 6.1,
+    "carbs_g": 35.0,
+    "fat_g": 14.1,
+    "fiber_g": 3.7
+   },
+   "per_serving": {
+    "kcal": 441.8,
+    "protein_g": 9.1,
+    "carbs_g": 52.5,
+    "fat_g": 21.1,
+    "fiber_g": 5.6
+   },
+   "source": "INDB (Indian Nutrient Databank) — per-100g values; serving computed",
+   "tier": 1,
+   "needs_review": false
+  },
+  {
+   "id": "asc061",
+   "name": "Plain omelette",
+   "name_local": "Omelette",
+   "category": "breakfast",
+   "aliases": [
+    "omelette",
+    "plain omelette"
+   ],
+   "serving_label": "1 omelette (120g)",
+   "serving_g": 120,
+   "per_100g": {
+    "kcal": 272.4,
+    "protein_g": 9.7,
+    "carbs_g": 0.6,
+    "fat_g": 25.7,
+    "fiber_g": 0.1
+   },
+   "per_serving": {
+    "kcal": 326.9,
+    "protein_g": 11.6,
+    "carbs_g": 0.7,
+    "fat_g": 30.8,
+    "fiber_g": 0.1
+   },
+   "source": "INDB (Indian Nutrient Databank) — per-100g values; serving computed",
+   "tier": 1,
+   "needs_review": false
+  },
+  {
+   "id": "asc056",
+   "name": "Boiled egg",
+   "name_local": "Ubla anda",
+   "category": "breakfast",
+   "aliases": [
+    "ubla anda",
+    "boiled egg"
+   ],
+   "serving_label": "1 egg (50g)",
+   "serving_g": 50,
+   "per_100g": {
+    "kcal": 45.4,
+    "protein_g": 4.4,
+    "carbs_g": 0.1,
+    "fat_g": 3.0,
+    "fiber_g": 0.1
+   },
+   "per_serving": {
+    "kcal": 22.7,
+    "protein_g": 2.2,
+    "carbs_g": 0.1,
+    "fat_g": 1.5,
+    "fiber_g": 0.1
+   },
+   "source": "INDB (Indian Nutrient Databank) — per-100g values; serving computed",
+   "tier": 1,
+   "needs_review": false
+  },
+  {
+   "id": "combo-rajma-chawal",
+   "name": "Rajma chawal (plate)",
+   "name_local": "Rajma chawal",
+   "category": "combos",
+   "aliases": [
+    "rajma chawal",
+    "rajma chawal (plate)"
+   ],
+   "serving_label": "1 plate: 1 katori rajma + 200g rice",
+   "serving_g": 350,
+   "per_100g": null,
+   "per_serving": {
+    "kcal": 449.9,
+    "protein_g": 14.2,
+    "carbs_g": 76.0,
+    "fat_g": 9.1,
+    "fiber_g": 11.1
+   },
+   "components": [
+    {
+     "dish_id": "asc165",
+     "grams": 150
+    },
+    {
+     "dish_id": "asc113",
+     "grams": 200
+    }
+   ],
+   "source": "Computed from component dishes in this DB",
+   "tier": 1,
+   "needs_review": false
+  },
+  {
+   "id": "combo-saag-makki",
+   "name": "Sarson da saag + makki di roti",
+   "name_local": "Sarson da saag te makki di roti",
+   "category": "combos",
+   "aliases": [
+    "sarson da saag te makki di roti",
+    "sarson da saag + makki di roti"
+   ],
+   "serving_label": "1 katori saag + 2 makki roti",
+   "serving_g": 320,
+   "per_100g": null,
+   "per_serving": {
+    "kcal": 580.5,
+    "protein_g": 10.4,
+    "carbs_g": 49.1,
+    "fat_g": 37.4,
+    "fiber_g": 14.4
+   },
+   "components": [
+    {
+     "dish_id": "asc217",
+     "grams": 150
+    },
+    {
+     "dish_id": "asc150",
+     "grams": 170
+    }
+   ],
+   "source": "Computed from component dishes in this DB",
+   "tier": 1,
+   "needs_review": false
+  },
+  {
+   "id": "poori",
+   "name": "Poori",
+   "name_local": "Poori",
+   "category": "breads",
+   "aliases": [
+    "poori",
+    "poori"
+   ],
+   "serving_label": "1 poori (35g)",
+   "serving_g": 35,
+   "per_100g": {
+    "kcal": 380,
+    "protein_g": 7.0,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "per_serving": {
+    "kcal": 133.0,
+    "protein_g": 2.4,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "source": "IFCT (Indian Food Composition Tables) via mealPlan.fit — kcal+protein verified; fetch full macros from https://mealplan.fit/nutrition/poori",
+   "tier": 2,
+   "needs_review": false
+  },
+  {
+   "id": "bhatura",
+   "name": "Bhatura",
+   "name_local": "Bhatura",
+   "category": "breads",
+   "aliases": [
+    "bhatura",
+    "bhatura"
+   ],
+   "serving_label": "1 bhatura (70g)",
+   "serving_g": 70,
+   "per_100g": {
+    "kcal": 315,
+    "protein_g": 7.0,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "per_serving": {
+    "kcal": 220.5,
+    "protein_g": 4.9,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "source": "IFCT (Indian Food Composition Tables) via mealPlan.fit — kcal+protein verified; fetch full macros from https://mealplan.fit/nutrition/bhatura",
+   "tier": 2,
+   "needs_review": false
+  },
+  {
+   "id": "samosa",
+   "name": "Aloo samosa",
+   "name_local": "Samosa",
+   "category": "snacks",
+   "aliases": [
+    "samosa",
+    "aloo samosa"
+   ],
+   "serving_label": "1 samosa (100g)",
+   "serving_g": 100,
+   "per_100g": {
+    "kcal": 262,
+    "protein_g": 5.0,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "per_serving": {
+    "kcal": 262.0,
+    "protein_g": 5.0,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "source": "IFCT (Indian Food Composition Tables) via mealPlan.fit — kcal+protein verified; fetch full macros from https://mealplan.fit/nutrition/samosa",
+   "tier": 2,
+   "needs_review": false
+  },
+  {
+   "id": "pakora-mix",
+   "name": "Mix veg pakora",
+   "name_local": "Pakode",
+   "category": "snacks",
+   "aliases": [
+    "pakode",
+    "mix veg pakora"
+   ],
+   "serving_label": "4 pc (100g)",
+   "serving_g": 100,
+   "per_100g": {
+    "kcal": 270,
+    "protein_g": 8.0,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "per_serving": {
+    "kcal": 270.0,
+    "protein_g": 8.0,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "source": "IFCT (Indian Food Composition Tables) via mealPlan.fit — kcal+protein verified; fetch full macros from https://mealplan.fit/nutrition/pakora-mix",
+   "tier": 2,
+   "needs_review": false
+  },
+  {
+   "id": "pakora-palak",
+   "name": "Palak pakora",
+   "name_local": "Palak de pakode",
+   "category": "snacks",
+   "aliases": [
+    "palak de pakode",
+    "palak pakora"
+   ],
+   "serving_label": "4 pc (100g)",
+   "serving_g": 100,
+   "per_100g": {
+    "kcal": 250,
+    "protein_g": 9.0,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "per_serving": {
+    "kcal": 250.0,
+    "protein_g": 9.0,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "source": "IFCT (Indian Food Composition Tables) via mealPlan.fit — kcal+protein verified; fetch full macros from https://mealplan.fit/nutrition/pakora-palak",
+   "tier": 2,
+   "needs_review": false
+  },
+  {
+   "id": "pakora-bread",
+   "name": "Bread pakora",
+   "name_local": "Bread pakoda",
+   "category": "snacks",
+   "aliases": [
+    "bread pakoda",
+    "bread pakora"
+   ],
+   "serving_label": "1 pc (80g)",
+   "serving_g": 80,
+   "per_100g": {
+    "kcal": 280,
+    "protein_g": 6.0,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "per_serving": {
+    "kcal": 224.0,
+    "protein_g": 4.8,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "source": "IFCT (Indian Food Composition Tables) via mealPlan.fit — kcal+protein verified; fetch full macros from https://mealplan.fit/nutrition/pakora-bread",
+   "tier": 2,
+   "needs_review": false
+  },
+  {
+   "id": "pakora-paneer",
+   "name": "Paneer pakora",
+   "name_local": "Paneer de pakode",
+   "category": "snacks",
+   "aliases": [
+    "paneer de pakode",
+    "paneer pakora"
+   ],
+   "serving_label": "4 pc (100g)",
+   "serving_g": 100,
+   "per_100g": {
+    "kcal": 320,
+    "protein_g": 14.0,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "per_serving": {
+    "kcal": 320.0,
+    "protein_g": 14.0,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "source": "IFCT (Indian Food Composition Tables) via mealPlan.fit — kcal+protein verified; fetch full macros from https://mealplan.fit/nutrition/pakora-paneer",
+   "tier": 2,
+   "needs_review": false
+  },
+  {
+   "id": "gulab-jamun",
+   "name": "Gulab jamun",
+   "name_local": "Gulab jamun",
+   "category": "sweets",
+   "aliases": [
+    "gulab jamun",
+    "gulab jamun"
+   ],
+   "serving_label": "2 pc (80g)",
+   "serving_g": 80,
+   "per_100g": {
+    "kcal": 350,
+    "protein_g": 5.0,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "per_serving": {
+    "kcal": 280.0,
+    "protein_g": 4.0,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "source": "IFCT (Indian Food Composition Tables) via mealPlan.fit — kcal+protein verified; fetch full macros from https://mealplan.fit/nutrition/gulab-jamun",
+   "tier": 2,
+   "needs_review": false
+  },
+  {
+   "id": "jalebi",
+   "name": "Jalebi",
+   "name_local": "Jalebi",
+   "category": "sweets",
+   "aliases": [
+    "jalebi",
+    "jalebi"
+   ],
+   "serving_label": "2 pc (50g)",
+   "serving_g": 50,
+   "per_100g": {
+    "kcal": 370,
+    "protein_g": 4.5,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "per_serving": {
+    "kcal": 185.0,
+    "protein_g": 2.2,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "source": "IFCT (Indian Food Composition Tables) via mealPlan.fit — kcal+protein verified; fetch full macros from https://mealplan.fit/nutrition/jalebi",
+   "tier": 2,
+   "needs_review": false
+  },
+  {
+   "id": "dosa-plain",
+   "name": "Plain dosa",
+   "name_local": "Dosa",
+   "category": "breakfast",
+   "aliases": [
+    "dosa",
+    "plain dosa"
+   ],
+   "serving_label": "1 dosa (100g)",
+   "serving_g": 100,
+   "per_100g": {
+    "kcal": 168,
+    "protein_g": 4.5,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "per_serving": {
+    "kcal": 168.0,
+    "protein_g": 4.5,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "source": "IFCT (Indian Food Composition Tables) via mealPlan.fit — kcal+protein verified; fetch full macros from https://mealplan.fit/nutrition/dosa-plain",
+   "tier": 2,
+   "needs_review": false
+  },
+  {
+   "id": "khichdi",
+   "name": "Dal khichdi",
+   "name_local": "Khichdi",
+   "category": "rice",
+   "aliases": [
+    "khichdi",
+    "dal khichdi"
+   ],
+   "serving_label": "1 katori (150g)",
+   "serving_g": 150,
+   "per_100g": {
+    "kcal": 115,
+    "protein_g": 4.5,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "per_serving": {
+    "kcal": 172.5,
+    "protein_g": 6.8,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "source": "IFCT (Indian Food Composition Tables) via mealPlan.fit — kcal+protein verified; fetch full macros from https://mealplan.fit/nutrition/khichdi",
+   "tier": 2,
+   "needs_review": false
+  },
+  {
+   "id": "sambar",
+   "name": "Sambar",
+   "name_local": "Sambar",
+   "category": "dals",
+   "aliases": [
+    "sambar",
+    "sambar"
+   ],
+   "serving_label": "1 katori (150g)",
+   "serving_g": 150,
+   "per_100g": {
+    "kcal": 66,
+    "protein_g": 3.5,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "per_serving": {
+    "kcal": 99.0,
+    "protein_g": 5.2,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "source": "IFCT (Indian Food Composition Tables) via mealPlan.fit — kcal+protein verified; fetch full macros from https://mealplan.fit/nutrition/sambar",
+   "tier": 2,
+   "needs_review": false
+  },
+  {
+   "id": "kadhi-plain",
+   "name": "Kadhi (plain)",
+   "name_local": "Kadhi",
+   "category": "curries_veg",
+   "aliases": [
+    "kadhi",
+    "kadhi (plain)"
+   ],
+   "serving_label": "1 katori (150g)",
+   "serving_g": 150,
+   "per_100g": {
+    "kcal": 85,
+    "protein_g": 3.0,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "per_serving": {
+    "kcal": 127.5,
+    "protein_g": 4.5,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "source": "IFCT (Indian Food Composition Tables) via mealPlan.fit — kcal+protein verified; fetch full macros from https://mealplan.fit/nutrition/kadhi-plain",
+   "tier": 2,
+   "needs_review": false
+  },
+  {
+   "id": "chana-masala",
+   "name": "Chana masala",
+   "name_local": "Chane",
+   "category": "curries_veg",
+   "aliases": [
+    "chane",
+    "chana masala"
+   ],
+   "serving_label": "1 katori (150g)",
+   "serving_g": 150,
+   "per_100g": {
+    "kcal": 290,
+    "protein_g": 10.0,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "per_serving": {
+    "kcal": 435.0,
+    "protein_g": 15.0,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "source": "IFCT (Indian Food Composition Tables) via mealPlan.fit — kcal+protein verified; fetch full macros from https://mealplan.fit/nutrition/chana-masala",
+   "tier": 2,
+   "needs_review": false
+  },
+  {
+   "id": "chicken-curry",
+   "name": "Chicken curry",
+   "name_local": "Chicken curry",
+   "category": "curries_nonveg",
+   "aliases": [
+    "chicken curry",
+    "chicken curry"
+   ],
+   "serving_label": "1 katori (150g)",
+   "serving_g": 150,
+   "per_100g": {
+    "kcal": 165,
+    "protein_g": 15.0,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "per_serving": {
+    "kcal": 247.5,
+    "protein_g": 22.5,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "source": "IFCT (Indian Food Composition Tables) via mealPlan.fit — kcal+protein verified; fetch full macros from https://mealplan.fit/nutrition/chicken-curry",
+   "tier": 2,
+   "needs_review": false
+  },
+  {
+   "id": "aloo-gobi",
+   "name": "Aloo gobi",
+   "name_local": "Aloo gobhi",
+   "category": "curries_veg",
+   "aliases": [
+    "aloo gobhi",
+    "aloo gobi"
+   ],
+   "serving_label": "1 katori (150g)",
+   "serving_g": 150,
+   "per_100g": {
+    "kcal": 95,
+    "protein_g": 2.5,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "per_serving": {
+    "kcal": 142.5,
+    "protein_g": 3.8,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "source": "IFCT (Indian Food Composition Tables) via mealPlan.fit — kcal+protein verified; fetch full macros from https://mealplan.fit/nutrition/aloo-gobi",
+   "tier": 2,
+   "needs_review": false
+  },
+  {
+   "id": "besan-cheela",
+   "name": "Besan cheela",
+   "name_local": "Besan da cheela",
+   "category": "breakfast",
+   "aliases": [
+    "besan da cheela",
+    "besan cheela"
+   ],
+   "serving_label": "1 cheela (80g)",
+   "serving_g": 80,
+   "per_100g": {
+    "kcal": 180,
+    "protein_g": 8.0,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "per_serving": {
+    "kcal": 144.0,
+    "protein_g": 6.4,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "source": "IFCT (Indian Food Composition Tables) via mealPlan.fit — kcal+protein verified; fetch full macros from https://mealplan.fit/nutrition/besan-cheela",
+   "tier": 2,
+   "needs_review": false
+  },
+  {
+   "id": "moong-cheela",
+   "name": "Moong dal cheela",
+   "name_local": "Moong dal da cheela",
+   "category": "breakfast",
+   "aliases": [
+    "moong dal da cheela",
+    "moong dal cheela"
+   ],
+   "serving_label": "1 cheela (80g)",
+   "serving_g": 80,
+   "per_100g": {
+    "kcal": 150,
+    "protein_g": 9.0,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "per_serving": {
+    "kcal": 120.0,
+    "protein_g": 7.2,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "source": "IFCT (Indian Food Composition Tables) via mealPlan.fit — kcal+protein verified; fetch full macros from https://mealplan.fit/nutrition/moong-cheela",
+   "tier": 2,
+   "needs_review": false
+  },
+  {
+   "id": "aloo-paratha-ifct",
+   "name": "Aloo paratha (fried)",
+   "name_local": "Aloo da parantha",
+   "category": "breads",
+   "aliases": [
+    "aloo da parantha",
+    "aloo paratha (fried)"
+   ],
+   "serving_label": "1 paratha (80g)",
+   "serving_g": 80,
+   "per_100g": {
+    "kcal": 295,
+    "protein_g": 6.0,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "per_serving": {
+    "kcal": 236.0,
+    "protein_g": 4.8,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "source": "IFCT (Indian Food Composition Tables) via mealPlan.fit — kcal+protein verified; fetch full macros from https://mealplan.fit/nutrition/aloo-paratha",
+   "tier": 2,
+   "needs_review": false
+  },
+  {
+   "id": "curd-plain",
+   "name": "Curd / Dahi",
+   "name_local": "Dahi",
+   "category": "dairy",
+   "aliases": [
+    "dahi",
+    "curd / dahi"
+   ],
+   "serving_label": "1 katori (150g)",
+   "serving_g": 150,
+   "per_100g": {
+    "kcal": 60,
+    "protein_g": 3.1,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "per_serving": {
+    "kcal": 90.0,
+    "protein_g": 4.7,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "source": "IFCT (Indian Food Composition Tables) via mealPlan.fit — kcal+protein verified; fetch full macros from https://mealplan.fit/nutrition/curd-plain",
+   "tier": 2,
+   "needs_review": false
+  },
+  {
+   "id": "milk",
+   "name": "Milk",
+   "name_local": "Doodh",
+   "category": "dairy",
+   "aliases": [
+    "doodh",
+    "milk"
+   ],
+   "serving_label": "1 glass (250ml)",
+   "serving_g": 250,
+   "per_100g": {
+    "kcal": 61,
+    "protein_g": 3.2,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "per_serving": {
+    "kcal": 152.5,
+    "protein_g": 8.0,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "source": "IFCT (Indian Food Composition Tables) via mealPlan.fit — kcal+protein verified; fetch full macros from https://mealplan.fit/nutrition/milk",
+   "tier": 2,
+   "needs_review": false
+  },
+  {
+   "id": "ghee",
+   "name": "Ghee",
+   "name_local": "Ghee",
+   "category": "dairy",
+   "aliases": [
+    "ghee",
+    "ghee"
+   ],
+   "serving_label": "1 tbsp (15g)",
+   "serving_g": 15,
+   "per_100g": {
+    "kcal": 876,
+    "protein_g": 0.3,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "per_serving": {
+    "kcal": 131.4,
+    "protein_g": 0.0,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "source": "IFCT (Indian Food Composition Tables) via mealPlan.fit — kcal+protein verified; fetch full macros from https://mealplan.fit/nutrition/ghee",
+   "tier": 2,
+   "needs_review": false
+  },
+  {
+   "id": "paneer",
+   "name": "Paneer (cow milk)",
+   "name_local": "Paneer",
+   "category": "dairy",
+   "aliases": [
+    "paneer",
+    "paneer (cow milk)"
+   ],
+   "serving_label": "100g",
+   "serving_g": 100,
+   "per_100g": {
+    "kcal": 265,
+    "protein_g": 18.3,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "per_serving": {
+    "kcal": 265.0,
+    "protein_g": 18.3,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "source": "IFCT (Indian Food Composition Tables) via mealPlan.fit — kcal+protein verified; fetch full macros from https://mealplan.fit/nutrition/paneer",
+   "tier": 2,
+   "needs_review": false
+  },
+  {
+   "id": "chaas",
+   "name": "Chaas",
+   "name_local": "Chaas",
+   "category": "beverages",
+   "aliases": [
+    "chaas",
+    "chaas"
+   ],
+   "serving_label": "1 glass (250ml)",
+   "serving_g": 250,
+   "per_100g": {
+    "kcal": 28,
+    "protein_g": 1.8,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "per_serving": {
+    "kcal": 70.0,
+    "protein_g": 4.5,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "source": "IFCT (Indian Food Composition Tables) via mealPlan.fit — kcal+protein verified; fetch full macros from https://mealplan.fit/nutrition/chaas",
+   "tier": 2,
+   "needs_review": false
+  },
+  {
+   "id": "butter-chicken-ifct",
+   "name": "Butter chicken (rich)",
+   "name_local": "Butter chicken",
+   "category": "curries_nonveg",
+   "aliases": [
+    "butter chicken",
+    "butter chicken (rich)"
+   ],
+   "serving_label": "1 katori (150g)",
+   "serving_g": 150,
+   "per_100g": {
+    "kcal": 195,
+    "protein_g": 15.0,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "per_serving": {
+    "kcal": 292.5,
+    "protein_g": 22.5,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "source": "IFCT (Indian Food Composition Tables) via mealPlan.fit — kcal+protein verified; fetch full macros from https://mealplan.fit/nutrition/butter-chicken",
+   "tier": 2,
+   "needs_review": false
+  },
+  {
+   "id": "palak-paneer-ifct",
+   "name": "Palak paneer (with cream)",
+   "name_local": "Palak paneer",
+   "category": "curries_veg",
+   "aliases": [
+    "palak paneer",
+    "palak paneer (with cream)"
+   ],
+   "serving_label": "1 katori (150g)",
+   "serving_g": 150,
+   "per_100g": {
+    "kcal": 185,
+    "protein_g": 12.0,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "per_serving": {
+    "kcal": 277.5,
+    "protein_g": 18.0,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "source": "IFCT (Indian Food Composition Tables) via mealPlan.fit — kcal+protein verified; fetch full macros from https://mealplan.fit/nutrition/palak-paneer",
+   "tier": 2,
+   "needs_review": false
+  },
+  {
+   "id": "kadhi-pakoda",
+   "name": "Kadhi pakoda",
+   "name_local": "Kadhi pakoda",
+   "category": "curries_veg",
+   "aliases": [
+    "kadhi pakoda",
+    "kadhi"
+   ],
+   "serving_label": "1 katori (150g)",
+   "serving_g": 150,
+   "per_100g": {
+    "kcal": 403.3,
+    "protein_g": 1.6,
+    "carbs_g": 3.6,
+    "fat_g": 42.6,
+    "fiber_g": 0.8
+   },
+   "per_serving": {
+    "kcal": 604.9,
+    "protein_g": 2.4,
+    "carbs_g": 5.4,
+    "fat_g": 63.9,
+    "fiber_g": 1.2
+   },
+   "source": "INDB ASC168 — QUARANTINED: frying oil counted 100% as consumed; value implausible vs home cooking (~150-200 kcal/100g typical). Verify against mealplan.fit/nutrition/kadhi before shipping.",
+   "tier": 2,
+   "needs_review": true
+  },
+  {
+   "id": "almonds",
+   "name": "Almonds",
+   "name_local": "Badam",
+   "category": "pantry",
+   "aliases": [
+    "badam",
+    "almonds"
+   ],
+   "serving_label": "10 pcs (15g)",
+   "serving_g": 15,
+   "per_100g": {
+    "kcal": 598,
+    "protein_g": 20.8,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "per_serving": {
+    "kcal": 89.7,
+    "protein_g": 3.1,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "source": "IFCT (Indian Food Composition Tables) via mealPlan.fit — kcal+protein verified; fetch full macros from https://mealplan.fit/nutrition/almonds",
+   "tier": 2,
+   "needs_review": false
+  },
+  {
+   "id": "walnuts",
+   "name": "Walnuts",
+   "name_local": "Akhrot",
+   "category": "pantry",
+   "aliases": [
+    "akhrot",
+    "walnuts"
+   ],
+   "serving_label": "1 handful (30g)",
+   "serving_g": 30,
+   "per_100g": {
+    "kcal": 654,
+    "protein_g": 15.0,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "per_serving": {
+    "kcal": 196.2,
+    "protein_g": 4.5,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "source": "IFCT (Indian Food Composition Tables) via mealPlan.fit — kcal+protein verified; fetch full macros from https://mealplan.fit/nutrition/walnuts",
+   "tier": 2,
+   "needs_review": false
+  },
+  {
+   "id": "cashews",
+   "name": "Cashew nuts",
+   "name_local": "Kaju",
+   "category": "pantry",
+   "aliases": [
+    "kaju",
+    "cashew nuts"
+   ],
+   "serving_label": "10 pcs (15g)",
+   "serving_g": 15,
+   "per_100g": {
+    "kcal": 596,
+    "protein_g": 21.2,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "per_serving": {
+    "kcal": 89.4,
+    "protein_g": 3.2,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "source": "IFCT (Indian Food Composition Tables) via mealPlan.fit — kcal+protein verified; fetch full macros from https://mealplan.fit/nutrition/cashews",
+   "tier": 2,
+   "needs_review": false
+  },
+  {
+   "id": "peanuts-roasted",
+   "name": "Roasted peanuts",
+   "name_local": "Moongfali",
+   "category": "pantry",
+   "aliases": [
+    "moongfali",
+    "roasted peanuts"
+   ],
+   "serving_label": "1 handful (30g)",
+   "serving_g": 30,
+   "per_100g": {
+    "kcal": 567,
+    "protein_g": 25.8,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "per_serving": {
+    "kcal": 170.1,
+    "protein_g": 7.7,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "source": "IFCT (Indian Food Composition Tables) via mealPlan.fit — kcal+protein verified; fetch full macros from https://mealplan.fit/nutrition/peanuts-roasted",
+   "tier": 2,
+   "needs_review": false
+  },
+  {
+   "id": "makhana",
+   "name": "Makhana (fox nuts)",
+   "name_local": "Makhana",
+   "category": "pantry",
+   "aliases": [
+    "makhana",
+    "makhana (fox nuts)"
+   ],
+   "serving_label": "1 cup (30g)",
+   "serving_g": 30,
+   "per_100g": {
+    "kcal": 347,
+    "protein_g": 9.7,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "per_serving": {
+    "kcal": 104.1,
+    "protein_g": 2.9,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "source": "IFCT (Indian Food Composition Tables) via mealPlan.fit — kcal+protein verified; fetch full macros from https://mealplan.fit/nutrition/makhana",
+   "tier": 2,
+   "needs_review": false
+  },
+  {
+   "id": "sattu",
+   "name": "Sattu drink",
+   "name_local": "Sattu",
+   "category": "beverages",
+   "aliases": [
+    "sattu",
+    "sattu drink"
+   ],
+   "serving_label": "2 tbsp in water (30g)",
+   "serving_g": 30,
+   "per_100g": {
+    "kcal": 406,
+    "protein_g": 25.0,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "per_serving": {
+    "kcal": 121.8,
+    "protein_g": 7.5,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "source": "IFCT (Indian Food Composition Tables) via mealPlan.fit — kcal+protein verified; fetch full macros from https://mealplan.fit/nutrition/sattu",
+   "tier": 2,
+   "needs_review": false
+  },
+  {
+   "id": "besan",
+   "name": "Besan (gram flour)",
+   "name_local": "Besan",
+   "category": "pantry",
+   "aliases": [
+    "besan",
+    "besan (gram flour)"
+   ],
+   "serving_label": "100g (for cooking)",
+   "serving_g": 100,
+   "per_100g": {
+    "kcal": 387,
+    "protein_g": 22.0,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "per_serving": {
+    "kcal": 387.0,
+    "protein_g": 22.0,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "source": "IFCT (Indian Food Composition Tables) via mealPlan.fit — kcal+protein verified; fetch full macros from https://mealplan.fit/nutrition/besan",
+   "tier": 2,
+   "needs_review": false
+  },
+  {
+   "id": "jaggery",
+   "name": "Jaggery",
+   "name_local": "Gur",
+   "category": "pantry",
+   "aliases": [
+    "gur",
+    "jaggery"
+   ],
+   "serving_label": "1 piece (20g)",
+   "serving_g": 20,
+   "per_100g": {
+    "kcal": 383,
+    "protein_g": 0.4,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "per_serving": {
+    "kcal": 76.6,
+    "protein_g": 0.1,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "source": "IFCT (Indian Food Composition Tables) via mealPlan.fit — kcal+protein verified; fetch full macros from https://mealplan.fit/nutrition/jaggery",
+   "tier": 2,
+   "needs_review": false
+  },
+  {
+   "id": "papad",
+   "name": "Papad (roasted)",
+   "name_local": "Papad",
+   "category": "pantry",
+   "aliases": [
+    "papad",
+    "papad (roasted)"
+   ],
+   "serving_label": "1 papad (15g)",
+   "serving_g": 15,
+   "per_100g": {
+    "kcal": 371,
+    "protein_g": 21.0,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "per_serving": {
+    "kcal": 55.6,
+    "protein_g": 3.1,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "source": "IFCT (Indian Food Composition Tables) via mealPlan.fit — kcal+protein verified; fetch full macros from https://mealplan.fit/nutrition/papad",
+   "tier": 2,
+   "needs_review": false
+  },
+  {
+   "id": "oats",
+   "name": "Oats",
+   "name_local": "Oats",
+   "category": "pantry",
+   "aliases": [
+    "oats",
+    "oats"
+   ],
+   "serving_label": "1 bowl dry (40g)",
+   "serving_g": 40,
+   "per_100g": {
+    "kcal": 379,
+    "protein_g": 17.0,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "per_serving": {
+    "kcal": 151.6,
+    "protein_g": 6.8,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "source": "IFCT (Indian Food Composition Tables) via mealPlan.fit — kcal+protein verified; fetch full macros from https://mealplan.fit/nutrition/oats",
+   "tier": 2,
+   "needs_review": false
+  },
+  {
+   "id": "soya-chunks",
+   "name": "Soya chunks (dry)",
+   "name_local": "Nutri",
+   "category": "pantry",
+   "aliases": [
+    "nutri",
+    "soya chunks (dry)"
+   ],
+   "serving_label": "50g dry",
+   "serving_g": 50,
+   "per_100g": {
+    "kcal": 345,
+    "protein_g": 52.0,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "per_serving": {
+    "kcal": 172.5,
+    "protein_g": 26.0,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "source": "IFCT (Indian Food Composition Tables) via mealPlan.fit — kcal+protein verified; fetch full macros from https://mealplan.fit/nutrition/soya-chunks",
+   "tier": 2,
+   "needs_review": false
+  },
+  {
+   "id": "paneer-lowfat",
+   "name": "Low-fat paneer",
+   "name_local": "Paneer",
+   "category": "dairy",
+   "aliases": [
+    "paneer",
+    "low-fat paneer"
+   ],
+   "serving_label": "100g",
+   "serving_g": 100,
+   "per_100g": {
+    "kcal": 160,
+    "protein_g": 20.0,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "per_serving": {
+    "kcal": 160.0,
+    "protein_g": 20.0,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "source": "IFCT (Indian Food Composition Tables) via mealPlan.fit — kcal+protein verified; fetch full macros from https://mealplan.fit/nutrition/paneer-lowfat",
+   "tier": 2,
+   "needs_review": false
+  },
+  {
+   "id": "greek-yogurt",
+   "name": "Greek yogurt",
+   "name_local": "Dahi",
+   "category": "dairy",
+   "aliases": [
+    "dahi",
+    "greek yogurt"
+   ],
+   "serving_label": "100g",
+   "serving_g": 100,
+   "per_100g": {
+    "kcal": 59,
+    "protein_g": 10.0,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "per_serving": {
+    "kcal": 59.0,
+    "protein_g": 10.0,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "source": "IFCT (Indian Food Composition Tables) via mealPlan.fit — kcal+protein verified; fetch full macros from https://mealplan.fit/nutrition/greek-yogurt",
+   "tier": 2,
+   "needs_review": false
+  },
+  {
+   "id": "hung-curd",
+   "name": "Hung curd",
+   "name_local": "Hung dahi",
+   "category": "dairy",
+   "aliases": [
+    "hung dahi",
+    "hung curd"
+   ],
+   "serving_label": "100g",
+   "serving_g": 100,
+   "per_100g": {
+    "kcal": 98,
+    "protein_g": 10.0,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "per_serving": {
+    "kcal": 98.0,
+    "protein_g": 10.0,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "source": "IFCT (Indian Food Composition Tables) via mealPlan.fit — kcal+protein verified; fetch full macros from https://mealplan.fit/nutrition/hung-curd",
+   "tier": 2,
+   "needs_review": false
+  },
+  {
+   "id": "buttermilk",
+   "name": "Buttermilk",
+   "name_local": "Chaas",
+   "category": "beverages",
+   "aliases": [
+    "chaas",
+    "buttermilk"
+   ],
+   "serving_label": "1 glass (250ml)",
+   "serving_g": 250,
+   "per_100g": {
+    "kcal": 40,
+    "protein_g": 3.3,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "per_serving": {
+    "kcal": 100.0,
+    "protein_g": 8.2,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "source": "IFCT (Indian Food Composition Tables) via mealPlan.fit — kcal+protein verified; fetch full macros from https://mealplan.fit/nutrition/buttermilk",
+   "tier": 2,
+   "needs_review": false
+  },
+  {
+   "id": "coconut-water",
+   "name": "Coconut water",
+   "name_local": "Nariyal pani",
+   "category": "beverages",
+   "aliases": [
+    "nariyal pani",
+    "coconut water"
+   ],
+   "serving_label": "1 glass (250ml)",
+   "serving_g": 250,
+   "per_100g": {
+    "kcal": 19,
+    "protein_g": 0.7,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "per_serving": {
+    "kcal": 47.5,
+    "protein_g": 1.8,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "source": "IFCT (Indian Food Composition Tables) via mealPlan.fit — kcal+protein verified; fetch full macros from https://mealplan.fit/nutrition/coconut-water",
+   "tier": 2,
+   "needs_review": false
+  },
+  {
+   "id": "banana",
+   "name": "Banana",
+   "name_local": "Kela",
+   "category": "fruits",
+   "aliases": [
+    "kela",
+    "banana"
+   ],
+   "serving_label": "1 banana (120g)",
+   "serving_g": 120,
+   "per_100g": {
+    "kcal": 89,
+    "protein_g": 1.1,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "per_serving": {
+    "kcal": 106.8,
+    "protein_g": 1.3,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "source": "IFCT (Indian Food Composition Tables) via mealPlan.fit — kcal+protein verified; fetch full macros from https://mealplan.fit/nutrition/banana",
+   "tier": 2,
+   "needs_review": false
+  },
+  {
+   "id": "mango",
+   "name": "Mango",
+   "name_local": "Aam",
+   "category": "fruits",
+   "aliases": [
+    "aam",
+    "mango"
+   ],
+   "serving_label": "1 mango (150g)",
+   "serving_g": 150,
+   "per_100g": {
+    "kcal": 60,
+    "protein_g": 0.8,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "per_serving": {
+    "kcal": 90.0,
+    "protein_g": 1.2,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "source": "IFCT (Indian Food Composition Tables) via mealPlan.fit — kcal+protein verified; fetch full macros from https://mealplan.fit/nutrition/mango",
+   "tier": 2,
+   "needs_review": false
+  },
+  {
+   "id": "guava",
+   "name": "Guava",
+   "name_local": "Amrood",
+   "category": "fruits",
+   "aliases": [
+    "amrood",
+    "guava"
+   ],
+   "serving_label": "1 guava (100g)",
+   "serving_g": 100,
+   "per_100g": {
+    "kcal": 68,
+    "protein_g": 2.6,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "per_serving": {
+    "kcal": 68.0,
+    "protein_g": 2.6,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "source": "IFCT (Indian Food Composition Tables) via mealPlan.fit — kcal+protein verified; fetch full macros from https://mealplan.fit/nutrition/guava",
+   "tier": 2,
+   "needs_review": false
+  },
+  {
+   "id": "papaya",
+   "name": "Papaya",
+   "name_local": "Papita",
+   "category": "fruits",
+   "aliases": [
+    "papita",
+    "papaya"
+   ],
+   "serving_label": "1 cup (150g)",
+   "serving_g": 150,
+   "per_100g": {
+    "kcal": 43,
+    "protein_g": 0.5,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "per_serving": {
+    "kcal": 64.5,
+    "protein_g": 0.8,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "source": "IFCT (Indian Food Composition Tables) via mealPlan.fit — kcal+protein verified; fetch full macros from https://mealplan.fit/nutrition/papaya",
+   "tier": 2,
+   "needs_review": false
+  },
+  {
+   "id": "apple",
+   "name": "Apple",
+   "name_local": "Seb",
+   "category": "fruits",
+   "aliases": [
+    "seb",
+    "apple"
+   ],
+   "serving_label": "1 apple (150g)",
+   "serving_g": 150,
+   "per_100g": {
+    "kcal": 59,
+    "protein_g": 0.2,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "per_serving": {
+    "kcal": 88.5,
+    "protein_g": 0.3,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "source": "IFCT (Indian Food Composition Tables) via mealPlan.fit — kcal+protein verified; fetch full macros from https://mealplan.fit/nutrition/apple",
+   "tier": 2,
+   "needs_review": false
+  },
+  {
+   "id": "potato",
+   "name": "Potato (boiled)",
+   "name_local": "Aloo",
+   "category": "vegetables",
+   "aliases": [
+    "aloo",
+    "potato (boiled)"
+   ],
+   "serving_label": "1 potato (150g)",
+   "serving_g": 150,
+   "per_100g": {
+    "kcal": 77,
+    "protein_g": 2.0,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "per_serving": {
+    "kcal": 115.5,
+    "protein_g": 3.0,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "source": "IFCT (Indian Food Composition Tables) via mealPlan.fit — kcal+protein verified; fetch full macros from https://mealplan.fit/nutrition/potato",
+   "tier": 2,
+   "needs_review": false
+  },
+  {
+   "id": "sweet-potato",
+   "name": "Sweet potato",
+   "name_local": "Shakarkandi",
+   "category": "vegetables",
+   "aliases": [
+    "shakarkandi",
+    "sweet potato"
+   ],
+   "serving_label": "1 pc (150g)",
+   "serving_g": 150,
+   "per_100g": {
+    "kcal": 86,
+    "protein_g": 1.6,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "per_serving": {
+    "kcal": 129.0,
+    "protein_g": 2.4,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "source": "IFCT (Indian Food Composition Tables) via mealPlan.fit — kcal+protein verified; fetch full macros from https://mealplan.fit/nutrition/sweet-potato",
+   "tier": 2,
+   "needs_review": false
+  },
+  {
+   "id": "onion",
+   "name": "Onion",
+   "name_local": "Pyaaz",
+   "category": "vegetables",
+   "aliases": [
+    "pyaaz",
+    "onion"
+   ],
+   "serving_label": "1 onion (80g)",
+   "serving_g": 80,
+   "per_100g": {
+    "kcal": 40,
+    "protein_g": 1.1,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "per_serving": {
+    "kcal": 32.0,
+    "protein_g": 0.9,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "source": "IFCT (Indian Food Composition Tables) via mealPlan.fit — kcal+protein verified; fetch full macros from https://mealplan.fit/nutrition/onion",
+   "tier": 2,
+   "needs_review": false
+  },
+  {
+   "id": "tomato",
+   "name": "Tomato",
+   "name_local": "Tamatar",
+   "category": "vegetables",
+   "aliases": [
+    "tamatar",
+    "tomato"
+   ],
+   "serving_label": "1 tomato (80g)",
+   "serving_g": 80,
+   "per_100g": {
+    "kcal": 18,
+    "protein_g": 0.9,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "per_serving": {
+    "kcal": 14.4,
+    "protein_g": 0.7,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "source": "IFCT (Indian Food Composition Tables) via mealPlan.fit — kcal+protein verified; fetch full macros from https://mealplan.fit/nutrition/tomato",
+   "tier": 2,
+   "needs_review": false
+  },
+  {
+   "id": "atta",
+   "name": "Whole wheat flour",
+   "name_local": "Atta",
+   "category": "pantry",
+   "aliases": [
+    "atta",
+    "whole wheat flour"
+   ],
+   "serving_label": "100g (for cooking)",
+   "serving_g": 100,
+   "per_100g": {
+    "kcal": 340,
+    "protein_g": 13.2,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "per_serving": {
+    "kcal": 340.0,
+    "protein_g": 13.2,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "source": "IFCT (Indian Food Composition Tables) via mealPlan.fit — kcal+protein verified; fetch full macros from https://mealplan.fit/nutrition/atta",
+   "tier": 2,
+   "needs_review": false
+  },
+  {
+   "id": "dalia",
+   "name": "Dalia (broken wheat)",
+   "name_local": "Dalia",
+   "category": "pantry",
+   "aliases": [
+    "dalia",
+    "dalia (broken wheat)"
+   ],
+   "serving_label": "50g dry",
+   "serving_g": 50,
+   "per_100g": {
+    "kcal": 342,
+    "protein_g": 11.2,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "per_serving": {
+    "kcal": 171.0,
+    "protein_g": 5.6,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "source": "IFCT (Indian Food Composition Tables) via mealPlan.fit — kcal+protein verified; fetch full macros from https://mealplan.fit/nutrition/dalia",
+   "tier": 2,
+   "needs_review": false
+  },
+  {
+   "id": "kurmura",
+   "name": "Puffed rice",
+   "name_local": "Kurmura",
+   "category": "pantry",
+   "aliases": [
+    "kurmura",
+    "puffed rice"
+   ],
+   "serving_label": "1 cup (30g)",
+   "serving_g": 30,
+   "per_100g": {
+    "kcal": 325,
+    "protein_g": 6.3,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "per_serving": {
+    "kcal": 97.5,
+    "protein_g": 1.9,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "source": "IFCT (Indian Food Composition Tables) via mealPlan.fit — kcal+protein verified; fetch full macros from https://mealplan.fit/nutrition/kurmura",
+   "tier": 2,
+   "needs_review": false
+  },
+  {
+   "id": "brown-rice-cooked",
+   "name": "Brown rice (cooked)",
+   "name_local": "Brown chawal",
+   "category": "rice",
+   "aliases": [
+    "brown chawal",
+    "brown rice (cooked)"
+   ],
+   "serving_label": "1 katori (150g)",
+   "serving_g": 150,
+   "per_100g": {
+    "kcal": 111,
+    "protein_g": 2.6,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "per_serving": {
+    "kcal": 166.5,
+    "protein_g": 3.9,
+    "carbs_g": null,
+    "fat_g": null,
+    "fiber_g": null
+   },
+   "source": "IFCT (Indian Food Composition Tables) via mealPlan.fit — kcal+protein verified; fetch full macros from https://mealplan.fit/nutrition/brown-rice-cooked",
+   "tier": 2,
+   "needs_review": false
+  },
+  {
+   "id": "th-double-double-m",
+   "name": "Double-Double Coffee (Medium)",
+   "name_local": "Double-Double Coffee (Medium)",
+   "brand": "Tim Hortons",
+   "category": "chain restaurants",
+   "aliases": [
+    "double double",
+    "double-double",
+    "tims double double",
+    "tim hortons double double",
+    "tim hortons coffee"
+   ],
+   "serving_label": "1 medium cup",
+   "serving_g": null,
+   "per_100g": null,
+   "per_serving": {
+    "kcal": 200,
+    "protein_g": 2,
+    "carbs_g": 22,
+    "fat_g": 13,
+    "fiber_g": 0
+   },
+   "source": "Tim Hortons Nutrition Guide (Canadian Edition, July 2026) — official PDF via timhortons.ca/nutrition-and-allergens",
+   "tier": 1,
+   "needs_review": false
+  },
+  {
+   "id": "th-double-double-l",
+   "name": "Double-Double Coffee (Large)",
+   "name_local": "Double-Double Coffee (Large)",
+   "brand": "Tim Hortons",
+   "category": "chain restaurants",
+   "aliases": [
+    "double double large",
+    "tims large double double"
+   ],
+   "serving_label": "1 large cup",
+   "serving_g": null,
+   "per_100g": null,
+   "per_serving": {
+    "kcal": 250,
+    "protein_g": 2,
+    "carbs_g": 28,
+    "fat_g": 15,
+    "fiber_g": 0
+   },
+   "source": "Tim Hortons Nutrition Guide (Canadian Edition, July 2026) — official PDF via timhortons.ca/nutrition-and-allergens",
+   "tier": 1,
+   "needs_review": false
+  },
+  {
+   "id": "th-timbit-choc",
+   "name": "Timbit — Chocolate Glazed (1 pc)",
+   "name_local": "Timbit — Chocolate Glazed (1 pc)",
+   "brand": "Tim Hortons",
+   "category": "chain restaurants",
+   "aliases": [
+    "timbit",
+    "timbits",
+    "tim hortons timbit"
+   ],
+   "serving_label": "1 timbit",
+   "serving_g": null,
+   "per_100g": null,
+   "per_serving": {
+    "kcal": 80,
+    "protein_g": 1,
+    "carbs_g": 11,
+    "fat_g": 3.5,
+    "fiber_g": 0
+   },
+   "source": "Tim Hortons Nutrition Guide (Canadian Edition, July 2026) — official PDF via timhortons.ca/nutrition-and-allergens",
+   "tier": 1,
+   "needs_review": false
+  },
+  {
+   "id": "th-boston-cream",
+   "name": "Boston Cream Donut",
+   "name_local": "Boston Cream Donut",
+   "brand": "Tim Hortons",
+   "category": "chain restaurants",
+   "aliases": [
+    "boston cream",
+    "tim hortons donut"
+   ],
+   "serving_label": "1 donut",
+   "serving_g": null,
+   "per_100g": null,
+   "per_serving": {
+    "kcal": 240,
+    "protein_g": 4,
+    "carbs_g": 38,
+    "fat_g": 8,
+    "fiber_g": 1
+   },
+   "source": "Tim Hortons Nutrition Guide (Canadian Edition, July 2026) — official PDF via timhortons.ca/nutrition-and-allergens",
+   "tier": 1,
+   "needs_review": false
+  },
+  {
+   "id": "th-apple-fritter",
+   "name": "Apple Fritter",
+   "name_local": "Apple Fritter",
+   "brand": "Tim Hortons",
+   "category": "chain restaurants",
+   "aliases": [
+    "apple fritter",
+    "tim hortons apple fritter"
+   ],
+   "serving_label": "1 fritter",
+   "serving_g": null,
+   "per_100g": null,
+   "per_serving": {
+    "kcal": 330,
+    "protein_g": 6,
+    "carbs_g": 54,
+    "fat_g": 11,
+    "fiber_g": 2
+   },
+   "source": "Tim Hortons Nutrition Guide (Canadian Edition, July 2026) — official PDF via timhortons.ca/nutrition-and-allergens",
+   "tier": 1,
+   "needs_review": false
+  },
+  {
+   "id": "mcd-big-mac",
+   "name": "Big Mac",
+   "name_local": "Big Mac",
+   "brand": "McDonald's",
+   "category": "chain restaurants",
+   "aliases": [
+    "big mac",
+    "mcdonalds big mac",
+    "mcd big mac"
+   ],
+   "serving_label": "1 sandwich (216g)",
+   "serving_g": 216,
+   "per_100g": {
+    "kcal": 263.9,
+    "protein_g": 11.1,
+    "carbs_g": 21.3,
+    "fat_g": 14.8,
+    "fiber_g": 1.4
+   },
+   "per_serving": {
+    "kcal": 570,
+    "protein_g": 24,
+    "carbs_g": 46,
+    "fat_g": 32,
+    "fiber_g": 3
+   },
+   "source": "McDonald's Canada official product pages / nutrition calculator — mcdonalds.com/ca (Oct 2026)",
+   "tier": 1,
+   "needs_review": false
+  },
+  {
+   "id": "mcd-quarter-pounder",
+   "name": "Quarter Pounder with Cheese",
+   "name_local": "Quarter Pounder with Cheese",
+   "brand": "McDonald's",
+   "category": "chain restaurants",
+   "aliases": [
+    "quarter pounder",
+    "quarter pounder with cheese",
+    "mcdonalds quarter pounder"
+   ],
+   "serving_label": "1 sandwich (201g)",
+   "serving_g": 201,
+   "per_100g": {
+    "kcal": 263.7,
+    "protein_g": 14.4,
+    "carbs_g": 20.4,
+    "fat_g": 13.4,
+    "fiber_g": 1.0
+   },
+   "per_serving": {
+    "kcal": 530,
+    "protein_g": 29,
+    "carbs_g": 41,
+    "fat_g": 27,
+    "fiber_g": 2
+   },
+   "source": "McDonald's Canada official product pages / nutrition calculator — mcdonalds.com/ca (Oct 2026)",
+   "tier": 1,
+   "needs_review": false
+  },
+  {
+   "id": "mcd-mcchicken",
+   "name": "McChicken",
+   "name_local": "McChicken",
+   "brand": "McDonald's",
+   "category": "chain restaurants",
+   "aliases": [
+    "mcchicken",
+    "mcdonalds mcchicken"
+   ],
+   "serving_label": "1 sandwich (175g)",
+   "serving_g": 175,
+   "per_100g": {
+    "kcal": 274.3,
+    "protein_g": 9.1,
+    "carbs_g": 25.7,
+    "fat_g": 15.4,
+    "fiber_g": 1.7
+   },
+   "per_serving": {
+    "kcal": 480,
+    "protein_g": 16,
+    "carbs_g": 45,
+    "fat_g": 27,
+    "fiber_g": 3
+   },
+   "source": "McDonald's Canada official product pages / nutrition calculator — mcdonalds.com/ca (Oct 2026)",
+   "tier": 1,
+   "needs_review": false
+  },
+  {
+   "id": "mcd-nuggets-10",
+   "name": "Chicken McNuggets (10 pc)",
+   "name_local": "Chicken McNuggets (10 pc)",
+   "brand": "McDonald's",
+   "category": "chain restaurants",
+   "aliases": [
+    "mcnuggets",
+    "chicken mcnuggets",
+    "mcdonalds nuggets",
+    "10 nuggets"
+   ],
+   "serving_label": "10 pieces (159g)",
+   "serving_g": 159,
+   "per_100g": {
+    "kcal": 257.9,
+    "protein_g": 16.4,
+    "carbs_g": 16.4,
+    "fat_g": 14.5,
+    "fiber_g": 0.0
+   },
+   "per_serving": {
+    "kcal": 410,
+    "protein_g": 26,
+    "carbs_g": 26,
+    "fat_g": 23,
+    "fiber_g": 0
+   },
+   "source": "McDonald's Canada official product pages / nutrition calculator — mcdonalds.com/ca (Oct 2026)",
+   "tier": 1,
+   "needs_review": false
+  },
+  {
+   "id": "mcd-fries-m",
+   "name": "French Fries (Medium)",
+   "name_local": "French Fries (Medium)",
+   "brand": "McDonald's",
+   "category": "chain restaurants",
+   "aliases": [
+    "medium fries",
+    "mcdonalds fries",
+    "mcd fries",
+    "french fries"
+   ],
+   "serving_label": "1 medium (110g)",
+   "serving_g": 110,
+   "per_100g": {
+    "kcal": 318.2,
+    "protein_g": 3.6,
+    "carbs_g": 41.8,
+    "fat_g": 15.5,
+    "fiber_g": 3.6
+   },
+   "per_serving": {
+    "kcal": 350,
+    "protein_g": 4,
+    "carbs_g": 46,
+    "fat_g": 17,
+    "fiber_g": 4
+   },
+   "source": "McDonald's Canada official product pages / nutrition calculator — mcdonalds.com/ca (Oct 2026)",
+   "tier": 1,
+   "needs_review": false
+  },
+  {
+   "id": "mcd-egg-mcmuffin",
+   "name": "Egg McMuffin",
+   "name_local": "Egg McMuffin",
+   "brand": "McDonald's",
+   "category": "chain restaurants",
+   "aliases": [
+    "egg mcmuffin",
+    "mcdonalds egg mcmuffin"
+   ],
+   "serving_label": "1 sandwich (133g)",
+   "serving_g": 133,
+   "per_100g": {
+    "kcal": 218.0,
+    "protein_g": 12.0,
+    "carbs_g": 21.1,
+    "fat_g": 8.3,
+    "fiber_g": 1.5
+   },
+   "per_serving": {
+    "kcal": 290,
+    "protein_g": 16,
+    "carbs_g": 28,
+    "fat_g": 11,
+    "fiber_g": 2
+   },
+   "source": "McDonald's Canada official product pages / nutrition calculator — mcdonalds.com/ca (Oct 2026)",
+   "tier": 1,
+   "needs_review": false
+  },
+  {
+   "id": "pp-pepperoni-slice",
+   "name": "Pepperoni Pizza (1 slice)",
+   "name_local": "Pepperoni Pizza (1 slice)",
+   "brand": "Pizza Pizza",
+   "category": "chain restaurants",
+   "aliases": [
+    "pepperoni pizza",
+    "pepperoni slice",
+    "pizza pizza pepperoni"
+   ],
+   "serving_label": "1 slice (1/8 of 12\" medium)",
+   "serving_g": null,
+   "per_100g": null,
+   "per_serving": {
+    "kcal": 210,
+    "protein_g": 10,
+    "carbs_g": 25,
+    "fat_g": 8,
+    "fiber_g": 1
+   },
+   "source": "Pizza Pizza official medium-pizza nutrition table — pizzapizza.ca/about-us/nutrition/medium-pizza/ (per slice = 1/8 of 12\" medium)",
+   "tier": 1,
+   "needs_review": false
+  },
+  {
+   "id": "pp-cheese-slice",
+   "name": "Cheese Pizza (1 slice)",
+   "name_local": "Cheese Pizza (1 slice)",
+   "brand": "Pizza Pizza",
+   "category": "chain restaurants",
+   "aliases": [
+    "cheese pizza",
+    "cheese slice",
+    "pizza pizza cheese"
+   ],
+   "serving_label": "1 slice (1/8 of 12\" medium)",
+   "serving_g": null,
+   "per_100g": null,
+   "per_serving": {
+    "kcal": 180,
+    "protein_g": 9,
+    "carbs_g": 25,
+    "fat_g": 5,
+    "fiber_g": 1
+   },
+   "source": "Pizza Pizza official medium-pizza nutrition table — pizzapizza.ca/about-us/nutrition/medium-pizza/ (per slice = 1/8 of 12\" medium)",
+   "tier": 1,
+   "needs_review": false
+  },
+  {
+   "id": "osm-shawarma-wrap",
+   "name": "Chicken Shawarma Wrap (Regular)",
+   "name_local": "Chicken Shawarma Wrap (Regular)",
+   "brand": "Osmow's",
+   "category": "chain restaurants",
+   "aliases": [
+    "chicken shawarma wrap",
+    "osmos shawarma",
+    "osmow's wrap",
+    "shawarma wrap"
+   ],
+   "serving_label": "1 regular wrap (311g)",
+   "serving_g": 311,
+   "per_100g": {
+    "kcal": 181.7,
+    "protein_g": 8.6,
+    "carbs_g": 13.3,
+    "fat_g": 10.1,
+    "fiber_g": 0.4
+   },
+   "per_serving": {
+    "kcal": 565,
+    "protein_g": 26.8,
+    "carbs_g": 41.3,
+    "fat_g": 31.4,
+    "fiber_g": 1.3
+   },
+   "source": "Osmow's official nutrition calculator — osmows.com/nutrition-calculator (Oct 2026; Regular size)",
+   "tier": 1,
+   "needs_review": false
+  },
+  {
+   "id": "osm-chicken-rocks",
+   "name": "Chicken On The Rocks (Regular)",
+   "name_local": "Chicken On The Rocks (Regular)",
+   "brand": "Osmow's",
+   "category": "chain restaurants",
+   "aliases": [
+    "chicken on the rocks",
+    "osmos chicken on the rocks",
+    "osmow's rocks"
+   ],
+   "serving_label": "1 regular (493g)",
+   "serving_g": 493,
+   "per_100g": {
+    "kcal": 173.8,
+    "protein_g": 8.0,
+    "carbs_g": 16.5,
+    "fat_g": 7.5,
+    "fiber_g": 0.5
+   },
+   "per_serving": {
+    "kcal": 857,
+    "protein_g": 39.6,
+    "carbs_g": 81.3,
+    "fat_g": 37.1,
+    "fiber_g": 2.3
+   },
+   "source": "Osmow's official nutrition calculator — osmows.com/nutrition-calculator (Oct 2026; Regular size)",
+   "tier": 1,
+   "needs_review": false
+  },
+  {
+   "id": "aw-teen-burger",
+   "name": "Teen Burger",
+   "name_local": "Teen Burger",
+   "brand": "A&W",
+   "category": "chain restaurants",
+   "aliases": [
+    "teen burger",
+    "a&w teen burger",
+    "aw teen burger"
+   ],
+   "serving_label": "1 burger",
+   "serving_g": null,
+   "per_100g": null,
+   "per_serving": {
+    "kcal": 500,
+    "protein_g": 27,
+    "carbs_g": null,
+    "fat_g": 30,
+    "fiber_g": null
+   },
+   "source": "A&W Canada official site web.aw.ca (Oct 2026) — A&W publishes calories/fat/protein ONLY; carbs and fibre are not officially published, so this entry is Tier 2 (partial) until completed.",
+   "tier": 2,
+   "needs_review": false
+  },
+  {
+   "id": "aw-fries-reg",
+   "name": "Russet Thick-Cut Fries (Regular)",
+   "name_local": "Russet Thick-Cut Fries (Regular)",
+   "brand": "A&W",
+   "category": "chain restaurants",
+   "aliases": [
+    "a&w fries",
+    "aw fries",
+    "russet fries"
+   ],
+   "serving_label": "1 regular",
+   "serving_g": null,
+   "per_100g": null,
+   "per_serving": {
+    "kcal": 340,
+    "protein_g": 5,
+    "carbs_g": null,
+    "fat_g": 18,
+    "fiber_g": null
+   },
+   "source": "A&W Canada official site web.aw.ca (Oct 2026) — A&W publishes calories/fat/protein ONLY; carbs and fibre are not officially published, so this entry is Tier 2 (partial) until completed.",
+   "tier": 2,
+   "needs_review": false
+  },
+  {
+   "id": "kfc-big-crunch",
+   "name": "Big Crunch Sandwich",
+   "name_local": "Big Crunch Sandwich",
+   "brand": "KFC",
+   "category": "chain restaurants",
+   "aliases": [
+    "big crunch",
+    "kfc big crunch"
+   ],
+   "serving_label": "1 sandwich",
+   "serving_g": null,
+   "per_100g": null,
+   "per_serving": {
+    "kcal": 620,
+    "protein_g": 25,
+    "carbs_g": 57,
+    "fat_g": 34,
+    "fiber_g": 3
+   },
+   "source": "KFC Canada official 'Nutritional Information (W8)' PDF via kfc.ca (Oct 2026)",
+   "tier": 1,
+   "needs_review": false
+  },
+  {
+   "id": "kfc-popcorn-small",
+   "name": "Popcorn Chicken (Small)",
+   "name_local": "Popcorn Chicken (Small)",
+   "brand": "KFC",
+   "category": "chain restaurants",
+   "aliases": [
+    "popcorn chicken",
+    "kfc popcorn chicken"
+   ],
+   "serving_label": "1 small",
+   "serving_g": null,
+   "per_100g": null,
+   "per_serving": {
+    "kcal": 370,
+    "protein_g": 19,
+    "carbs_g": 26,
+    "fat_g": 21,
+    "fiber_g": 2
+   },
+   "source": "KFC Canada official 'Nutritional Information (W8)' PDF via kfc.ca (Oct 2026)",
+   "tier": 1,
+   "needs_review": false
+  },
+  {
+   "id": "popeyes-chicken-sandwich",
+   "name": "Classic Chicken Sandwich",
+   "name_local": "Classic Chicken Sandwich",
+   "brand": "Popeyes",
+   "category": "chain restaurants",
+   "aliases": [
+    "popeyes chicken sandwich",
+    "chicken sandwich",
+    "popeyes sandwich"
+   ],
+   "serving_label": "1 sandwich",
+   "serving_g": null,
+   "per_100g": null,
+   "per_serving": {
+    "kcal": 730,
+    "protein_g": 34,
+    "carbs_g": 53,
+    "fat_g": 42,
+    "fiber_g": 2
+   },
+   "source": "Popeyes Canada official 'PLK CAN Nutrition Guide 2025' PDF via popeyeschicken.ca (Oct 2026)",
+   "tier": 1,
+   "needs_review": false
+  },
+  {
+   "id": "wendys-baconator",
+   "name": "Baconator (Single)",
+   "name_local": "Baconator (Single)",
+   "brand": "Wendy's",
+   "category": "chain restaurants",
+   "aliases": [
+    "baconator",
+    "wendys baconator"
+   ],
+   "serving_label": "1 sandwich",
+   "serving_g": null,
+   "per_100g": null,
+   "per_serving": {
+    "kcal": 920,
+    "protein_g": 58,
+    "carbs_g": 35,
+    "fat_g": 61,
+    "fiber_g": 1
+   },
+   "source": "Wendy's Canada official menu page — order.wendys.com/ca (Oct 2026)",
+   "tier": 1,
+   "needs_review": false
+  },
+  {
+   "id": "sbux-latte-grande",
+   "name": "Caffe Latte (Grande, 2%)",
+   "name_local": "Caffe Latte (Grande, 2%)",
+   "brand": "Starbucks",
+   "category": "chain restaurants",
+   "aliases": [
+    "latte",
+    "starbucks latte",
+    "caffe latte",
+    "grande latte"
+   ],
+   "serving_label": "1 grande (473 ml)",
+   "serving_g": 473,
+   "per_100g": {
+    "kcal": 40.2,
+    "protein_g": 2.5,
+    "carbs_g": 4.0,
+    "fat_g": 1.5,
+    "fiber_g": 0.0
+   },
+   "per_serving": {
+    "kcal": 190,
+    "protein_g": 12,
+    "carbs_g": 19,
+    "fat_g": 7,
+    "fiber_g": 0
+   },
+   "source": "Starbucks Canada official product nutrition page — starbucks.ca (Oct 2026)",
+   "tier": 1,
+   "needs_review": false
+  },
+  {
+   "id": "mb-big-mary",
+   "name": "Big Mary",
+   "name_local": "Big Mary",
+   "brand": "Mary Brown's",
+   "category": "chain restaurants",
+   "aliases": [
+    "big mary",
+    "mary browns big mary",
+    "mary brown's chicken sandwich"
+   ],
+   "serving_label": "1 sandwich (249g)",
+   "serving_g": 249,
+   "per_100g": {
+    "kcal": 240.2,
+    "protein_g": 13.3,
+    "carbs_g": 17.8,
+    "fat_g": 12.7,
+    "fiber_g": 0.8
+   },
+   "per_serving": {
+    "kcal": 598,
+    "protein_g": 33.0,
+    "carbs_g": 44.3,
+    "fat_g": 31.7,
+    "fiber_g": 1.9
+   },
+   "source": "Mary Brown's official 'Nutritional Information — July 2026' PDF via marybrowns.com. Note: the PDF's Taters Medium row prints larger than its Large row (apparent labeling quirk in the official doc); Small used as the standard serving.",
+   "tier": 1,
+   "needs_review": false
+  },
+  {
+   "id": "mb-taters-small",
+   "name": "Taters (Small)",
+   "name_local": "Taters (Small)",
+   "brand": "Mary Brown's",
+   "category": "chain restaurants",
+   "aliases": [
+    "taters",
+    "mary browns taters",
+    "mary brown's taters"
+   ],
+   "serving_label": "1 small (189g)",
+   "serving_g": 189,
+   "per_100g": {
+    "kcal": 248.7,
+    "protein_g": 5.0,
+    "carbs_g": 33.3,
+    "fat_g": 13.0,
+    "fiber_g": 3.5
+   },
+   "per_serving": {
+    "kcal": 470,
+    "protein_g": 9.4,
+    "carbs_g": 63.0,
+    "fat_g": 24.5,
+    "fiber_g": 6.6
+   },
+   "source": "Mary Brown's official 'Nutritional Information — July 2026' PDF via marybrowns.com. Note: the PDF's Taters Medium row prints larger than its Large row (apparent labeling quirk in the official doc); Small used as the standard serving.",
+   "tier": 1,
+   "needs_review": false
+  }
+ ],
+ "restaurants": [
+  {
+   "id": "rest_01",
+   "name": "Punjabi by Nature",
+   "city": "Mississauga",
+   "address": "2273 Dundas St W, Mississauga",
+   "cuisine": "Punjabi / North Indian",
+   "signature_dishes": [
+    "Butter chicken",
+    "Chicken biryani",
+    "Chole bhature"
+   ],
+   "nutrition_published": false,
+   "dish_mappings": [
+    {
+     "restaurant_dish": "Butter chicken",
+     "db_dish_id": "asc242",
+     "note": "Typical dish values from the TrainLuma food database — this restaurant's recipe will differ. Not restaurant-verified."
+    }
+   ],
+   "unmapped_dishes": [
+    "Chicken biryani (no DB match yet)",
+    "Chole bhature (chole data under review — NOT mapped until Tier 1 complete)"
+   ],
+   "source": "Rio research 2026-10-12 — restaurant websites, menu PDFs, DoorDash listings, targeted nutrition searches; zero published nutrition found"
+  },
+  {
+   "id": "rest_02",
+   "name": "Sweet India",
+   "city": "Mississauga",
+   "address": "7126 Airport Rd, Mississauga",
+   "cuisine": "North Indian / sweets (25+ years)",
+   "signature_dishes": [
+    "Thali",
+    "Samosa with chana"
+   ],
+   "nutrition_published": false,
+   "dish_mappings": [],
+   "unmapped_dishes": [
+    "Thali (composite — use meal template)",
+    "Samosa with chana (samosa data under review)"
+   ],
+   "source": "Rio research 2026-10-12 — restaurant websites, menu PDFs, DoorDash listings, targeted nutrition searches; zero published nutrition found"
+  },
+  {
+   "id": "rest_03",
+   "name": "Punjabi Dhaba",
+   "city": "Mississauga",
+   "address": "2855 Derry Rd E, Mississauga",
+   "cuisine": "Punjabi homestyle / dhaba",
+   "signature_dishes": [
+    "Homestyle dal",
+    "Rajma"
+   ],
+   "nutrition_published": false,
+   "dish_mappings": [
+    {
+     "restaurant_dish": "Homestyle dal (dal makhani)",
+     "db_dish_id": "osr139",
+     "note": "Typical dish values from the TrainLuma food database — this restaurant's recipe will differ. Not restaurant-verified."
+    },
+    {
+     "restaurant_dish": "Rajma",
+     "db_dish_id": "asc165",
+     "note": "Typical dish values from the TrainLuma food database — this restaurant's recipe will differ. Not restaurant-verified."
+    }
+   ],
+   "unmapped_dishes": [],
+   "source": "Rio research 2026-10-12 — restaurant websites, menu PDFs, DoorDash listings, targeted nutrition searches; zero published nutrition found"
+  },
+  {
+   "id": "rest_04",
+   "name": "Indraprastha",
+   "city": "Mississauga",
+   "address": "4646 Heritage Hills Blvd, Mississauga",
+   "cuisine": "South Indian",
+   "signature_dishes": [
+    "Hyderabadi chicken dum biryani",
+    "Mysore masala dosa"
+   ],
+   "nutrition_published": false,
+   "dish_mappings": [
+    {
+     "restaurant_dish": "Mysore masala dosa",
+     "db_dish_id": "asc146",
+     "note": "Typical dish values from the TrainLuma food database — this restaurant's recipe will differ. Not restaurant-verified."
+    }
+   ],
+   "unmapped_dishes": [
+    "Hyderabadi chicken dum biryani (no DB match yet)"
+   ],
+   "source": "Rio research 2026-10-12 — restaurant websites, menu PDFs, DoorDash listings, targeted nutrition searches; zero published nutrition found"
+  },
+  {
+   "id": "rest_05",
+   "name": "Desi Bar and Grill",
+   "city": "Mississauga",
+   "address": "925 Rathburn Rd E, Mississauga",
+   "cuisine": "Modern North Indian",
+   "signature_dishes": [
+    "Butter chicken",
+    "Naan"
+   ],
+   "nutrition_published": false,
+   "dish_mappings": [
+    {
+     "restaurant_dish": "Butter chicken",
+     "db_dish_id": "asc242",
+     "note": "Typical dish values from the TrainLuma food database — this restaurant's recipe will differ. Not restaurant-verified."
+    },
+    {
+     "restaurant_dish": "Naan",
+     "db_dish_id": "asc142",
+     "note": "Typical dish values from the TrainLuma food database — this restaurant's recipe will differ. Not restaurant-verified."
+    }
+   ],
+   "unmapped_dishes": [],
+   "source": "Rio research 2026-10-12 — restaurant websites, menu PDFs, DoorDash listings, targeted nutrition searches; zero published nutrition found"
+  },
+  {
+   "id": "rest_06",
+   "name": "Bombay on the Lake",
+   "city": "Mississauga",
+   "address": "1710 Lakeshore Rd W, Mississauga (Port Credit)",
+   "cuisine": "North Indian",
+   "signature_dishes": [
+    "Dal makhani",
+    "Tandoori items"
+   ],
+   "nutrition_published": false,
+   "dish_mappings": [
+    {
+     "restaurant_dish": "Dal makhani",
+     "db_dish_id": "osr139",
+     "note": "Typical dish values from the TrainLuma food database — this restaurant's recipe will differ. Not restaurant-verified."
+    }
+   ],
+   "unmapped_dishes": [
+    "Tandoori platter items (no DB match yet)"
+   ],
+   "source": "Rio research 2026-10-12 — restaurant websites, menu PDFs, DoorDash listings, targeted nutrition searches; zero published nutrition found"
+  },
+  {
+   "id": "rest_07",
+   "name": "Maharaja Riyasat",
+   "city": "Mississauga",
+   "address": "325 Central Pkwy W, Mississauga",
+   "cuisine": "Punjabi / North Indian",
+   "signature_dishes": [
+    "Punjabi curries",
+    "Tandoor items"
+   ],
+   "nutrition_published": false,
+   "dish_mappings": [
+    {
+     "restaurant_dish": "Butter chicken",
+     "db_dish_id": "asc242",
+     "note": "Typical dish values from the TrainLuma food database — this restaurant's recipe will differ. Not restaurant-verified."
+    },
+    {
+     "restaurant_dish": "Dal makhani",
+     "db_dish_id": "osr139",
+     "note": "Typical dish values from the TrainLuma food database — this restaurant's recipe will differ. Not restaurant-verified."
+    }
+   ],
+   "unmapped_dishes": [],
+   "source": "Rio research 2026-10-12 — restaurant websites, menu PDFs, DoorDash listings, targeted nutrition searches; zero published nutrition found"
+  },
+  {
+   "id": "rest_08",
+   "name": "Tamarind Modern Indian Bistro",
+   "city": "Mississauga",
+   "address": "33 City Centre Dr, Mississauga (Square One)",
+   "cuisine": "Modern upscale Indian",
+   "signature_dishes": [
+    "Modern Indian mains"
+   ],
+   "nutrition_published": false,
+   "dish_mappings": [
+    {
+     "restaurant_dish": "Butter chicken",
+     "db_dish_id": "asc242",
+     "note": "Typical dish values from the TrainLuma food database — this restaurant's recipe will differ. Not restaurant-verified."
+    }
+   ],
+   "unmapped_dishes": [
+    "Bistro specials (no DB match yet)"
+   ],
+   "source": "Rio research 2026-10-12 — restaurant websites, menu PDFs, DoorDash listings, targeted nutrition searches; zero published nutrition found"
+  },
+  {
+   "id": "rest_09",
+   "name": "Mughal Mahal",
+   "city": "Mississauga",
+   "address": "7071 Airport Rd, Mississauga",
+   "cuisine": "North Indian / Mughlai (since 1990)",
+   "signature_dishes": [
+    "Amritsari kulcha (\"best in GTA\")",
+    "Mughlai curries"
+   ],
+   "nutrition_published": false,
+   "dish_mappings": [
+    {
+     "restaurant_dish": "Butter chicken",
+     "db_dish_id": "asc242",
+     "note": "Typical dish values from the TrainLuma food database — this restaurant's recipe will differ. Not restaurant-verified."
+    }
+   ],
+   "unmapped_dishes": [
+    "Amritsari kulcha (no DB match yet)"
+   ],
+   "source": "Rio research 2026-10-12 — restaurant websites, menu PDFs, DoorDash listings, targeted nutrition searches; zero published nutrition found"
+  },
+  {
+   "id": "rest_10",
+   "name": "MotiMahal Canada",
+   "city": "Mississauga",
+   "address": "5120 Dixie Rd Unit 2, Mississauga",
+   "cuisine": "Delhi-style North Indian / street food (brand since 1976)",
+   "signature_dishes": [
+    "Chole bhature",
+    "Raj kachori"
+   ],
+   "nutrition_published": false,
+   "dish_mappings": [],
+   "unmapped_dishes": [
+    "Chole bhature (chole data under review — NOT mapped until Tier 1 complete)",
+    "Raj kachori (no DB match yet)"
+   ],
+   "source": "Rio research 2026-10-12 — restaurant websites, menu PDFs, DoorDash listings, targeted nutrition searches; zero published nutrition found"
+  },
+  {
+   "id": "rest_11",
+   "name": "Tandoori Flame",
+   "city": "Brampton",
+   "address": "8150 Dixie Rd, Bramalea, Brampton (+ Mississauga, Surrey-Delta BC)",
+   "cuisine": "North Indian / buffet (150+ items, \"North America's largest Indian buffet\")",
+   "signature_dishes": [
+    "Butter chicken",
+    "Naan",
+    "Veg biryani",
+    "Tandoori platter"
+   ],
+   "nutrition_published": false,
+   "dish_mappings": [
+    {
+     "restaurant_dish": "Butter chicken",
+     "db_dish_id": "asc242",
+     "note": "Typical dish values from the TrainLuma food database — this restaurant's recipe will differ. Not restaurant-verified."
+    },
+    {
+     "restaurant_dish": "Naan",
+     "db_dish_id": "asc142",
+     "note": "Typical dish values from the TrainLuma food database — this restaurant's recipe will differ. Not restaurant-verified."
+    },
+    {
+     "restaurant_dish": "Veg biryani",
+     "db_dish_id": "asc123",
+     "note": "Typical dish values from the TrainLuma food database — this restaurant's recipe will differ. Not restaurant-verified."
+    }
+   ],
+   "unmapped_dishes": [
+    "Tandoori platter (no DB match yet) — log items separately"
+   ],
+   "source": "Rio research 2026-10-12 — restaurant websites, menu PDFs, DoorDash listings, targeted nutrition searches; zero published nutrition found"
+  },
+  {
+   "id": "rest_12",
+   "name": "Cholebhature.ca",
+   "city": "Brampton",
+   "address": "Brampton",
+   "cuisine": "Punjabi street food (chole bhature specialist)",
+   "signature_dishes": [
+    "Chole bhature"
+   ],
+   "nutrition_published": false,
+   "dish_mappings": [],
+   "unmapped_dishes": [
+    "Chole bhature (chole data under review — NOT mapped until Tier 1 complete)"
+   ],
+   "source": "Rio research 2026-10-12 — restaurant websites, menu PDFs, DoorDash listings, targeted nutrition searches; zero published nutrition found"
+  },
+  {
+   "id": "rest_13",
+   "name": "Pind Punjabi Kitchen",
+   "city": "Brampton",
+   "address": "Brampton",
+   "cuisine": "Punjabi homestyle",
+   "signature_dishes": [
+    "Sarson da saag + makki di roti"
+   ],
+   "nutrition_published": false,
+   "dish_mappings": [
+    {
+     "restaurant_dish": "Sarson da saag + makki di roti",
+     "db_dish_id": "combo-saag-makki",
+     "note": "Typical dish values from the TrainLuma food database — this restaurant's recipe will differ. Not restaurant-verified."
+    }
+   ],
+   "unmapped_dishes": [],
+   "source": "Rio research 2026-10-12 — restaurant websites, menu PDFs, DoorDash listings, targeted nutrition searches; zero published nutrition found"
+  },
+  {
+   "id": "rest_14",
+   "name": "Kwality Sweets & Restaurant",
+   "city": "Brampton",
+   "address": "Brampton",
+   "cuisine": "North Indian / sweets / chaat",
+   "signature_dishes": [
+    "Sweets",
+    "Chaat"
+   ],
+   "nutrition_published": false,
+   "dish_mappings": [
+    {
+     "restaurant_dish": "Rasmalai",
+     "db_dish_id": "bfp393",
+     "note": "Typical dish values from the TrainLuma food database — this restaurant's recipe will differ. Not restaurant-verified."
+    }
+   ],
+   "unmapped_dishes": [
+    "Chaat items (no DB match yet)"
+   ],
+   "source": "Rio research 2026-10-12 — restaurant websites, menu PDFs, DoorDash listings, targeted nutrition searches; zero published nutrition found"
+  },
+  {
+   "id": "rest_15",
+   "name": "Rajdhani Sweets & Restaurant",
+   "city": "Brampton",
+   "address": "Brampton",
+   "cuisine": "North Indian / sweets / chaat",
+   "signature_dishes": [
+    "Sweets",
+    "Restaurant mains"
+   ],
+   "nutrition_published": false,
+   "dish_mappings": [
+    {
+     "restaurant_dish": "Rasmalai",
+     "db_dish_id": "bfp393",
+     "note": "Typical dish values from the TrainLuma food database — this restaurant's recipe will differ. Not restaurant-verified."
+    },
+    {
+     "restaurant_dish": "Dal makhani",
+     "db_dish_id": "osr139",
+     "note": "Typical dish values from the TrainLuma food database — this restaurant's recipe will differ. Not restaurant-verified."
+    }
+   ],
+   "unmapped_dishes": [],
+   "source": "Rio research 2026-10-12 — restaurant websites, menu PDFs, DoorDash listings, targeted nutrition searches; zero published nutrition found"
+  },
+  {
+   "id": "rest_16",
+   "name": "Tadka King",
+   "city": "Brampton",
+   "address": "35 Main St N, Brampton",
+   "cuisine": "Punjabi / North Indian",
+   "signature_dishes": [
+    "Amritsari kulcha",
+    "Butter chicken"
+   ],
+   "nutrition_published": false,
+   "dish_mappings": [
+    {
+     "restaurant_dish": "Butter chicken",
+     "db_dish_id": "asc242",
+     "note": "Typical dish values from the TrainLuma food database — this restaurant's recipe will differ. Not restaurant-verified."
+    }
+   ],
+   "unmapped_dishes": [
+    "Amritsari kulcha (no DB match yet)"
+   ],
+   "source": "Rio research 2026-10-12 — restaurant websites, menu PDFs, DoorDash listings, targeted nutrition searches; zero published nutrition found"
+  },
+  {
+   "id": "rest_17",
+   "name": "Tandoori Haveli",
+   "city": "Brampton",
+   "address": "1315 Steeles Ave E, Brampton",
+   "cuisine": "North Indian / late-night takeout",
+   "signature_dishes": [
+    "Tandoori items",
+    "Dal makhani"
+   ],
+   "nutrition_published": false,
+   "dish_mappings": [
+    {
+     "restaurant_dish": "Dal makhani",
+     "db_dish_id": "osr139",
+     "note": "Typical dish values from the TrainLuma food database — this restaurant's recipe will differ. Not restaurant-verified."
+    }
+   ],
+   "unmapped_dishes": [
+    "Tandoori items (no DB match yet)"
+   ],
+   "source": "Rio research 2026-10-12 — restaurant websites, menu PDFs, DoorDash listings, targeted nutrition searches; zero published nutrition found"
+  },
+  {
+   "id": "rest_18",
+   "name": "Singh Parantha Junction",
+   "city": "Brampton",
+   "address": "118 Orenda Rd, Brampton",
+   "cuisine": "Punjabi / paratha house",
+   "signature_dishes": [
+    "Stuffed parathas"
+   ],
+   "nutrition_published": false,
+   "dish_mappings": [],
+   "unmapped_dishes": [
+    "Stuffed parathas (no DB match yet — closest DB item is tandoori paratha, not stuffed)"
+   ],
+   "source": "Rio research 2026-10-12 — restaurant websites, menu PDFs, DoorDash listings, targeted nutrition searches; zero published nutrition found"
+  },
+  {
+   "id": "rest_19",
+   "name": "Chutneys Indian Grill",
+   "city": "Brampton",
+   "address": "Brampton",
+   "cuisine": "Modern Indian grill",
+   "signature_dishes": [
+    "Grill items"
+   ],
+   "nutrition_published": false,
+   "dish_mappings": [],
+   "unmapped_dishes": [
+    "Grill items (no DB match yet)"
+   ],
+   "source": "Rio research 2026-10-12 — restaurant websites, menu PDFs, DoorDash listings, targeted nutrition searches; zero published nutrition found"
+  },
+  {
+   "id": "rest_20",
+   "name": "Punjaabi Sweets & Restaurant",
+   "city": "Vaughan (Woodbridge)",
+   "address": "Woodbridge, Vaughan",
+   "cuisine": "Punjabi / sweets",
+   "signature_dishes": [
+    "Sweets",
+    "North Indian mains"
+   ],
+   "nutrition_published": false,
+   "dish_mappings": [
+    {
+     "restaurant_dish": "Rasmalai",
+     "db_dish_id": "bfp393",
+     "note": "Typical dish values from the TrainLuma food database — this restaurant's recipe will differ. Not restaurant-verified."
+    },
+    {
+     "restaurant_dish": "Dal makhani",
+     "db_dish_id": "osr139",
+     "note": "Typical dish values from the TrainLuma food database — this restaurant's recipe will differ. Not restaurant-verified."
+    }
+   ],
+   "unmapped_dishes": [],
+   "source": "Rio research 2026-10-12 — restaurant websites, menu PDFs, DoorDash listings, targeted nutrition searches; zero published nutrition found"
+  },
+  {
+   "id": "rest_21",
+   "name": "Krave Indian",
+   "city": "Vaughan",
+   "address": "6150 Hwy 7, Vaughan",
+   "cuisine": "Rajasthani / North Indian",
+   "signature_dishes": [
+    "Dal baati churma"
+   ],
+   "nutrition_published": false,
+   "dish_mappings": [],
+   "unmapped_dishes": [
+    "Dal baati churma (no DB match yet)"
+   ],
+   "source": "Rio research 2026-10-12 — restaurant websites, menu PDFs, DoorDash listings, targeted nutrition searches; zero published nutrition found"
+  },
+  {
+   "id": "rest_22",
+   "name": "The Fancy Dosa House",
+   "city": "Vaughan",
+   "address": "4401 Hwy 7, Vaughan",
+   "cuisine": "South Indian (100+ dosa varieties)",
+   "signature_dishes": [
+    "Masala dosa",
+    "Idli"
+   ],
+   "nutrition_published": false,
+   "dish_mappings": [
+    {
+     "restaurant_dish": "Masala dosa",
+     "db_dish_id": "asc146",
+     "note": "Typical dish values from the TrainLuma food database — this restaurant's recipe will differ. Not restaurant-verified."
+    },
+    {
+     "restaurant_dish": "Idli",
+     "db_dish_id": "asc144",
+     "note": "Typical dish values from the TrainLuma food database — this restaurant's recipe will differ. Not restaurant-verified."
+    }
+   ],
+   "unmapped_dishes": [],
+   "source": "Rio research 2026-10-12 — restaurant websites, menu PDFs, DoorDash listings, targeted nutrition searches; zero published nutrition found"
+  },
+  {
+   "id": "rest_23",
+   "name": "Superstar by Indian Hero",
+   "city": "Vaughan",
+   "address": "Vaughan",
+   "cuisine": "Modern North Indian",
+   "signature_dishes": [
+    "Modern Indian mains"
+   ],
+   "nutrition_published": false,
+   "dish_mappings": [
+    {
+     "restaurant_dish": "Butter chicken",
+     "db_dish_id": "asc242",
+     "note": "Typical dish values from the TrainLuma food database — this restaurant's recipe will differ. Not restaurant-verified."
+    }
+   ],
+   "unmapped_dishes": [],
+   "source": "Rio research 2026-10-12 — restaurant websites, menu PDFs, DoorDash listings, targeted nutrition searches; zero published nutrition found"
+  },
+  {
+   "id": "rest_24",
+   "name": "King Tandoori",
+   "city": "Vaughan",
+   "address": "7600 Hwy 27, Vaughan (6 GTA locations)",
+   "cuisine": "Punjabi / North Indian / Hakka",
+   "signature_dishes": [
+    "Butter chicken",
+    "Kadhi pakora",
+    "Tandoori platter"
+   ],
+   "nutrition_published": false,
+   "dish_mappings": [
+    {
+     "restaurant_dish": "Butter chicken",
+     "db_dish_id": "asc242",
+     "note": "Typical dish values from the TrainLuma food database — this restaurant's recipe will differ. Not restaurant-verified."
+    }
+   ],
+   "unmapped_dishes": [
+    "Kadhi pakora (DB values under review — NOT mapped until verified)",
+    "Tandoori platter (no DB match yet)"
+   ],
+   "source": "Rio research 2026-10-12 — restaurant websites, menu PDFs, DoorDash listings, targeted nutrition searches; zero published nutrition found"
+  },
+  {
+   "id": "rest_25",
+   "name": "Bhojan Bhandar Sweets",
+   "city": "Vaughan (Woodbridge)",
+   "address": "202-15 Jevlan Dr, Woodbridge, Vaughan",
+   "cuisine": "Vegetarian Indian / sweets",
+   "signature_dishes": [
+    "Vegetarian buffet",
+    "Sweets"
+   ],
+   "nutrition_published": false,
+   "dish_mappings": [
+    {
+     "restaurant_dish": "Dal makhani",
+     "db_dish_id": "osr139",
+     "note": "Typical dish values from the TrainLuma food database — this restaurant's recipe will differ. Not restaurant-verified."
+    },
+    {
+     "restaurant_dish": "Veg biryani",
+     "db_dish_id": "asc123",
+     "note": "Typical dish values from the TrainLuma food database — this restaurant's recipe will differ. Not restaurant-verified."
+    }
+   ],
+   "unmapped_dishes": [],
+   "source": "Rio research 2026-10-12 — restaurant websites, menu PDFs, DoorDash listings, targeted nutrition searches; zero published nutrition found"
+  }
+ ]
+}

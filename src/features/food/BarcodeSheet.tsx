@@ -8,6 +8,7 @@ import { FoodArt } from '@/core/design/foodArt';
 import { Icon } from '@/core/design/icons';
 import { Segmented, Sheet, Stepper } from '@/core/design/ui';
 import { newId } from '@/core/ids';
+import { track } from '@/core/analytics/analytics';
 import { SLOT_LABEL, describeAmount } from './mealActions';
 import { saveErrorMessage, useLibrary, useMealLogging } from './useFood';
 
@@ -59,6 +60,7 @@ export function BarcodeSheet({ date, initialSlot, onClose }: { date: string; ini
         setQty(1);
         return setStep({ kind: 'found', existing, product: { barcode: code, name: existing.name, brand: null, per_100g: food.per_100g, liquid: false, serving_label: null, serving_grams: existing.items[0]!.unit_label === 'serving' ? existing.items[0]!.grams_per_unit : null, complete: true } });
       }
+      track('barcode_scanned', {});
       const p = await lookupBarcode(code);
       if (!p) return setStep({ kind: 'missing', code });
       setQty(1);
@@ -97,7 +99,7 @@ export function BarcodeSheet({ date, initialSlot, onClose }: { date: string; ini
         refresh();
       }
       onClose();
-      await logPreset(preset, qty, { slot, date: date || today, newFoods });
+      await logPreset(preset, qty, { slot, date: date || today, newFoods, method: 'barcode' });
     } catch (e) {
       setBusy(false);
       notify({ kind: 'error', message: saveErrorMessage(e) });

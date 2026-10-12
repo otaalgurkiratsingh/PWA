@@ -9,6 +9,7 @@ import { pushSupport } from '@/core/notifications/push';
 import { CoachAvatar } from '@/core/design/CoachAvatar';
 import { useTrainer } from '@/features/coach/Trainer';
 import { WaterCard } from './WaterCard';
+import { NudgeCard } from '@/features/food/Frictionless';
 import { formatShortDate, formatTime, localHourIn } from '@/core/time/localDate';
 import { addDays } from '@/domain/metrics/metrics';
 import { momentum } from '@/domain/metrics/momentum';
@@ -91,6 +92,8 @@ export function TodayScreen() {
         <h2 style={{ fontSize: '1.25rem', fontWeight: 700 }}>{greeting}, {profile.nickname.split(' ')[0]}</h2>
       </div>
 
+      <NudgeCard />
+
       <div className={`card ${feature.tone}`}>
         <span className="eyebrow">{feature.eyebrow}</span>
         <div className="feature-title">{feature.title}</div>
@@ -138,7 +141,7 @@ export function TodayScreen() {
           <div className="carousel" role="list" aria-label="Usual meals">
             {usual.map((p) => (
               <div role="listitem" key={p.id}>
-                <MealCard preset={p} onOpen={() => setAdding(p)} onQuickAdd={() => void logPreset(p, 1, { slot })} />
+                <MealCard preset={p} onOpen={() => setAdding(p)} onQuickAdd={() => void logPreset(p, 1, { slot, method: 'usual' })} />
               </div>
             ))}
           </div>

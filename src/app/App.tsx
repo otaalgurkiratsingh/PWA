@@ -10,6 +10,7 @@ import { TrainerFab } from '@/features/coach/Trainer';
 import { configureAnalytics } from '@/core/analytics/analytics';
 import { DataReviewScreen } from '@/features/food/DataReview';
 import { RecipeBuilderScreen } from '@/features/food/RecipeBuilder';
+import { QuickLogScreen } from '@/features/food/Frictionless';
 import { AnimatedMark, LaunchSplash } from '@/core/design/BrandLogo';
 import { AccessScreen, WelcomeScreen } from '@/features/auth/WelcomeScreen';
 import { ChatScreen } from '@/features/coach/ChatScreen';
@@ -158,6 +159,7 @@ function AppShell() {
     case 'answers': screen = <PlanningWizard mode="edit" />; break;
     case 'notifications': screen = <NotificationsScreen />; break;
     case 'recipe': screen = <RecipeBuilderScreen param={route.param} />; break;
+    case 'quicklog': screen = <QuickLogScreen param={route.param} />; break;
     case 'data-review': screen = <DataReviewScreen />; break;
     case 'plan': screen = <PlanEditor />; break;
     case 'meal': screen = <MealEditor presetId={route.param} />; break;

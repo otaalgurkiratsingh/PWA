@@ -2540,3 +2540,48 @@ ol.how-to {
   background: var(--primary-soft);
   color: var(--primary-soft-ink);
 }
+
+/* ---------- frictionless logging ---------- */
+.nudge-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: linear-gradient(135deg, var(--food), var(--card));
+  border-color: transparent;
+}
+.suggestion-chip {
+  white-space: normal;
+  text-align: left;
+}
+.voice-entry {
+  flex: none;
+  padding-left: 14px;
+  padding-right: 14px;
+}
+.voice-btn {
+  align-self: center;
+  display: grid;
+  place-items: center;
+  gap: 6px;
+  width: 132px;
+  height: 132px;
+  border-radius: 50%;
+  border: 0;
+  background: var(--primary);
+  color: var(--primary-ink);
+  font-weight: 700;
+  font-size: var(--fs-small);
+  cursor: pointer;
+  box-shadow: 0 10px 30px rgba(30, 98, 225, 0.35);
+}
+.voice-btn.on {
+  animation: voice-pulse 1.2s ease-in-out infinite;
+}
+@keyframes voice-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(30, 98, 225, 0.45); }
+  50% { box-shadow: 0 0 0 18px rgba(30, 98, 225, 0); }
+}
+.voice-item {
+  padding: 8px 4px;
+  gap: 8px;
+}

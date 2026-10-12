@@ -9,6 +9,11 @@ import { formatShortDate, formatTime } from '@/core/time/localDate';
 import { addDays } from '@/domain/metrics/metrics';
 import { snapshotPreset, totalsOfItems, formatTotal } from '@/domain/nutrition/calc';
 import { NutritionSummary } from './NutritionSummary';
+import { trackFoodLogged } from '@/core/analytics/analytics';
+import { autoUsuals } from '@/domain/nutrition/routines';
+import { BarcodeSheet } from './BarcodeSheet';
+import { QuickAddSheet } from './DishParts';
+import { NudgeCard, SaveTemplateSheet, SuggestionsRow, VoiceSheet } from './Frictionless';
 import { FoodPicker } from './FoodPicker';
 import { PhotoSheet } from './PhotoSheet';
 import { SLOT_LABEL, copyEntries, describeAmount, describeQuantity, rescaleEntry, slotForHour } from './mealActions';
@@ -146,6 +151,7 @@ function EntrySheet({ entry, onClose }: { entry: MealEntry; onClose: () => void 
         <button className="btn secondary" onClick={() => commit(async () => {
           const [copy] = copyEntries([entry], today, new Date(), journal.ownerId);
           await journal.commit('meal_entries', copy!);
+          trackFoodLogged('repeat', { slot: copy!.slot });
         }, `Added ${entry.name} again${entry.local_date === today ? '' : ' today'}`)}>
           <Icon name="repeat" size={18} /> Add again {entry.local_date === today ? '' : 'today'}
         </button>
@@ -179,6 +185,13 @@ export function FoodScreen() {
   const yesterday = useQuery((j) => j.mealsOn(addDays(date, -1)), [date]);
   const status = useQuery((j) => j.db.get('daily_log_status', date), [date]);
   const presets = useMemo(() => (lib && recent ? sortPresets(lib.presets, recent) : null), [lib, recent]);
+  const month = useQuery((j) => j.mealsBetween(addDays(today, -30), today), [today]);
+  // T10: usuals = 3+ logs in 30 days, top 6. Until something qualifies, show the person's meals.
+  const usuals = useMemo(() => (lib && month ? autoUsuals(lib.presets, month, today) : []), [lib, month, today]);
+  const [voice, setVoice] = useState(false);
+  const [quickAdd, setQuickAdd] = useState(false);
+  const [barcode, setBarcode] = useState(false);
+  const [template, setTemplate] = useState<{ slot: MealSlot; entries: MealEntry[] } | null>(null);
   const { logPreset } = useMealLogging();
   const defaultSlot: MealSlot = date === today ? slotForHour(localHourIn(profile.timezone)) : 'lunch';
 
@@ -203,6 +216,7 @@ export function FoodScreen() {
     try {
       const copies = copyEntries(yesterday, date, new Date(), journal.ownerId).map((c) => ({ ...c, synthetic: profile.synthetic }));
       for (const c of copies) await journal.commit('meal_entries', c);
+      for (const c of copies) trackFoodLogged('repeat', { slot: c.slot });
       refresh();
       notify({
         kind: 'info',
@@ -225,11 +239,13 @@ export function FoodScreen() {
         <button className="icon-btn" aria-label="Next day" onClick={() => setDate(addDays(date, 1))} disabled={date >= today}><Icon name="chevronRight" /></button>
       </div>
 
+      {date === today ? <NudgeCard /> : null}
+
       <div className="card food">
         {entries ? <NutritionSummary entries={entries} targets={profile.targets} dayComplete={status?.intake_complete ?? false} /> : <div className="skeleton" />}
       </div>
 
-      <Section title="Your usual meals" action={presets && presets.length > 6 ? <button className="link" onClick={() => setAll(defaultSlot)}>See all</button> : undefined}>
+      <Section title={usuals.length ? 'Your usuals' : 'Your usual meals'} action={presets && presets.length > 6 ? <button className="link" onClick={() => setAll(defaultSlot)}>See all</button> : undefined}>
         {presets === null ? <div className="skeleton" /> : presets.length === 0 ? (
           <div className="card flat">
             <EmptyState icon="food" tone="food" title="Pick the foods you eat often" action={<button className="btn" onClick={() => setAll(defaultSlot)}>Choose foods</button>}>
@@ -238,14 +254,19 @@ export function FoodScreen() {
           </div>
         ) : (
           <div className="carousel" role="list" aria-label="Usual meals">
-            {presets.slice(0, 12).map((p) => (
+            {(usuals.length ? usuals : presets.slice(0, 12)).map((p) => (
               <div role="listitem" key={p.id}>
-                <MealCard preset={p} onOpen={() => setAdding({ preset: p, slot: defaultSlot })} onQuickAdd={() => void logPreset(p, 1, { slot: defaultSlot, date })} />
+                <MealCard preset={p} onOpen={() => setAdding({ preset: p, slot: defaultSlot })} onQuickAdd={() => void logPreset(p, 1, { slot: defaultSlot, date, method: 'usual' })} />
               </div>
             ))}
           </div>
         )}
-        <button className="btn block" onClick={() => setMenu(true)}><Icon name="plus" size={20} /> Add food</button>
+        {!usuals.length && presets && presets.length ? <span className="label">Log something 3 times this month and it becomes one of your usuals.</span> : null}
+        <SuggestionsRow date={date} />
+        <div className="row" style={{ gap: 8 }}>
+          <button className="btn grow" onClick={() => setMenu(true)}><Icon name="plus" size={20} /> Add food</button>
+          <button className="btn secondary voice-entry" onClick={() => setVoice(true)} aria-label="Say what you ate"><Icon name="mic" size={22} /></button>
+        </div>
       </Section>
 
       <Section title={date === today ? 'Today’s meals' : `Meals · ${dayLabel(date, today)}`}>
@@ -256,7 +277,10 @@ export function FoodScreen() {
               <div key={slot}>
                 <div className="slot-head">
                   <h3>{SLOT_LABEL[slot]}</h3>
-                  <button className="link" onClick={() => setAll(slot)} aria-label={`Add to ${SLOT_LABEL[slot]}`}><Icon name="plus" size={16} /> Add</button>
+                  <span className="row" style={{ gap: 12 }}>
+                    {list.length >= 2 ? <button className="link" onClick={() => setTemplate({ slot, entries: list })} aria-label={`Save ${SLOT_LABEL[slot]} as a template`}><Icon name="star" size={16} /> Template</button> : null}
+                    <button className="link" onClick={() => setAll(slot)} aria-label={`Add to ${SLOT_LABEL[slot]}`}><Icon name="plus" size={16} /> Add</button>
+                  </span>
                 </div>
                 {list.length === 0 ? <div className="label" style={{ paddingBottom: 8 }}>Not logged</div> : list.map((e) => {
                   const t = totalsOfItems(e.items);
@@ -292,6 +316,15 @@ export function FoodScreen() {
             <button className="choice" onClick={() => { setMenu(false); setPhoto(true); }}>
               <Icon name="camera" /> <span className="grow"><strong>Photo</strong><br /><span className="small muted">{mode === 'account' ? 'Get dish suggestions, then confirm' : 'Use a photo as a meal picture'}</span></span>
             </button>
+            <button className="choice" onClick={() => { setMenu(false); setVoice(true); }}>
+              <Icon name="mic" /> <span className="grow"><strong>Say it</strong><br /><span className="small muted">“Rajma chawal and two rotis”</span></span>
+            </button>
+            <button className="choice" onClick={() => { setMenu(false); setBarcode(true); }}>
+              <Icon name="barcode" /> <span className="grow"><strong>Scan a barcode</strong><br /><span className="small muted">Packaged foods</span></span>
+            </button>
+            <button className="choice" onClick={() => { setMenu(false); setQuickAdd(true); }}>
+              <Icon name="plus" /> <span className="grow"><strong>Quick-add calories</strong><br /><span className="small muted">Just a number</span></span>
+            </button>
             {yesterday && yesterday.length ? (
               <button className="choice" onClick={() => { setMenu(false); void repeatYesterday(); }}>
                 <Icon name="repeat" /> <span className="grow"><strong>Repeat the day before</strong><br /><span className="small muted">{yesterday.length} meal{yesterday.length === 1 ? '' : 's'}</span></span>
@@ -303,6 +336,10 @@ export function FoodScreen() {
       {all && presets ? <FoodPicker presets={presets} date={date} slot={all} initialQuery={pickerQuery} onClose={() => { setAll(null); setPickerQuery(''); }} onPickPreset={(p) => { const s = all; setAll(null); setAdding({ preset: p, slot: s }); }} /> : null}
       {adding ? <AddMealSheet preset={adding.preset} slot={adding.slot} date={date} onClose={() => setAdding(null)} /> : null}
       {editing ? <EntrySheet entry={editing} onClose={() => setEditing(null)} /> : null}
+      {voice ? <VoiceSheet date={date} initialSlot={defaultSlot} onClose={() => setVoice(false)} /> : null}
+      {quickAdd ? <QuickAddSheet date={date} initialSlot={defaultSlot} onClose={() => setQuickAdd(false)} /> : null}
+      {barcode ? <BarcodeSheet date={date} initialSlot={defaultSlot} onClose={() => setBarcode(false)} /> : null}
+      {template ? <SaveTemplateSheet slot={template.slot} entries={template.entries} onClose={() => setTemplate(null)} /> : null}
       {photo && presets ? <PhotoSheet presets={presets} onClose={() => setPhoto(false)} onPickPreset={(p) => { setPhoto(false); setAdding({ preset: p, slot: defaultSlot }); }}
         onPickListFood={(name) => { setPhoto(false); setPickerQuery(name); setAll(defaultSlot); }} /> : null}
     </div>

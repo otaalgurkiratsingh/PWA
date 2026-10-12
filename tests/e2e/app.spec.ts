@@ -304,8 +304,7 @@ test.describe('food list (catalogue)', () => {
     await entry.getByText('Details').click();
     await expect(entry.getByText(/not weighed · Unknown · Unknown/)).toBeVisible();
     await page.keyboard.press('Escape');
-    // Now it is one of the person's meals, with the catalogue picture.
-    await expect(page.getByRole('button', { name: /^Mixed vegetable sabzi, 1 bowl/ })).toBeVisible();
+    // Now it is one of the person's meals (a "usual" after 3 logs this month), with the catalogue picture.
     await expect(page.locator('svg[data-art="mixed-vegetable-sabzi"]').first()).toBeVisible();
     const after = await page.evaluate(async () => new Promise<number>((resolve) => {
       const req = indexedDB.open('rozana-journal-demo-a');
@@ -705,5 +704,68 @@ test.describe('Phase 1: TrainLuma food database', () => {
     await page.screenshot({ path: 'docs/screenshots/43-make-it-mine.png' });
     await page.getByRole('button', { name: 'Save to My recipes' }).click();
     await expect(page.getByRole('status').getByText(/Saved “My rajma curry” to My recipes/)).toBeVisible();
+  });
+});
+
+test.describe('Phase 2: frictionless logging', () => {
+  const events = (page: Page) => page.evaluate(() => JSON.parse(localStorage.getItem('trainluma.events.demo-a') ?? '[]') as { event: string; props: Record<string, unknown> }[]);
+
+  test('usuals on the Food tab; one tap logs and is counted as zero typing', async ({ page }) => {
+    await enterDemo(page, 'food');
+    await expect(page.getByRole('heading', { name: /Your usuals|Your usual meals/ })).toBeVisible();
+    const cards = page.getByRole('list', { name: 'Usual meals' }).getByRole('listitem');
+    expect(await cards.count()).toBeLessThanOrEqual(12);
+    await page.getByRole('button', { name: /^Add usual / }).first().click();
+    await expect(page.getByRole('status').getByText(/^Added /)).toBeVisible();
+    const logged = (await events(page)).filter((e) => e.event === 'food_logged');
+    expect(logged.at(-1)?.props).toMatchObject({ method: 'usual', zero_typing: true });
+  });
+
+  test('voice (typed fallback): "rajma chawal and two rotis" → confirm → both logged', async ({ page }) => {
+    await enterDemo(page, 'food');
+    await page.getByRole('button', { name: 'Say what you ate' }).click();
+    const sheet = page.getByRole('dialog', { name: 'Say what you ate' });
+    await sheet.getByRole('textbox').fill('I had rajma chawal and two rotis');
+    await sheet.getByRole('button', { name: 'Next' }).click();
+    await expect(sheet.getByText('Rajma chawal (plate)')).toBeVisible();
+    await expect(sheet.getByText('Roti', { exact: true })).toBeVisible(); // matched to the person's own "Roti" meal
+    await sheet.getByRole('button', { name: 'Log 2 items' }).click();
+    await expect(page.getByRole('status').getByText(/Logged 2 items/)).toBeVisible();
+    const methods = (await events(page)).filter((e) => e.event === 'food_logged').map((e) => e.props.method);
+    expect(methods.slice(-2)).toEqual(['voice', 'voice']);
+  });
+
+  test('template: save a slot with two items, then log the whole meal in one tap', async ({ page }) => {
+    await enterDemo(page, 'food');
+    for (const name of ['Add usual Chai', 'Add usual Roti']) {
+      await page.getByRole('button', { name }).click();
+      await expect(page.getByRole('status').getByText(/^Added /)).toBeVisible();
+      await page.getByRole('button', { name: 'Dismiss' }).click();
+    }
+    const slotWithTwo = page.getByRole('button', { name: /^Save .* as a template$/ }).first();
+    await slotWithTwo.click();
+    const sheet = page.getByRole('dialog', { name: 'Save as a template' });
+    await sheet.getByLabel('Name').fill('My Tim’s run');
+    await sheet.getByRole('button', { name: 'Save template' }).click();
+    await expect(page.getByRole('status').getByText(/Saved “My Tim’s run”/)).toBeVisible();
+    await page.getByRole('button', { name: 'Add food' }).click();
+    await page.getByRole('button', { name: /Choose food/ }).click();
+    await page.getByLabel('Search foods').fill('tim');
+    await expect(page.getByRole('dialog', { name: 'Choose food' }).locator('.my-badge').first()).toBeVisible();
+  });
+
+  test('quick-add calories from the Add food menu (typed, so not zero typing)', async ({ page }) => {
+    await enterDemo(page, 'food');
+    await page.getByRole('button', { name: 'Add food' }).click();
+    await page.getByRole('button', { name: /Quick-add calories/ }).click();
+    const sheet = page.getByRole('dialog', { name: 'Quick-add calories' });
+    await sheet.getByLabel('Calories (kcal)').fill('450');
+    await sheet.getByLabel('What was it? (optional)').fill('Wedding plate');
+    await sheet.getByRole('button', { name: /^Log / }).click();
+    await expect(page.getByRole('status').getByText(/Added Wedding plate/)).toBeVisible();
+    const last = (await events(page)).filter((e) => e.event === 'food_logged').at(-1);
+    expect(last?.props).toMatchObject({ method: 'quick_add', zero_typing: false });
+    // Quick-adds never become "usual meals".
+    await expect(page.getByRole('button', { name: /^Wedding plate, / })).toHaveCount(0);
   });
 });

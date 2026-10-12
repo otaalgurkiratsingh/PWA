@@ -11,8 +11,9 @@ export interface Route {
 const NAMES: readonly RouteName[] = [...TABS, 'settings', 'coach', 'chat', 'draft', 'plan', 'meal', 'photos', 'answers', 'notifications', 'recipe', 'insights', 'year', 'circles', 'invite', 'data-review', 'quicklog'];
 
 export function parseRoute(hash: string = location.hash): Route {
-  const [name, param] = hash.replace(/^#\/?/, '').split('/');
-  return NAMES.includes(name as RouteName) ? { name: name as RouteName, param: param ? decodeURIComponent(param) : null } : { name: 'today', param: null };
+  const [name, ...rest] = hash.replace(/^#\/?/, '').split('/');
+  const param = rest.length ? rest.map(decodeURIComponent).join('/') : null;
+  return NAMES.includes(name as RouteName) ? { name: name as RouteName, param: param || null } : { name: 'today', param: null };
 }
 
 export function navigate(name: RouteName, param?: string) {

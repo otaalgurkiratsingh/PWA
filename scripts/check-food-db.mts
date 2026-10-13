@@ -7,7 +7,7 @@
 // plus: serving maths, combos, restaurant labels, and the brief's QA searches (§11).
 import { readFileSync } from 'node:fs';
 import {
-  closestDish, complete, isPublic, MACRO_KEYS, parseFoodDb, scaleMacros, searchDishes, searchRestaurants, TYPICAL_LABEL, type Dish,
+  closestDish, complete, coveredByDb, coveredNames, isPublic, MACRO_KEYS, parseFoodDb, scaleMacros, searchDishes, searchRestaurants, TYPICAL_LABEL, type Dish,
 } from '../shared/fooddb/foodDb.ts';
 
 const results: { name: string; ok: boolean; detail: string }[] = [];
@@ -89,6 +89,21 @@ const qa: [string, string][] = [['rajma', 'asc165'], ['rajmah', 'asc165'], ['sar
 const qaBad = qa.filter(([q, id]) => first(q) !== id).map(([q, id]) => `${q}: got ${first(q)}, want ${id}`);
 check('QA searches rank the right dish first', qaBad.length === 0, qaBad.join('; ') || qa.map(([q]) => q).join(', '));
 check('kadhi pakoda (quarantined) is not in search', !searchDishes(db!, 'kadhi pakoda', { limit: 500 }).some((h) => h.dish.id === 'kadhi-pakoda'), 'search "kadhi pakoda"');
+
+// Extra: reference values (CNF/USDA) only fill gaps. Every list food the database covers is hidden
+// from "More foods", so no food shows both a database value and a reference value.
+{
+  const cat = JSON.parse(readFileSync(new URL('../supabase/functions/_shared/data/punjabi-canadian-v2.json', import.meta.url), 'utf8')) as { foods: { id: string; name: string; aliases: string[] }[] };
+  const ref = JSON.parse(readFileSync(new URL('../supabase/functions/_shared/data/food-nutrients-v1.json', import.meta.url), 'utf8')) as { foods: Record<string, unknown> };
+  const names = coveredNames(db!);
+  const covered = cat.foods.filter((f) => coveredByDb(names, f));
+  const shown = cat.foods.filter((f) => !coveredByDb(names, f));
+  const withRef = shown.filter((f) => f.id in ref.foods).length;
+  // The picker hides exactly `covered` (it uses the same coveredByDb rule).
+  const picker = readFileSync(new URL('../src/features/food/FoodPicker.tsx', import.meta.url), 'utf8');
+  check('reference values only fill gaps (no food shows two sources)', covered.length > 0 && /filter\(\(f\) => !coveredByDb\(dbNames, f\)\)/.test(picker),
+    `${covered.length} list foods covered by the database (hidden); ${withRef} others use CNF/USDA; ${shown.length - withRef} stay "not set"`);
+}
 
 report();
 

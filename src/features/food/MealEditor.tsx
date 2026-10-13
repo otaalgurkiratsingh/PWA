@@ -249,15 +249,14 @@ function MealEditorForm({ existing, initial }: { existing: MealPreset | null; in
                 onRemove={() => set({ ingredients: form.ingredients.filter((_, k) => k !== i) })} />
             ))}
             <div className="row wrap">
+              <button className="btn sm" onClick={() => navigate('recipe', 'new')}>
+                <Icon name="search" size={18} /> Build from the food database
+              </button>
               {LEGACY_REFERENCE_VALUES ? (
-                <button className="btn sm" onClick={() => setPickingIngredient(true)}>
+                <button className="btn secondary sm" onClick={() => setPickingIngredient(true)}>
                   <Icon name="search" size={18} /> Add from ingredient list
                 </button>
-              ) : (
-                <button className="btn sm" onClick={() => navigate('recipe', 'new')}>
-                  <Icon name="search" size={18} /> Build from the food database
-                </button>
-              )}
+              ) : null}
               <button className="btn secondary sm" onClick={() => set({ ingredients: [...form.ingredients, { key: newId(), food_version_id: null, name: '', state: 'raw', grams: '', per100: emptyNutrients(), source_kind: 'label' }] })}>
                 <Icon name="plus" size={18} /> Add ingredient
               </button>

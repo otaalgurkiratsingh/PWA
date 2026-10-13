@@ -6,7 +6,7 @@
 **Live credentials used:** none. Nothing was published, billed or sent to anyone, and nobody was invited.
 
 The hard rules held throughout:
-- **Nutrition numbers:** every dish number comes from `indian_dishes.json`. A missing number shows the fallback (closest match, quick-add, or "Request this food"), never a guess.
+- **Nutrition numbers:** every dish number comes from `indian_dishes.json`. A missing number shows the fallback (closest match, quick-add, or "Request this food"), never a guess. *Update 2026-10-13 (your call):* Canadian Nutrient File / USDA values are back on, but only for list foods the database doesn't cover (see §3.3).
 - **Tier gating:** Tier 2 and needs-review dishes stay hidden, and kadhi pakoda never appears.
 - **Restaurant label:** every restaurant card says "Typical values — this restaurant's recipe will differ."
 - **Bans:** none of the dark patterns banned in §14 or the referral abuses banned in §15 were built.
@@ -65,7 +65,7 @@ The hard rules held throughout:
 
 ## 2. Verification results
 
-**Food-database check script (`npm run check:food-db`): 9/9 PASS**
+**Food-database check script (`npm run check:food-db`): 10/10 PASS**
 
 | Check | Result |
 |---|---|
@@ -78,6 +78,7 @@ The hard rules held throughout:
 | every restaurant card carries the typical-values label | **PASS** · 28 cards |
 | QA searches rank the right dish first (rajma, rajmah, sarson, makki, roti, paneer, parantha, rajma chawal, double double) | **PASS** |
 | kadhi pakoda not in search | **PASS** |
+| reference values only fill gaps (no food shows two sources) | **PASS** · 42 list foods covered by the database are hidden; 128 others use CNF/USDA; 123 stay "not set" |
 
 **Other checks (all run on 2026-10-13 in the build container)**
 
@@ -105,7 +106,7 @@ One real bug was found and fixed by these tests: reloading a circle invite link 
 
 1. **T2 Tier-2 macro completion: not done.** The brief asks to fetch carbs, fat and fibre for 58 Tier-2 dishes from `mealplan.fit/nutrition/<slug>`. That site is not reachable from the build container, and the brief itself says the URL pattern must be verified per dish. Filling numbers without the source would break hard rule 1, so the 58 stay hidden behind the "verifying" state. To finish: fetch each page, verify it, set `tier: 1`, and rerun `npm run check:food-db`.
 2. **T1 mapping of other usual meals:** only the four exact names with a public Tier-1 match are linked. Dahi (`curd-plain`) and chicken curry (`chicken-curry`) are Tier 2 and stay as the person's own foods until they are verified. Saved meals are never rewritten, so their history keeps its original values.
-3. **Earlier CNF/USDA standard values on list foods are switched off** (flag `LEGACY_REFERENCE_VALUES = false`) so the database is the only source of food numbers, as rule 1 requires. Those foods now show "not set" again unless a database dish matches. This is reversible with one line (owner decision below).
+3. **CNF/USDA standard values: kept, as gap-fillers (you decided this on 2026-10-13).** The database comes first. Any list food the database covers (42) is hidden, so you never see two numbers for one food. The other list foods use their sourced CNF/USDA value (128), named on the food, or stay "not set" (123). The CNF ingredient list is back in recipes, next to "Build from the food database". The flag is `LEGACY_REFERENCE_VALUES = true` in `src/core/config/dataPolicy.ts`, and a new check-script line enforces the rule.
 4. **Plus is a ledger, not a subscription.** No billing exists, so the "30-day trial + bonus month" and the inviter month are recorded and shown as "saved". Nothing is charged or applied, and "referral-to-paid conversion" can't be measured until billing exists.
 5. **Repeat any meal** uses a tap on the past meal, then "Add again today", instead of a long-press. A long-press is undiscoverable and fails accessibility, and this reaches the same result.
 6. **Invite prompt "earned moments"**: the prompt is shown after a 7+ day streak only. Showing it after the first weekly recap and after a PR was left out to keep it to one quiet card. The PR moment already has its own "share with your circle" button.
@@ -122,7 +123,7 @@ One real bug was found and fixed by these tests: reloading a circle invite link 
 
 ## 4. Owner decisions to review
 
-1. **CNF/USDA values off?** Keep them off (strict "one source", the default now) or turn them back on for list foods with no database dish (`src/core/config/dataPolicy.ts`).
+1. ~~CNF/USDA values~~ **Decided:** kept on, filling only the foods the database doesn't cover.
 2. **Tier-2 completion:** approve fetching the 58 Tier-2 dishes from mealPlan.fit (needs a machine that can reach it), and review the `needs_review` items yourself before they go live.
 3. **Licences before commercial launch (§10):** INDB has no declared licence, and the values derive from ICMR-NIN's copyrighted IFCT. The attribution line is in, but written permission is still needed for paid use.
 4. **Daily motivation notification retired.** Notifications v2 allows only the three kinds in the brief. The old daily note you asked for earlier no longer sends. The "How you're doing" card on Today still shows it in the app.

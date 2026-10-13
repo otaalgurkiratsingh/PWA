@@ -1,12 +1,15 @@
 /**
- * Where nutrition numbers may come from (owner decision, 2026-10-12 build brief, hard rule 1):
- * the TrainLuma food database (indian_dishes.json) is the ONLY source of app-supplied dish numbers.
- * Exceptions the brief itself asks for: packaged products by barcode (Open Food Facts label values,
- * T16) and numbers the person types (labels, quick-add, their own recipe ingredients).
+ * Where nutrition numbers come from (owner decisions: 2026-10-12 build brief, updated 2026-10-13).
  *
- * The earlier reference values (Canadian Nutrient File / USDA on the 293-item food list, and the
- * CNF ingredient list for recipes) are therefore OFF. They stay in the repo, unused, so the owner
- * can switch them back on with this one flag if the rule changes. Foods people already saved keep
- * their values (the journal is never rewritten).
+ * 1. The TrainLuma food database (indian_dishes.json) comes first for every dish it covers. A list
+ *    food that matches a database dish (by name or alias) is hidden, so one dish never shows two
+ *    sets of numbers.
+ * 2. Reference values (Canadian Nutrient File 2026 / USDA FNDDS) fill in list foods the database
+ *    doesn't cover, and the CNF ingredient list stays available for recipes. Each value names its
+ *    source and record. The owner asked to keep them (2026-10-13).
+ * 3. Packaged products by barcode use Open Food Facts label values; numbers the person types are theirs.
+ *
+ * Nothing is ever guessed: a food with no sourced value stays "not set". Set this to false to make
+ * the database the only app-supplied source again. Saved foods keep their values either way.
  */
-export const LEGACY_REFERENCE_VALUES = false;
+export const LEGACY_REFERENCE_VALUES = true;

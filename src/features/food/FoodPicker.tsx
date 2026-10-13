@@ -9,7 +9,7 @@ import { CatalogueArt } from '@/core/design/catalogueArt';
 import { FoodArt } from '@/core/design/foodArt';
 import { Icon } from '@/core/design/icons';
 import { Segmented, Sheet, Stepper, Toggle } from '@/core/design/ui';
-import { searchDishes, searchRestaurants, tokens, type Dish } from '@shared/fooddb/foodDb';
+import { coveredByDb, coveredNames, searchDishes, searchRestaurants, type Dish } from '@shared/fooddb/foodDb';
 import { useQuery } from '@/app/JournalContext';
 import { track, type InputMethod } from '@/core/analytics/analytics';
 import { LEGACY_REFERENCE_VALUES } from '@/core/config/dataPolicy';
@@ -123,8 +123,8 @@ export function FoodPicker({ presets, date, slot, onPickPreset, onClose, initial
   const dishes = useMemo(() => (db ? searchDishes(db, query, { vegOnly, hour, usage, limit: query ? 40 : 12 }) : []), [db, query, vegOnly, hour, usage]);
   const places = useMemo(() => (db && query ? searchRestaurants(db, query) : []), [db, query]);
   // A list food that is the same dish as a database entry is shown once (as the database dish).
-  const dbNames = useMemo(() => new Set((db?.publicDishes ?? []).flatMap((d) => [d.name, ...d.aliases].map((x) => tokens(x).join(' ')))), [db]);
-  const extraFoods = listed.foods.filter((f) => ![f.name, ...f.aliases].some((x) => dbNames.has(tokens(x).join(' '))));
+  const dbNames = useMemo(() => (db ? coveredNames(db) : new Set<string>()), [db]);
+  const extraFoods = listed.foods.filter((f) => !coveredByDb(dbNames, f));
   const nothing = !!query && !!db && dishes.length === 0 && places.length === 0 && myMatches.length === 0;
   useSearchAnalytics(query, dishes.length + places.length + myMatches.length);
 
@@ -181,7 +181,7 @@ export function FoodPicker({ presets, date, slot, onPickPreset, onClose, initial
         </div>
 
         <div className="stack-sm" hidden={!!query && extraFoods.length === 0}>
-          <h3 className="picker-head">{query ? 'More foods (no values yet)' : 'More foods'}</h3>
+          <h3 className="picker-head">{query ? (LEGACY_REFERENCE_VALUES ? 'More foods' : 'More foods (no values yet)') : 'More foods'}</h3>
           {!query ? (
             <div className="chips" role="group" aria-label="Food categories">
               {(['popular', ...CATEGORY_IDS, 'all'] as Chip[]).map((c) => (
@@ -207,7 +207,9 @@ export function FoodPicker({ presets, date, slot, onPickPreset, onClose, initial
           <button className="btn secondary" onClick={() => { onClose(); navigate('recipe', 'new'); }}><Icon name="edit" size={18} /> Create your own recipe</button>
           <button className="btn secondary" onClick={() => { onClose(); navigate('meal', 'new'); }}><Icon name="plus" size={18} /> Add a food from its label</button>
         </div>
-        <p className="label">Dish values come from the TrainLuma food database (Indian Food Composition Tables, ICMR-NIN; INDB; brands’ official Canadian nutrition). “More foods” have pictures but no values yet — log a close dish, quick-add, or add your recipe.</p>
+        <p className="label">Dish values come from the TrainLuma food database (Indian Food Composition Tables, ICMR-NIN; INDB; brands’ official Canadian nutrition).{LEGACY_REFERENCE_VALUES
+          ? ' “More foods” show standard values from the Canadian Nutrient File or USDA where there’s a good match; the rest have no values yet — log a close dish, quick-add, or add your recipe.'
+          : ' “More foods” have pictures but no values yet — log a close dish, quick-add, or add your recipe.'}</p>
       </div>
     </Sheet>
   );

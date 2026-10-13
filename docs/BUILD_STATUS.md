@@ -13,7 +13,7 @@ Built from `docs/spec/TRAINLUMA_FOOD_DB_BUILD_BRIEF.md` in three phases. The ful
 
 | Check (2026-10-13) | Result |
 |---|---|
-| `npm run check:food-db` (a)–(d) + serving maths, combos, labels, QA searches, kadhi pakoda | **9/9** |
+| `npm run check:food-db` (a)–(d) + serving maths, combos, labels, QA searches, kadhi pakoda, reference values only fill gaps | **10/10** |
 | `npm run check` | **pass** · 263 unit tests |
 | `npm run test:db` (5 migrations) | **97/97** |
 | `npm run smoke:notify` (notifications v2) | **13/13** |

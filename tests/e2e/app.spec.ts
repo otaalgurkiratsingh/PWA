@@ -277,7 +277,7 @@ test.describe('data safety', () => {
 });
 
 test.describe('food list (catalogue)', () => {
-  test('search by alias → add a list food → logged with unknown nutrition → appears in usual meals; existing meals untouched', async ({ page }) => {
+  test('search by alias → database dish wins → standard value on an uncovered food → unknown stays unknown → reused; existing meals untouched', async ({ page }) => {
     await enterDemo(page, 'food');
     const before = await page.evaluate(async () => new Promise<number>((resolve) => {
       const req = indexedDB.open('rozana-journal-demo-a');
@@ -291,21 +291,32 @@ test.describe('food list (catalogue)', () => {
     await dialog.getByLabel('Search foods').fill('chapati');
     await expect(dialog.getByRole('button', { name: /^Chapati \/ Roti, 81 kcal/ })).toBeVisible();
     await expect(dialog.getByRole('button', { name: 'Whole-wheat roti' })).toHaveCount(0);
-    // A list food with no database values yet still works, honestly marked unknown.
+    // A list food the database doesn't cover shows its sourced standard value (CNF/USDA), named.
     await dialog.getByLabel('Search foods').fill('sabji');
-    await dialog.getByRole('button', { name: 'Mixed vegetable sabzi' }).click();
-    const add = page.getByRole('dialog', { name: 'Mixed vegetable sabzi' });
+    await dialog.getByRole('button', { name: /^Mixed vegetable sabzi/ }).click();
+    const std = page.getByRole('dialog', { name: 'Mixed vegetable sabzi' });
+    await expect(std.getByLabel('Standard estimate')).toContainText(/kcal/);
+    await expect(std.getByText(/Standard estimate for .*(Canadian Nutrient File|USDA|CNF).*Your recipe may differ/)).toBeVisible();
+    await page.keyboard.press('Escape');
+    if (!(await page.getByRole('dialog', { name: 'Choose food' }).isVisible())) {
+      if (!(await page.getByRole('button', { name: /Choose food/ }).isVisible())) await page.getByRole('button', { name: 'Add food' }).click();
+      await page.getByRole('button', { name: /Choose food/ }).click();
+    }
+    // A list food with no sourced value at all still works, honestly marked unknown (never guessed).
+    await page.getByLabel('Search foods').fill('tinda');
+    await page.getByRole('dialog', { name: 'Choose food' }).getByRole('button', { name: /^Tinda sabzi/ }).click();
+    const add = page.getByRole('dialog', { name: 'Tinda sabzi' });
     await expect(add.getByText(/Nutrition not set yet/)).toBeVisible();
     await add.getByRole('button', { name: 'Breakfast' }).click();
-    await add.getByRole('button', { name: 'Add 1 bowl' }).click();
-    await expect(page.getByText(/Added Mixed vegetable sabzi/)).toBeVisible();
-    await page.getByRole('button', { name: 'Edit Mixed vegetable sabzi' }).click();
-    const entry = page.getByRole('dialog', { name: 'Mixed vegetable sabzi' });
+    await add.getByRole('button', { name: /^Add 1 / }).click();
+    await expect(page.getByText(/Added Tinda sabzi/)).toBeVisible();
+    await page.getByRole('button', { name: 'Edit Tinda sabzi' }).click();
+    const entry = page.getByRole('dialog', { name: 'Tinda sabzi' });
     await entry.getByText('Details').click();
     await expect(entry.getByText(/not weighed · Unknown · Unknown/)).toBeVisible();
     await page.keyboard.press('Escape');
-    // Now it is one of the person's meals (a "usual" after 3 logs this month), with the catalogue picture.
-    await expect(page.locator('svg[data-art="mixed-vegetable-sabzi"]').first()).toBeVisible();
+    // Now it is one of the person's meals, with the catalogue picture.
+    await expect(page.locator('svg[data-art="tinda-sabzi"]').first()).toBeVisible();
     const after = await page.evaluate(async () => new Promise<number>((resolve) => {
       const req = indexedDB.open('rozana-journal-demo-a');
       req.onsuccess = () => { const c = req.result.transaction('presets').objectStore('presets').count(); c.onsuccess = () => { resolve(c.result); req.result.close(); }; };
@@ -314,9 +325,9 @@ test.describe('food list (catalogue)', () => {
     // Picking it again from the list reuses the same meal.
     await page.getByRole('button', { name: 'Add food' }).click();
     await page.getByRole('button', { name: /Choose food/ }).click();
-    await page.getByLabel('Search foods').fill('mix veg');
-    await page.getByRole('dialog', { name: 'Choose food' }).getByRole('button', { name: 'Mixed vegetable sabzi, in your meals' }).click();
-    await expect(page.getByRole('dialog', { name: 'Mixed vegetable sabzi' }).getByText(/Usual: 1 bowl/)).toBeVisible();
+    await page.getByLabel('Search foods').fill('tinda');
+    await page.getByRole('dialog', { name: 'Choose food' }).getByRole('button', { name: 'Tinda sabzi, in your meals' }).click();
+    await expect(page.getByRole('dialog', { name: 'Tinda sabzi' }).getByText(/Usual: 1 /)).toBeVisible();
   });
 
   test('categories, All foods and empty search', async ({ page }) => {
@@ -598,7 +609,7 @@ test.describe('personal recipe', () => {
     await enterDemo(page, 'meal/new');
     await page.getByPlaceholder('e.g. Dal tadka').fill('Mummy’s dal');
     await page.getByRole('radio', { name: 'My recipe' }).or(page.getByRole('button', { name: 'My recipe' })).first().click();
-    await expect(page.getByRole('button', { name: 'Add from ingredient list' })).toHaveCount(0); // earlier reference list is off by policy
+    await expect(page.getByRole('button', { name: 'Add from ingredient list' })).toBeVisible(); // CNF ingredient list kept (owner, 2026-10-13)
     await page.getByRole('button', { name: 'Build from the food database' }).click();
     await expect(page.getByRole('heading', { name: 'Create your own recipe' })).toBeVisible();
     await page.getByLabel('Recipe name').fill('Mummy’s dal');

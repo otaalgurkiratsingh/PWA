@@ -326,3 +326,14 @@ export function loadFoodDb(): Promise<FoodDb> {
   loading ??= import('../../supabase/functions/_shared/data/indian-dishes-v1.json').then((m) => parseFoodDb((m as { default: unknown }).default));
   return loading;
 }
+
+/**
+ * Names (and aliases) of public dishes, normalised. A list food whose name or alias is in this set
+ * is covered by the database and is hidden from "More foods", so one food never shows two sets of
+ * numbers (database first; reference values only fill the gaps).
+ */
+export function coveredNames(db: FoodDb): Set<string> {
+  return new Set(db.publicDishes.flatMap((d) => [d.name, ...d.aliases].map((x) => tokens(x).join(' '))));
+}
+export const coveredByDb = (names: Set<string>, food: { name: string; aliases: readonly string[] }) =>
+  [food.name, ...food.aliases].some((x) => names.has(tokens(x).join(' ')));

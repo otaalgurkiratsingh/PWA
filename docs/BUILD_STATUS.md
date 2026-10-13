@@ -2,10 +2,24 @@
 
 **App:** TrainLuma (renamed from Rozana on 2026-10-10; new TL logo).
 **Phase:** V2 food, AI onboarding and text AI Coach (`docs/spec/CLAUDE_CODE_FOOD_AND_AI_ONBOARDING_UPDATE_V2.md`), built on the approved redesign.
-**Last updated:** 2026-10-12 · Branch `claude/meal-workout-journal-phase-0-pepxc3`
+**Last updated:** 2026-10-13 · Branch `claude/meal-workout-journal-phase-0-pepxc3`
 **Live credentials used:** none. Nothing was published, billed or shared, and nobody was invited.
 
 > "Implemented" is not "tested", and "tested here" is not "tested on your phone or your live Supabase project". Each row below says which.
+
+## Pass 4 (2026-10-13): food database, frictionless logging, retention + referral
+
+Built from `docs/spec/TRAINLUMA_FOOD_DB_BUILD_BRIEF.md` in three phases. The full per-task list, verification results (pass/fail per check), simplifications and owner decisions are in **`BUILD_REPORT.md`** at the repo root.
+
+| Check (2026-10-13) | Result |
+|---|---|
+| `npm run check:food-db` (a)–(d) + serving maths, combos, labels, QA searches, kadhi pakoda | **9/9** |
+| `npm run check` | **pass** · 263 unit tests |
+| `npm run test:db` (5 migrations) | **97/97** |
+| `npm run smoke:notify` (notifications v2) | **13/13** |
+| Playwright (demo + auth harness) | **55/55** |
+
+**Owner action:** apply migration `20261013000005_growth.sql`, then **redeploy `notify`** (OWNER_GUIDE §2g).
 
 ## Pass 3 (2026-10-12): reminders, standard nutrition, barcodes, recipes, exercise library, AI trainer
 

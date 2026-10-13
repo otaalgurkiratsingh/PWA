@@ -171,3 +171,23 @@ The demo has no account, so it cannot use the real coach. To show what chatting 
 ## D36. Updates found at launch apply immediately
 
 A new version found within 20 s of opening the app applies right away (nothing is on screen yet that it could interrupt), unless a workout is active. Later updates still wait for the person to tap Update. Icon URLs are versioned so installed apps pick up the TL icon.
+
+## D37. The TrainLuma food database is the only source of dish numbers
+
+Per the food-database brief, every calorie and protein value for a dish comes from `indian_dishes.json` (bundled as `indian-dishes-v1.json`). Only Tier-1 dishes with complete macros and a source are searchable; Tier-2, `needs_review` and quarantined items (kadhi pakoda) never appear. The earlier CNF/USDA standard values on list foods (D29) are switched off by one flag (`LEGACY_REFERENCE_VALUES = false` in `src/core/config/dataPolicy.ts`) so two sources never disagree. Values a person types (labels, quick-add) and Open Food Facts label values for barcodes stay, since they are the person's own or the package's numbers. `npm run check:food-db` asserts the rules on every check.
+
+## D38. Notifications v2: three kinds, two a day, quiet nights, three strikes
+
+The daily motivation message (D32) is retired. Only a routine nudge ("Your usual dal chawal?" with Log it), the gym reminder (learned from when the person usually starts, or a fixed time) and "milestone / weekly insight ready" can be sent; at most 2 a day, never 22:00–07:00 local, and a kind dismissed 3 times stops for good. Dismissals are recorded by the service worker in its own IndexedDB store and sent by the app on next open (`notification_dismissed`), because the worker cannot reach the account. Hide details sends only a fixed-time gym reminder, as nothing else can be useful without its details.
+
+## D39. Circles show effort, never comparison
+
+Circles are private (3–6 people, join by code). The board appears only at 3+ members, celebrates whoever was active on the most days as "most consistent", and lists everyone else alphabetically with their own 7 dots, so no one is ever shown last. Only active-day counts and posts the person chose to share are visible; never food, weight or plans. New bests are offered as a "Share with {circle}" button after a workout; nothing posts automatically.
+
+## D40. Referral credits are a ledger until billing exists
+
+"Give a month, get a month" records months in `plus_credits` (invitee: queued after the trial; inviter: pending until the invitee logs on 7 days within 30). There is no billing, so nothing is charged or applied yet; the app says the months are saved. One redemption per person and per device (a random on-device id, sent only as a SHA-256 hash), never your own code. Share messages are pre-written, editable and only leave through the system share sheet on a tap.
+
+## D41. First-party usage stats, on by default with an opt-out
+
+The friends test needs `food_logged` (with input method and zero-typing), search/no-result, insight, circle and referral events. They queue on the phone and go to the owner's own Supabase (`log_events`) for signed-in members who leave "Share usage stats" on. No third-party SDK, no ad ids, no journal contents; only a no-result search or food request carries the text that was typed. The demo never sends.

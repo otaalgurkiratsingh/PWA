@@ -4,12 +4,18 @@ import { goBack } from '@/app/router';
 import { Icon } from '@/core/design/icons';
 import { Section, Toggle } from '@/core/design/ui';
 import {
-  canNotify, deviceSubscribed, disableDevice, enableDevice, loadPrefs, permission, pushConfigured, pushSupport, savePrefs, testNotification,
+  canNotify, deviceSubscribed, disableDevice, enableDevice, loadDismissals, loadPrefs, permission, pushConfigured, pushSupport, savePrefs, testNotification,
 } from '@/core/notifications/push';
-import { defaultPrefs, describeWhen, LEAD_CHOICES, minusMinutes, nextReminders, validTime, type NotificationPrefs } from '@/core/notifications/schedule';
+import {
+  DAILY_MAX, defaultPrefs, describeWhen, DISMISS_STOP, inQuietHours, LEAD_CHOICES, minusMinutes, nextReminders, validTime, type NotificationPrefs, type NotifyKind,
+} from '@/core/notifications/schedule';
 import { WEEKDAY_SHORT } from '@/domain/training/plan';
 
-/** Settings → Notifications: daily motivation + a reminder before gym time. */
+/**
+ * Settings → Notifications (v2): three kinds only — a routine nudge, the gym reminder (learned or a
+ * fixed time) and "your milestone / weekly insight is ready". At most 2 a day, quiet 10pm–7am, and a
+ * kind dismissed 3 times stops for good. No guilt, ever.
+ */
 export function NotificationsScreen() {
   const { profile, mode, journal, notify } = useJournal();
   const [prefs, setPrefs] = useState<NotificationPrefs | null>(null);
@@ -17,6 +23,7 @@ export function NotificationsScreen() {
   const [device, setDevice] = useState<boolean | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [dismissed, setDismissed] = useState<Partial<Record<NotifyKind, number>>>({});
   const support = pushSupport();
   const account = mode === 'account';
 
@@ -28,12 +35,15 @@ export function NotificationsScreen() {
       (e: Error) => { if (live) { setPrefs(base); setError(e.message); } },
     );
     void deviceSubscribed().then((d) => live && setDevice(d));
+    void loadDismissals(mode).then((d) => live && setDismissed(d));
     return () => { live = false; };
   }, [mode, journal.ownerId, profile.timezone, profile.training]);
 
   const upcoming = useMemo(() => (prefs ? nextReminders(prefs, new Date()) : []), [prefs]);
   const dirty = !!prefs && JSON.stringify(prefs) !== JSON.stringify(saved);
-  const on = !!prefs && (prefs.motivation_enabled || (prefs.gym_enabled && prefs.gym_days.length > 0));
+  const on = !!prefs && (prefs.routine_enabled || prefs.insight_enabled || (prefs.gym_enabled && (prefs.gym_mode === 'learned' || prefs.gym_days.length > 0)));
+  const stopped = (k: NotifyKind) => (dismissed[k] ?? 0) >= DISMISS_STOP;
+  const stoppedNote = (k: NotifyKind) => (stopped(k) ? <span className="label">Stopped because you dismissed it {DISMISS_STOP} times. We took the hint 🙂</span> : null);
 
   if (!prefs) return <div className="skeleton" style={{ height: 240 }} />;
   const set = (patch: Partial<NotificationPrefs>) => { setPrefs({ ...prefs, ...patch }); setError(null); };
@@ -42,7 +52,7 @@ export function NotificationsScreen() {
     setBusy(true);
     setError(null);
     try {
-      if (!validTime(prefs.motivation_time) || !validTime(prefs.gym_time)) throw new Error('Choose a time for each reminder.');
+      if (prefs.gym_mode === 'fixed' && !validTime(prefs.gym_time)) throw new Error('Choose a gym time.');
       if (account && on && support === 'supported' && pushConfigured() && !device) {
         await enableDevice();
         setDevice(true);
@@ -86,7 +96,7 @@ export function NotificationsScreen() {
         <span className="nh-icon" aria-hidden="true"><Icon name="clock" size={24} /></span>
         <div className="grow">
           <strong>Stay on track, gently</strong>
-          <p className="small muted">One encouraging note a day, and a heads-up before gym time so you don’t forget to go and log your sets.</p>
+          <p className="small muted">Only three kinds of notes, each one useful. Never more than {DAILY_MAX} a day, never between 10pm and 7am, and never a guilt trip.</p>
         </div>
       </div>
 
@@ -103,59 +113,78 @@ export function NotificationsScreen() {
         <div className="notice" role="status">Phone reminders are still being set up by the owner. Your choices are saved and start working once that’s done.</div>
       ) : null}
 
-      <Section title="Daily motivation">
+      <Section title="Your routine">
         <div className="card stack-sm">
-          <Toggle label="Daily motivation" checked={prefs.motivation_enabled} onChange={(v) => set({ motivation_enabled: v })}
-            description="A short note on how you’re doing: new bests, your weekly goal, your logging streak. Never a guilt trip." />
-          {prefs.motivation_enabled ? (
-            <label className="field">
-              Time
-              <input className="input" type="time" value={prefs.motivation_time} onChange={(e) => set({ motivation_time: e.target.value })} />
-            </label>
-          ) : null}
+          <Toggle label="Routine nudge" checked={prefs.routine_enabled} onChange={(v) => set({ routine_enabled: v })}
+            description="When you usually log a meal and haven’t yet, e.g. “Time for your usual chai?” with a one-tap Log it." />
+          {stoppedNote('routine')}
         </div>
       </Section>
 
       <Section title="Gym reminder">
         <div className="card stack-sm">
           <Toggle label="Remind me before gym time" checked={prefs.gym_enabled} onChange={(v) => set({ gym_enabled: v })}
-            description="Names your planned workout, so you can get ready and log as you go." />
+            description="Names your planned workout, so you can get ready and log as you go. Skipped on days you’ve already trained." />
+          {stoppedNote('gym')}
           {prefs.gym_enabled ? (
             <>
-              <div className="stack-sm">
-                <span className="label" style={{ fontWeight: 600 }}>Gym days</span>
-                <div className="chips wrap" role="group" aria-label="Gym days">
-                  {WEEKDAY_SHORT.map((d, i) => {
-                    const sel = prefs.gym_days.includes(i);
-                    return (
-                      <button key={d} type="button" className="chip" aria-pressed={sel}
-                        onClick={() => set({ gym_days: sel ? prefs.gym_days.filter((x) => x !== i) : [...prefs.gym_days, i].sort() })}>{d}</button>
-                    );
-                  })}
-                </div>
+              <div className="chips wrap" role="radiogroup" aria-label="When is gym time">
+                <button type="button" role="radio" className="chip" aria-checked={prefs.gym_mode === 'learned'} aria-pressed={prefs.gym_mode === 'learned'} onClick={() => set({ gym_mode: 'learned' })}>Learn it from my workouts</button>
+                <button type="button" role="radio" className="chip" aria-checked={prefs.gym_mode === 'fixed'} aria-pressed={prefs.gym_mode === 'fixed'} onClick={() => set({ gym_mode: 'fixed' })}>I’ll set a time</button>
               </div>
-              <div className="row wrap" style={{ gap: 12 }}>
-                <label className="field grow">
-                  Gym time
-                  <input className="input" type="time" value={prefs.gym_time} onChange={(e) => set({ gym_time: e.target.value })} />
-                </label>
-                <label className="field grow">
-                  Remind me
-                  <select className="input" value={prefs.lead_minutes} onChange={(e) => set({ lead_minutes: Number(e.target.value) })}>
-                    {LEAD_CHOICES.map((m) => <option key={m} value={m}>{m} min before</option>)}
-                  </select>
-                </label>
-              </div>
-              {validTime(prefs.gym_time) ? <span className="label">You’ll get it at {minusMinutes(prefs.gym_time, prefs.lead_minutes)} on the days you picked.</span> : null}
+              {prefs.gym_mode === 'learned' ? (
+                <span className="label">After two workouts on the same weekday, we’ll remind you before the time you usually start.</span>
+              ) : (
+                <>
+                  <div className="stack-sm">
+                    <span className="label" style={{ fontWeight: 600 }}>Gym days</span>
+                    <div className="chips wrap" role="group" aria-label="Gym days">
+                      {WEEKDAY_SHORT.map((d, i) => {
+                        const sel = prefs.gym_days.includes(i);
+                        return (
+                          <button key={d} type="button" className="chip" aria-pressed={sel}
+                            onClick={() => set({ gym_days: sel ? prefs.gym_days.filter((x) => x !== i) : [...prefs.gym_days, i].sort() })}>{d}</button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  <div className="row wrap" style={{ gap: 12 }}>
+                    <label className="field grow">
+                      Gym time
+                      <input className="input" type="time" value={prefs.gym_time} onChange={(e) => set({ gym_time: e.target.value })} />
+                    </label>
+                    <label className="field grow">
+                      Remind me
+                      <select className="input" value={prefs.lead_minutes} onChange={(e) => set({ lead_minutes: Number(e.target.value) })}>
+                        {LEAD_CHOICES.map((m) => <option key={m} value={m}>{m} min before</option>)}
+                      </select>
+                    </label>
+                  </div>
+                  {validTime(prefs.gym_time) ? (
+                    inQuietHours(minusMinutes(prefs.gym_time, prefs.lead_minutes))
+                      ? <span className="label">That’s inside quiet hours (10pm–7am), so this one stays silent.</span>
+                      : <span className="label">You’ll get it at {minusMinutes(prefs.gym_time, prefs.lead_minutes)} on the days you picked.</span>
+                  ) : null}
+                </>
+              )}
             </>
           ) : null}
+        </div>
+      </Section>
+
+      <Section title="Milestones and insights">
+        <div className="card stack-sm">
+          <Toggle label="Milestone or insight ready" checked={prefs.insight_enabled} onChange={(v) => set({ insight_enabled: v })}
+            description="When you reach 7, 30 or 100 days, and when your weekly Luma Insight is ready." />
+          {stoppedNote('insight')}
         </div>
       </Section>
 
       <Section title="Privacy">
         <div className="card stack-sm">
           <Toggle label="Hide details on the lock screen" checked={prefs.hide_details} onChange={(v) => set({ hide_details: v })}
-            description="Shows “Your daily check-in is ready” instead of your numbers or workout name." />
+            description="Shows a plain “Something’s ready for you” instead of meal names, numbers or your workout." />
+          {prefs.hide_details ? <span className="label">With details hidden, only a fixed-time gym reminder can be sent (routine nudges and insights need their details).</span> : null}
           <span className="label">Reminders are encrypted for this phone; the delivery service (Google or Apple) can’t read them.</span>
         </div>
       </Section>
@@ -165,8 +194,8 @@ export function NotificationsScreen() {
           <div className="card tight list-divided" aria-label="Next reminders">
             {upcoming.map((u) => (
               <div key={u.kind} className="row" style={{ padding: '10px 4px', gap: 12 }}>
-                <span className="mini-icon" aria-hidden="true"><Icon name={u.kind === 'gym' ? 'workout' : 'star'} size={18} /></span>
-                <span className="grow">{u.kind === 'gym' ? 'Gym reminder' : 'Daily motivation'}</span>
+                <span className="mini-icon" aria-hidden="true"><Icon name="workout" size={18} /></span>
+                <span className="grow">Gym reminder</span>
                 <span className="small muted num">{describeWhen(u.at, new Date(), prefs.timezone)}</span>
               </div>
             ))}

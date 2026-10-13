@@ -11,6 +11,12 @@ import { configureAnalytics } from '@/core/analytics/analytics';
 import { DataReviewScreen } from '@/features/food/DataReview';
 import { RecipeBuilderScreen } from '@/features/food/RecipeBuilder';
 import { QuickLogScreen } from '@/features/food/Frictionless';
+import { InsightsScreen, YearScreen } from '@/features/insights';
+import { CirclesScreen } from '@/features/social/CirclesScreen';
+import { InviteScreen } from '@/features/social/InviteScreen';
+import { useReferralUpkeep } from '@/features/social/referral';
+import { flushNotificationDismissals } from '@/core/notifications/push';
+import { track } from '@/core/analytics/analytics';
 import { AnimatedMark, LaunchSplash } from '@/core/design/BrandLogo';
 import { AccessScreen, WelcomeScreen } from '@/features/auth/WelcomeScreen';
 import { ChatScreen } from '@/features/coach/ChatScreen';
@@ -136,10 +142,15 @@ function Shell() {
   return <AppShell />;
 }
 
+const onInsightsOpen = () => track('insight_opened', {});
+const onStoryShared = (kind: string) => track('story_shared', { kind });
+
 function AppShell() {
   const route = useRoute();
   const { profile, timer, journal, mode } = useJournal();
   useEffect(() => configureAnalytics({ ownerId: journal.ownerId, mode, timezone: profile.timezone }), [journal.ownerId, mode, profile.timezone]);
+  useEffect(() => { if (mode === 'account') void flushNotificationDismissals(); }, [mode]);
+  useReferralUpkeep();
   useEffect(() => {
     document.title = `${TITLES[route.name]} · TrainLuma`;
     window.scrollTo({ top: 0 });
@@ -161,6 +172,10 @@ function AppShell() {
     case 'recipe': screen = <RecipeBuilderScreen param={route.param} />; break;
     case 'quicklog': screen = <QuickLogScreen param={route.param} />; break;
     case 'data-review': screen = <DataReviewScreen />; break;
+    case 'insights': screen = <InsightsScreen onOpen={onInsightsOpen} onShare={onStoryShared} />; break;
+    case 'year': screen = <YearScreen year={route.param && /^\d{4}$/.test(route.param) ? Number(route.param) : undefined} onShare={onStoryShared} />; break;
+    case 'circles': screen = <CirclesScreen code={route.param} />; break;
+    case 'invite': screen = <InviteScreen code={route.param} />; break;
     case 'plan': screen = <PlanEditor />; break;
     case 'meal': screen = <MealEditor presetId={route.param} />; break;
     default: screen = <TodayScreen />;

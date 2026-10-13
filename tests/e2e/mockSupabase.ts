@@ -75,6 +75,18 @@ export class MockSupabase {
   drafts: Draft[] = [];
   photos: PhotoRow[] = [];
   notifyPrefs = new Map<string, Record<string, unknown>>();
+  // Phase 3 (growth migration): circles, referral ledger, notification dismissals, analytics.
+  circles: { id: string; name: string; join_code: string }[] = [];
+  circleMembers: { circle_id: string; user_id: string; display_name: string; avatar: string; share_prs: boolean }[] = [];
+  circlePosts: { id: string; circle_id: string; user_id: string; kind: string; text: string; created_at: string }[] = [];
+  /** Active days in the last 7 per user, for circle_board. */
+  activeDays = new Map<string, number>();
+  referralCodes = new Map<string, string>();
+  redemptions: { owner: string; invitee: string; device: string; activated: boolean }[] = [];
+  credits: { user_id: string; reason: string; status: string }[] = [];
+  loggedDaysSinceRedeem = new Map<string, number>();
+  dismissals = new Map<string, number>();
+  events: unknown[] = [];
   objects = new Map<string, { owner: string; bytes: number }>();
   memory: { id: string; user_id: string; fact: string }[] = [];
   usage = { questions_today: 0, limit: 20 };
@@ -272,6 +284,97 @@ export class MockSupabase {
         this.notifyPrefs.set(me, row);
         return this.rows(route, headers, [row]);
       }
+    }
+
+    // ---- Phase 3: circles (members only), referral ledger, dismissals, analytics ----
+    if (p === '/rest/v1/rpc/log_events') {
+      this.events.push(...((body as { p_events: unknown[] }).p_events ?? []));
+      return this.json(route, 200, null);
+    }
+    const mine = (c: string) => this.circleMembers.some((m) => m.circle_id === c && m.user_id === me);
+    if (p === '/rest/v1/circles') return this.rows(route, headers, this.circles.filter((c) => mine(c.id)));
+    if (p === '/rest/v1/circle_members') return this.rows(route, headers, this.circleMembers.filter((m) => mine(m.circle_id)));
+    if (p === '/rest/v1/circle_posts') {
+      if (req.method() === 'DELETE') {
+        const id = url.searchParams.get('id')?.replace(/^eq\./, '');
+        this.circlePosts = this.circlePosts.filter((x) => !(x.id === id && x.user_id === me));
+        return route.fulfill({ status: 204, body: '' });
+      }
+      return this.rows(route, headers, this.filter(this.circlePosts.filter((x) => mine(x.circle_id)) as unknown as Record<string, unknown>[], url));
+    }
+    const a = body as Record<string, string>;
+    if (p === '/rest/v1/rpc/create_circle') {
+      const c = { id: randomUUID(), name: a.p_name!, join_code: 'ABC' + String(234 + this.circles.length).slice(-3).replace(/[01]/g, '2') };
+      this.circles.push(c);
+      this.circleMembers.push({ circle_id: c.id, user_id: me, display_name: a.p_display_name!, avatar: a.p_avatar!, share_prs: true });
+      return this.json(route, 200, { id: c.id, join_code: c.join_code });
+    }
+    if (p === '/rest/v1/rpc/join_circle') {
+      const c = this.circles.find((x) => x.join_code === a.p_code!.toUpperCase().replace(/[\s-]/g, ''));
+      if (!c) return this.json(route, 404, { code: 'P0002', message: 'not_found' });
+      if (this.circleMembers.filter((m) => m.circle_id === c.id).length >= 6) return this.json(route, 400, { code: 'P0001', message: 'circle_full' });
+      if (!mine(c.id)) this.circleMembers.push({ circle_id: c.id, user_id: me, display_name: a.p_display_name!, avatar: a.p_avatar!, share_prs: true });
+      return this.json(route, 200, c.id);
+    }
+    if (p === '/rest/v1/rpc/leave_circle') {
+      this.circleMembers = this.circleMembers.filter((m) => !(m.circle_id === a.p_circle && m.user_id === me));
+      this.circlePosts = this.circlePosts.filter((x) => !(x.circle_id === a.p_circle && x.user_id === me));
+      return this.json(route, 200, null);
+    }
+    if (p === '/rest/v1/rpc/circle_board') {
+      if (!mine(a.p_circle!)) return this.json(route, 403, { code: '42501', message: 'not authorized' });
+      return this.json(route, 200, this.circleMembers.filter((m) => m.circle_id === a.p_circle)
+        .map((m) => ({ user_id: m.user_id, display_name: m.display_name, avatar: m.avatar, active_days_7: this.activeDays.get(m.user_id) ?? 0, is_me: m.user_id === me }))
+        .sort((x, y) => y.active_days_7 - x.active_days_7 || x.display_name.localeCompare(y.display_name)));
+    }
+    if (p === '/rest/v1/rpc/post_to_circle') {
+      if (!mine(a.p_circle!)) return this.json(route, 403, { code: '42501', message: 'not authorized' });
+      const post = { id: randomUUID(), circle_id: a.p_circle!, user_id: me, kind: a.p_kind!, text: a.p_text!, created_at: new Date().toISOString() };
+      this.circlePosts.unshift(post);
+      return this.json(route, 200, post.id);
+    }
+    if (p === '/rest/v1/rpc/set_circle_sharing') {
+      for (const m of this.circleMembers) if (m.circle_id === (body as { p_circle: string }).p_circle && m.user_id === me) m.share_prs = (body as { p_share_prs: boolean }).p_share_prs;
+      return this.json(route, 200, null);
+    }
+    if (p === '/rest/v1/rpc/my_referral') {
+      if (!this.referralCodes.has(me)) this.referralCodes.set(me, `${/^[A-Z]{2}$/.test(String(a.p_prefix)) ? a.p_prefix : 'TL'}-${String(1000 + this.referralCodes.size * 1111).slice(-4)}`);
+      const mineR = this.redemptions.filter((r) => r.owner === me);
+      const months = (st: string[]) => this.credits.filter((c) => c.user_id === me && st.includes(c.status)).length;
+      return this.json(route, 200, { code: this.referralCodes.get(me), redeemed: mineR.length, activated: mineR.filter((r) => r.activated).length, months_banked: months(['released', 'queued']), months_pending: months(['pending']) });
+    }
+    if (p === '/rest/v1/rpc/redeem_referral') {
+      const code = a.p_code!.toUpperCase().replace(/\s/g, '');
+      const owner = [...this.referralCodes].find(([, c]) => c === code)?.[0];
+      const status = !owner ? 'invalid_code' : owner === me ? 'self_referral' : this.redemptions.some((r) => r.invitee === me) ? 'already_redeemed'
+        : this.redemptions.some((r) => r.device === a.p_device_hash) ? 'device_used' : 'ok';
+      if (status === 'ok') {
+        this.redemptions.push({ owner: owner!, invitee: me, device: a.p_device_hash!, activated: false });
+        this.credits.push({ user_id: me, reason: 'invitee_bonus', status: 'queued' }, { user_id: owner!, reason: 'inviter_reward', status: 'pending' });
+      }
+      return this.json(route, 200, { status });
+    }
+    if (p === '/rest/v1/rpc/referral_check_activation') {
+      const r = this.redemptions.find((x) => x.invitee === me);
+      const days = this.loggedDaysSinceRedeem.get(me) ?? 0;
+      if (r && !r.activated && days >= 7) {
+        r.activated = true;
+        const c = this.credits.find((x) => x.user_id === r.owner && x.status === 'pending');
+        if (c) c.status = 'released';
+      }
+      return this.json(route, 200, { logged_days: r ? days : 0, activated: r?.activated ?? false });
+    }
+    if (p === '/rest/v1/rpc/my_plus') {
+      const n = (st: string) => this.credits.filter((c) => c.user_id === me && c.status === st).length;
+      return this.json(route, 200, { queued: n('queued'), pending: n('pending'), released: n('released') });
+    }
+    if (p === '/rest/v1/rpc/notification_dismissed') {
+      const k = `${me}:${a.p_kind}`;
+      this.dismissals.set(k, (this.dismissals.get(k) ?? 0) + 1);
+      return this.json(route, 200, this.dismissals.get(k));
+    }
+    if (p === '/rest/v1/notification_dismissals') {
+      return this.rows(route, headers, [...this.dismissals].filter(([k]) => k.startsWith(`${me}:`)).map(([k, count]) => ({ kind: k.split(':')[1], count })));
     }
 
     // ---- storage (private bucket, owner folder only) ----

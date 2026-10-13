@@ -5,7 +5,8 @@
  * `notification_prefs` (RLS: owner only). In the demo, preferences stay on this phone.
  */
 import { supabase } from '@/core/auth/supabase';
-import type { NotificationPrefs } from './schedule';
+import { track } from '@/core/analytics/analytics';
+import type { NotificationPrefs, NotifyKind } from './schedule';
 
 const VAPID = (import.meta.env.VITE_VAPID_PUBLIC_KEY as string | undefined)?.trim() ?? '';
 
@@ -131,9 +132,11 @@ export async function loadPrefs(mode: 'account' | 'demo', owner: string): Promis
   const d = data as Record<string, unknown>;
   const hhmm = (v: unknown) => String(v ?? '').slice(0, 5);
   return {
-    motivation_enabled: d.motivation_enabled === true, motivation_time: hhmm(d.motivation_time),
-    gym_enabled: d.gym_enabled === true, gym_days: Array.isArray(d.gym_days) ? (d.gym_days as number[]) : [], gym_time: hhmm(d.gym_time),
+    routine_enabled: d.routine_enabled !== false, insight_enabled: d.insight_enabled !== false,
+    gym_enabled: d.gym_enabled === true, gym_mode: d.gym_mode === 'fixed' ? 'fixed' : 'learned',
+    gym_days: Array.isArray(d.gym_days) ? (d.gym_days as number[]) : [], gym_time: hhmm(d.gym_time),
     lead_minutes: Number(d.lead_minutes) || 15, hide_details: d.hide_details === true, timezone: String(d.timezone ?? ''),
+    motivation_enabled: false,
   };
 }
 
@@ -147,6 +150,88 @@ export async function savePrefs(mode: 'account' | 'demo', owner: string, p: Noti
     return;
   }
   const db = await supabase();
-  const { error } = await db.from('notification_prefs').upsert({ user_id: owner, ...p }, { onConflict: 'user_id' });
+  // The retired daily motivation is always saved off.
+  const { error } = await db.from('notification_prefs').upsert({ user_id: owner, ...p, motivation_enabled: false }, { onConflict: 'user_id' });
   if (error) throw new Error('Couldn’t save your reminder settings. Check your connection and try again.');
+}
+
+// ---------- dismissals and opens (recorded by the service worker) ----------
+// The service worker can't reach the account, so it writes {kind, what} rows to its own small
+// IndexedDB store; the app sends them on the next open. Three dismissals of a kind stop it for good
+// (enforced by the server in notify_claim).
+
+const SW_DB = 'trainluma-sw';
+const SW_STORE = 'notification-events';
+
+interface SwEvent { id?: number; kind: string; what: 'dismissed' | 'opened'; at: string }
+
+function openSwDb(): Promise<IDBDatabase> {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(SW_DB, 1);
+    req.onupgradeneeded = () => { if (!req.result.objectStoreNames.contains(SW_STORE)) req.result.createObjectStore(SW_STORE, { keyPath: 'id', autoIncrement: true }); };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error ?? new Error('idb'));
+  });
+}
+
+const isKind = (k: string): k is NotifyKind => k === 'routine' || k === 'gym' || k === 'insight';
+
+/** Send dismissals recorded by the service worker to the account; track opens. Best effort. */
+export async function flushNotificationDismissals(): Promise<void> {
+  if (typeof indexedDB === 'undefined') return;
+  let db: IDBDatabase;
+  try {
+    db = await openSwDb();
+  } catch {
+    return;
+  }
+  try {
+    const rows = await new Promise<SwEvent[]>((resolve, reject) => {
+      const req = db.transaction(SW_STORE).objectStore(SW_STORE).getAll();
+      req.onsuccess = () => resolve(req.result as SwEvent[]);
+      req.onerror = () => reject(req.error ?? new Error('idb'));
+    });
+    if (!rows.length) return;
+    const client = await supabase();
+    const done: number[] = [];
+    for (const r of rows) {
+      if (r.id === undefined) continue;
+      if (!isKind(r.kind)) { done.push(r.id); continue; }
+      if (r.what === 'opened') {
+        track('notification_opened', { kind: r.kind });
+        done.push(r.id);
+        continue;
+      }
+      const { error } = await client.rpc('notification_dismissed', { p_kind: r.kind });
+      if (error) break; // offline: keep the rest for next time
+      track('notification_dismissed', { kind: r.kind });
+      done.push(r.id);
+    }
+    if (done.length) {
+      await new Promise<void>((resolve) => {
+        const tx = db.transaction(SW_STORE, 'readwrite');
+        for (const id of done) tx.objectStore(SW_STORE).delete(id);
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => resolve();
+      });
+    }
+  } catch {
+    // not configured or offline: try again next open
+  } finally {
+    db.close();
+  }
+}
+
+/** How many times each kind was dismissed (owner-only table), to explain a stopped kind. */
+export async function loadDismissals(mode: 'account' | 'demo'): Promise<Partial<Record<NotifyKind, number>>> {
+  if (mode !== 'account') return {};
+  try {
+    const db = await supabase();
+    const { data } = await db.from('notification_dismissals').select('kind,count');
+    const out: Partial<Record<NotifyKind, number>> = {};
+    for (const r of (data ?? []) as { kind: string; count: number }[]) if (isKind(r.kind)) out[r.kind] = r.count;
+    return out;
+  } catch {
+    return {};
+  }
 }

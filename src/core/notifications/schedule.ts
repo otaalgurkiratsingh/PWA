@@ -1,27 +1,46 @@
 /**
  * Reminder preferences and "when is the next one" — pure, so the panel can show exactly when
- * each notification will arrive. The server (notify_due) uses the same rules.
+ * each notification will arrive. Notifications v2 (the `notify` function decides): three kinds only
+ * (a routine nudge, the gym reminder, "your milestone / weekly insight is ready"), at most 2 a day,
+ * never between 22:00 and 07:00 local, and a kind dismissed 3 times stops for good.
  */
+export type NotifyKind = 'routine' | 'gym' | 'insight';
+
 export interface NotificationPrefs {
-  motivation_enabled: boolean;
-  /** Local "HH:MM". */
-  motivation_time: string;
+  /** "Time for your usual chai?" when you usually log something and haven't yet. */
+  routine_enabled: boolean;
+  /** "Your weekly insight is ready" / milestone reached. */
+  insight_enabled: boolean;
   gym_enabled: boolean;
-  /** 0 = Sunday … 6 = Saturday. */
+  /** learned: from when you usually start workouts; fixed: the days and time below. */
+  gym_mode: 'learned' | 'fixed';
+  /** 0 = Sunday … 6 = Saturday (fixed mode). */
   gym_days: number[];
   gym_time: string;
   lead_minutes: number;
   hide_details: boolean;
   timezone: string;
+  /** Retired v1 daily motivation: always off, kept so old rows stay readable. */
+  motivation_enabled: false;
+  motivation_time: string;
 }
+
+export const DAILY_MAX = 2;
+export const QUIET_FROM = '22:00';
+export const QUIET_UNTIL = '07:00';
+/** Same rule as the server: a kind dismissed this many times stops for good. */
+export const DISMISS_STOP = 3;
 
 export const LEAD_CHOICES = [10, 15, 30, 45] as const;
 
 export function defaultPrefs(timezone: string, daysAvailable: readonly number[] = []): NotificationPrefs {
   return {
-    motivation_enabled: true,
-    motivation_time: '08:00',
+    routine_enabled: true,
+    insight_enabled: true,
     gym_enabled: true,
+    gym_mode: 'learned',
+    motivation_enabled: false,
+    motivation_time: '08:00',
     gym_days: daysAvailable.length ? [...daysAvailable].sort() : [1, 3, 5],
     gym_time: '18:00',
     lead_minutes: 15,
@@ -51,9 +70,17 @@ export function zonedInstant(tz: string, y: number, m: number, d: number, h: num
   return new Date(t);
 }
 
-export interface Upcoming { kind: 'motivation' | 'gym'; at: Date }
+export interface Upcoming { kind: NotifyKind; at: Date }
 
-/** The next motivation and the next gym reminder after `now` (within 8 days). */
+/** Local "HH:MM" inside 22:00–07:00 (nothing is sent then). */
+export function inQuietHours(time: string): boolean {
+  return validTime(time) && (time >= QUIET_FROM || time < QUIET_UNTIL);
+}
+
+/**
+ * The next fixed-time gym reminder after `now` (within 8 days). Routine nudges, learned gym times
+ * and insights depend on your logs, so they have no fixed time to show.
+ */
 export function nextReminders(prefs: NotificationPrefs, now: Date): Upcoming[] {
   const out: Upcoming[] = [];
   const today = partsIn(prefs.timezone, now);
@@ -67,8 +94,8 @@ export function nextReminders(prefs: NotificationPrefs, now: Date): Upcoming[] {
       if (at > now) return out.push({ kind, at });
     }
   };
-  if (prefs.motivation_enabled && validTime(prefs.motivation_time)) find('motivation', prefs.motivation_time, null, 0);
-  if (prefs.gym_enabled && prefs.gym_days.length && validTime(prefs.gym_time)) find('gym', prefs.gym_time, prefs.gym_days, prefs.lead_minutes);
+  if (prefs.gym_enabled && prefs.gym_mode === 'fixed' && prefs.gym_days.length && validTime(prefs.gym_time)
+    && !inQuietHours(minusMinutes(prefs.gym_time, prefs.lead_minutes))) find('gym', prefs.gym_time, prefs.gym_days, prefs.lead_minutes);
   return out.sort((a, b) => a.at.getTime() - b.at.getTime());
 }
 

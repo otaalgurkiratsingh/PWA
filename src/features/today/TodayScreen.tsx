@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { MealPreset, MealSlot } from '@shared/contracts';
 import { useJournal, useQuery } from '@/app/JournalContext';
 import { navigate } from '@/app/router';
@@ -21,6 +21,33 @@ import { NutritionSummary } from '@/features/food/NutritionSummary';
 import { describeAmount, slotForHour } from '@/features/food/mealActions';
 import { sortPresets, useLibrary, useMealLogging } from '@/features/food/useFood';
 import { useWorkout } from '@/features/workout/useWorkout';
+import { MilestoneCelebration, StreakBadge, useStreak } from '@/features/insights';
+import { track } from '@/core/analytics/analytics';
+import { InvitePrompt } from '@/features/social/InvitePrompt';
+
+/** True the first time this milestone key is seen (then remembered); false without storage. */
+export function claimMilestone(key: string, today: string, store: Pick<Storage, 'getItem' | 'setItem'> = localStorage): boolean {
+  try {
+    if (store.getItem(key)) return false;
+    store.setItem(key, today);
+    return true;
+  } catch {
+    return false; // no storage: skip rather than repeat it on every visit
+  }
+}
+
+/** Show each milestone's celebration once per person (on this phone). */
+function useMilestoneOnce(owner: string, milestone: 7 | 30 | 100 | null, today: string): [7 | 30 | 100 | null, () => void] {
+  const key = milestone ? `trainluma.milestoneSeen.${owner}.${milestone}` : '';
+  const [shown, setShown] = useState<7 | 30 | 100 | null>(null);
+  useEffect(() => {
+    if (!milestone) return;
+    if (!claimMilestone(key, today)) return;
+    setShown(milestone); // eslint-disable-line react-hooks/set-state-in-effect -- one-time celebration after reading storage
+    track('milestone_shown', { days: milestone });
+  }, [milestone, key, today]);
+  return [shown, () => setShown(null)];
+}
 
 export function TodayScreen() {
   const { profile, today, mode } = useJournal();
@@ -37,6 +64,8 @@ export function TodayScreen() {
   const weights = useQuery((j) => j.weightsBetween(addDays(today, -13), today), [today]);
   const [adding, setAdding] = useState<MealPreset | null>(null);
   const trainer = useTrainer();
+  const streak = useStreak();
+  const [celebrate, closeCelebration] = useMilestoneOnce(profile.id, streak.milestone, today);
   const promptKey = `trainluma.reminderPrompt.${profile.id}`;
   const [askReminders, setAskReminders] = useState(() => {
     try {
@@ -111,6 +140,7 @@ export function TodayScreen() {
               <span className="small mo-detail">{mood.detail}</span>
             </span>
           </div>
+          {streak.ready ? <div style={{ marginTop: 10 }}><StreakBadge current={streak.logging.current} frozen={streak.logging.frozen.length} broken={streak.logging.broken} /></div> : null}
           <div className="mo-stats">
             <span><b className="num">{mood.workouts7}{mood.target ? `/${mood.target}` : ''}</b> workouts · 7 days</span>
             <span><b className="num">{mood.sets7}</b> sets</span>
@@ -119,12 +149,24 @@ export function TodayScreen() {
         </section>
       ) : null}
 
+      <button className="card insights-entry" onClick={() => navigate('insights')}>
+        <span className="ie-icon" aria-hidden="true"><Icon name="sparkle" size={22} /></span>
+        <span className="grow">
+          <span className="eyebrow">Luma Insights</span>
+          <strong style={{ display: 'block' }}>{weekday === 1 ? 'Your week in review is ready 👀' : 'Luma found something in your week 👀'}</strong>
+          <span className="small muted">Your consistency, protein and best moments, as a story you can share.</span>
+        </span>
+        <Icon name="chevronRight" size={20} />
+      </button>
+
+      <InvitePrompt streak={streak.logging.current} />
+
       {askReminders ? (
         <div className="card notify-hero" role="region" aria-label="Reminders">
           <span className="nh-icon" aria-hidden="true"><Icon name="clock" size={22} /></span>
           <span className="grow">
             <strong>Never miss gym time</strong>
-            <span className="small muted" style={{ display: 'block' }}>A daily boost and a reminder 15 minutes before your workout.</span>
+            <span className="small muted" style={{ display: 'block' }}>A heads-up before gym time and a nudge for your usual meals. Never more than 2 a day.</span>
             <span className="row" style={{ gap: 8, marginTop: 10 }}>
               <button className="btn sm" onClick={() => { dismissReminders(); navigate('notifications'); }}>Turn on</button>
               <button className="btn sm ghost" onClick={dismissReminders}>Not now</button>
@@ -186,6 +228,7 @@ export function TodayScreen() {
         </div>
       </div>
 
+      {celebrate ? <MilestoneCelebration days={celebrate} onClose={closeCelebration} onShare={(kind) => track('story_shared', { kind })} /> : null}
       {adding ? <AddMealSheet preset={adding} slot={slot} date={today} onClose={() => setAdding(null)} /> : null}
     </div>
   );

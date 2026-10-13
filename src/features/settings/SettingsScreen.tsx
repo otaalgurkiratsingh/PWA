@@ -190,7 +190,15 @@ export function SettingsScreen() {
 
       <Section title="Notifications">
         <div className="card stack-sm">
-          <button className="link" onClick={() => navigate('notifications')}><Icon name="clock" size={18} /> Daily motivation and gym reminders <Icon name="chevronRight" size={16} /></button>
+          <button className="link" onClick={() => navigate('notifications')}><Icon name="clock" size={18} /> Gym, routine and insight reminders <Icon name="chevronRight" size={16} /></button>
+        </div>
+      </Section>
+
+      <Section title="Friends">
+        <div className="card stack-sm">
+          <button className="link" onClick={() => navigate('circles')}><Icon name="users" size={18} /> Circles <Icon name="chevronRight" size={16} /></button>
+          <button className="link" onClick={() => navigate('invite')}><Icon name="gift" size={18} /> Invite friends: give a month, get a month <Icon name="chevronRight" size={16} /></button>
+          <button className="link" onClick={() => navigate('insights')}><Icon name="sparkle" size={18} /> Luma Insights <Icon name="chevronRight" size={16} /></button>
         </div>
       </Section>
 

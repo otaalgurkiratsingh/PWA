@@ -1,4 +1,4 @@
-export { weekRecap, yearRecap, loggedDates, type WeekRecap, type YearRecap, type PersonalBest } from './recap';
+export { weekRecap, yearRecap, loggedDates, sessionPRs, type WeekRecap, type YearRecap, type PersonalBest } from './recap';
 export { renderStoryPng, shareStory, storyFromWeek, storyFromMilestone, storyFromYear, storyFilename, type StoryCard } from './story';
 export { InsightsScreen } from './InsightsScreen';
 export { YearScreen } from './YearScreen';

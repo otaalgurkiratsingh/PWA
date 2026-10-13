@@ -569,16 +569,163 @@ test('reminders panel: preferences saved to the person’s own row and reloaded'
   await page.goto('/#/notifications');
   await expect(page.getByRole('heading', { name: 'Notifications' })).toBeVisible();
   await expect(page.getByText(/still being set up by the owner/)).toBeVisible(); // this build has no VAPID key
+  // v2: three kinds only; the gym time is learned unless the person sets one.
+  await expect(page.getByText(/Never more than 2 a day, never between 10pm and 7am/)).toBeVisible();
+  await expect(page.getByRole('switch', { name: /Routine nudge/ })).toBeChecked();
+  await expect(page.getByRole('switch', { name: /Milestone or insight ready/ })).toBeChecked();
+  await expect(page.getByText(/Daily motivation/)).toHaveCount(0);
+  await page.getByRole('radio', { name: 'I’ll set a time' }).click();
   await page.getByLabel('Gym time', { exact: true }).fill('19:30');
   await page.getByRole('combobox').selectOption('30');
   await expect(page.getByText('You’ll get it at 19:00 on the days you picked.')).toBeVisible();
+  await page.getByLabel('Gym time', { exact: true }).fill('07:10');
+  await expect(page.getByText(/inside quiet hours/)).toBeVisible();
+  await page.getByLabel('Gym time', { exact: true }).fill('19:30');
+  await page.getByRole('switch', { name: /Routine nudge/ }).click();
   await page.getByRole('switch', { name: /Hide details on the lock screen/ }).click();
+  await expect(page.getByText(/only a fixed-time gym reminder can be sent/)).toBeVisible();
   await page.getByRole('button', { name: 'Turn on reminders' }).click();
   await expect(page.getByRole('status').getByText('Reminders saved.')).toBeVisible();
   const saved = sb.notifyPrefs.get(OWNER.id)!;
-  expect(saved).toMatchObject({ user_id: OWNER.id, gym_time: '19:30', lead_minutes: 30, hide_details: true, motivation_enabled: true });
+  expect(saved).toMatchObject({ user_id: OWNER.id, gym_mode: 'fixed', gym_time: '19:30', lead_minutes: 30, hide_details: true, routine_enabled: false, insight_enabled: true, motivation_enabled: false });
   await page.reload();
   await expect(page.getByLabel('Gym time', { exact: true })).toHaveValue('19:30');
+  await expect(page.getByRole('switch', { name: /Routine nudge/ })).not.toBeChecked();
   await expect(page.getByRole('button', { name: 'Save changes' })).toBeDisabled();
   expect(sb.notifyPrefs.size).toBe(1);
+});
+
+test('notifications: a kind dismissed 3 times stops for good (recorded by the service worker, sent by the app)', async ({ page }) => {
+  const sb = new MockSupabase([OWNER]);
+  await sb.install(page);
+  await signIn(page, OWNER.email);
+  await onboardSimple(page);
+  // What the service worker writes when a notification is closed without a tap.
+  await page.evaluate(async () => {
+    await new Promise<void>((resolve, reject) => {
+      const req = indexedDB.open('trainluma-sw', 1);
+      req.onupgradeneeded = () => req.result.createObjectStore('notification-events', { keyPath: 'id', autoIncrement: true });
+      req.onsuccess = () => {
+        const tx = req.result.transaction('notification-events', 'readwrite');
+        for (let i = 0; i < 3; i++) tx.objectStore('notification-events').add({ kind: 'routine', what: 'dismissed', at: new Date().toISOString() });
+        tx.objectStore('notification-events').add({ kind: 'insight', what: 'opened', at: new Date().toISOString() });
+        tx.oncomplete = () => { req.result.close(); resolve(); };
+      };
+      req.onerror = () => reject(req.error);
+    });
+  });
+  await page.goto('/#/notifications');
+  await page.reload();
+  await expect.poll(() => sb.dismissals.get(`${OWNER.id}:routine`) ?? 0).toBe(3);
+  await page.reload();
+  await expect(page.getByText(/Stopped because you dismissed it 3 times/)).toBeVisible();
+  // Sent once: the queue on the phone is empty afterwards.
+  await page.reload();
+  expect(sb.dismissals.get(`${OWNER.id}:routine`)).toBe(3);
+  expect(sb.requests.filter((r) => r.path === '/rest/v1/rpc/notification_dismissed').length).toBe(3);
+});
+
+test('circles: join with a code → kind board (no last place) → share a new best only on a tap → leave', async ({ page }) => {
+  const sb = new MockSupabase([OWNER, WIFE]);
+  sb.circles.push({ id: 'c0ffee00-0000-4000-8000-000000000001', name: 'Morning crew', join_code: 'KTX234' });
+  sb.circleMembers.push(
+    { circle_id: 'c0ffee00-0000-4000-8000-000000000001', user_id: WIFE.id, display_name: 'Simran', avatar: 'bloom', share_prs: true },
+    { circle_id: 'c0ffee00-0000-4000-8000-000000000001', user_id: 'friend-z', display_name: 'Zora', avatar: 'panda', share_prs: true },
+  );
+  sb.activeDays.set(WIFE.id, 6);
+  sb.activeDays.set('friend-z', 0);
+  sb.activeDays.set(OWNER.id, 3);
+  await sb.install(page);
+  await signIn(page, OWNER.email);
+  await onboardSimple(page);
+  await page.goto('/#/circles/KTX234'); // a shared circle link opens the join sheet with the code
+  await expect(page.getByRole('heading', { name: 'Circles' })).toBeVisible();
+  await expect(page.getByLabel('Code from your friend')).toHaveValue('KTX234');
+  await expect(page.getByLabel('Your name in the circle')).toHaveValue('Gurkirat');
+  await page.getByRole('button', { name: 'Join circle' }).click();
+  const circle = page.getByRole('region', { name: 'Morning crew' });
+  await expect(circle.getByText('Most consistent this week 🌟')).toBeVisible();
+  await expect(circle.locator('.cb-top')).toContainText('Simran');
+  // Everyone else alphabetical (Gurkirat before Zora), never ranked; no numbers like "#3" or "last".
+  const others = circle.getByRole('list', { name: 'Everyone else, alphabetical' });
+  await expect(others.locator('.cb-row')).toHaveText([/Gurkirat \(you\)/, /Zora/]);
+  await expect(circle).not.toContainText(/#\d|\brank|came last|bottom/i);
+  expect(sb.circleMembers.find((m) => m.user_id === OWNER.id)).toMatchObject({ display_name: 'Gurkirat' });
+
+  // Invite: an editable message, sent only through the share sheet on a tap.
+  await page.evaluate(() => {
+    (window as unknown as { shared: string[] }).shared = [];
+    Object.defineProperty(navigator, 'share', { configurable: true, value: async (d: ShareData) => { (window as unknown as { shared: string[] }).shared.push(d.text ?? ''); } });
+  });
+  await circle.getByRole('button', { name: 'Invite' }).click();
+  const msg = page.getByLabel(/Your message/);
+  await expect(msg).toHaveValue(/Code: KTX234/);
+  expect(await page.evaluate(() => (window as unknown as { shared: string[] }).shared.length)).toBe(0);
+  await msg.fill('Join us! KTX234');
+  await page.getByRole('button', { name: 'Share', exact: true }).click();
+  await expect.poll(() => page.evaluate(() => (window as unknown as { shared: string[] }).shared)).toEqual(['Join us! KTX234']);
+  await page.keyboard.press('Escape');
+
+  // A post from the circle shows with the friend's name; nothing about food or weight.
+  sb.circlePosts.push({ id: 'p-1', circle_id: 'c0ffee00-0000-4000-8000-000000000001', user_id: WIFE.id, kind: 'milestone', text: '30 days in a row 🔥', created_at: new Date().toISOString() });
+  await page.reload();
+  await expect(page.getByRole('region', { name: 'Morning crew' }).getByText('30 days in a row 🔥')).toBeVisible();
+
+  // Start my own circle: the board waits for 3 members.
+  await page.getByRole('button', { name: 'Start a circle' }).click();
+  await page.getByLabel('Circle name').fill('Family');
+  await page.getByRole('button', { name: 'Create circle' }).click();
+  await expect(page.getByRole('region', { name: 'Family' }).getByText(/starts once 2 more friends join/)).toBeVisible();
+
+  // Leave the first circle.
+  await page.getByRole('region', { name: 'Morning crew' }).getByRole('button', { name: 'Leave circle' }).click();
+  await page.getByRole('button', { name: 'Leave', exact: true }).click();
+  await expect(page.getByRole('region', { name: 'Morning crew' })).toHaveCount(0);
+  expect(sb.circleMembers.some((m) => m.user_id === OWNER.id && m.circle_id === 'c0ffee00-0000-4000-8000-000000000001')).toBe(false);
+});
+
+test('invite: give a month, get a month — own code, editable share, redeem rules, months saved (no billing)', async ({ page }) => {
+  const sb = new MockSupabase([OWNER, WIFE]);
+  sb.referralCodes.set(WIFE.id, 'SI-4321');
+  await sb.install(page);
+  // An invite link opened before signing in is remembered.
+  await page.goto('/#/invite/si-4321');
+  await signIn(page, OWNER.email);
+  await onboardSimple(page);
+  await page.goto('/#/today');
+  await expect(page.getByRole('region', { name: 'Friend’s invite' }).getByText(/Use their code SI-4321/)).toBeVisible();
+  await page.getByRole('button', { name: 'Claim my month' }).click();
+  await expect(page.getByRole('heading', { name: 'Invite friends' })).toBeVisible();
+  await expect(page.getByText('Give a month, get a month')).toBeVisible();
+  await expect(page.getByLabel(/Your code GU-\d{4}/)).toBeVisible();
+  const mine = sb.referralCodes.get(OWNER.id)!;
+
+  // My own code is refused kindly.
+  await page.getByRole('textbox', { name: 'Friend’s code' }).fill(mine);
+  await page.getByRole('button', { name: 'Use code' }).click();
+  await expect(page.getByText(/That’s your own code/)).toBeVisible();
+  // The friend's code works once, with a device hash (never the raw id).
+  await page.getByRole('textbox', { name: 'Friend’s code' }).fill('si 4321');
+  await page.getByRole('button', { name: 'Use code' }).click();
+  await expect(page.getByText(/Your friend gave you Plus free for your first 2 months/)).toBeVisible();
+  expect(sb.redemptions).toHaveLength(1);
+  expect(sb.redemptions[0]!.device).toMatch(/^[a-f0-9]{64}$/);
+  expect(sb.credits).toEqual([{ user_id: OWNER.id, reason: 'invitee_bonus', status: 'queued' }, { user_id: WIFE.id, reason: 'inviter_reward', status: 'pending' }]);
+  await expect(page.getByText(/Plus isn’t on sale yet, so nothing is charged/)).toBeVisible();
+  await page.getByRole('textbox', { name: 'Friend’s code' }).fill('SI-4321');
+  await page.getByRole('button', { name: 'Use code' }).click();
+  await expect(page.getByText(/already used a friend’s code/)).toBeVisible();
+  expect(sb.redemptions).toHaveLength(1);
+
+  // Sharing my code: pre-written but editable, and nothing is sent without a tap.
+  await page.evaluate(() => {
+    (window as unknown as { shared: string[] }).shared = [];
+    Object.defineProperty(navigator, 'share', { configurable: true, value: async (d: ShareData) => { (window as unknown as { shared: string[] }).shared.push(d.text ?? ''); } });
+  });
+  await page.getByRole('button', { name: 'Share with a friend' }).click();
+  await expect(page.getByLabel(/Your message/)).toHaveValue(new RegExp(`${mine}.*#/invite/${mine}`));
+  await page.getByLabel(/Your message/).fill(`Try this! ${mine}`);
+  expect(await page.evaluate(() => (window as unknown as { shared: string[] }).shared.length)).toBe(0);
+  await page.getByRole('button', { name: 'Share', exact: true }).click();
+  await expect.poll(() => page.evaluate(() => (window as unknown as { shared: string[] }).shared)).toEqual([`Try this! ${mine}`]);
 });

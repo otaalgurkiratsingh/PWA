@@ -10,6 +10,9 @@ import {
   sessionProgress, sessionSummary, setDiscomfort, skipSet, undoSet, updateDraft,
 } from '@/domain/training/session';
 import { useWorkout } from './useWorkout';
+import { track } from '@/core/analytics/analytics';
+import { sessionPRs } from '@/features/insights/recap';
+import { CircleWinShare } from '@/features/social/CircleWinShare';
 
 const parseNum = (v: string): number | null => {
   if (v.trim() === '') return null;
@@ -275,6 +278,7 @@ export function FinishSummary({ session, history, onClose, onReopen }: { session
             ))}
           </ul>
         ) : <p className="muted">No completed working sets.</p>}
+        {onReopen ? <CircleWinShare prs={sessionPRs(session, history)} /> : null}
         {s.skipped ? <p className="small muted">{s.skipped} set{s.skipped === 1 ? '' : 's'} skipped — kept as skipped, not as zero.</p> : null}
         {s.discomfortFlags ? <p className="small muted">You noted discomfort {s.discomfortFlags === 1 ? 'once' : `${s.discomfortFlags} times`}. Take it easy on those movements and get advice if it continues.</p> : null}
       </div>
@@ -320,7 +324,10 @@ export function ActiveWorkout({ session, history, onFinished }: { session: Worko
               setConfirm(false);
               const done = await mutate(session.id, (s) => finishSession(s, new Date().toISOString()));
               await setTimer(null);
-              if (done) onFinished(done);
+              if (done) {
+                track('workout_finished', { sets: sessionProgress(done).done });
+                onFinished(done);
+              }
             }}>Finish</button>
           </>
         }>

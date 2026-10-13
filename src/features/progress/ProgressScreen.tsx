@@ -3,6 +3,7 @@ import type { WeightEntry } from '@shared/contracts';
 import { useJournal, useQuery } from '@/app/JournalContext';
 import { newId } from '@/core/ids';
 import { EquipmentArt, Icon } from '@/core/design/icons';
+import { navigate } from '@/app/router';
 import { EmptyState, Metric, Section, Segmented, Sheet } from '@/core/design/ui';
 import { formatShortDate } from '@/core/time/localDate';
 import { addDays, dateRange, healthSeries, loggingConsistency, weightSeries, weightTrend } from '@/domain/metrics/metrics';
@@ -141,6 +142,11 @@ export function ProgressScreen() {
           {stepVals.length ? <Metric label="Steps (avg)" value={Math.round(stepVals.reduce((a, b) => a + b, 0) / stepVals.length).toLocaleString('en-US')} sub={`${stepVals.length} days entered`} /> : <Metric label="Steps" value="Not logged" empty sub="Manual entry" />}
         </div>
       )}
+
+      <div className="row" style={{ gap: 8 }}>
+        <button className="btn secondary grow" onClick={() => navigate('insights')}><Icon name="sparkle" size={18} /> Luma Insights</button>
+        <button className="btn secondary grow" onClick={() => navigate('year')}><Icon name="star" size={18} /> Your year in training</button>
+      </div>
 
       <Section title="Weight" action={<button className="link" onClick={() => setSheet('weight')}><Icon name="plus" size={16} /> Log weight</button>}>
         <div className="card">

@@ -146,6 +146,19 @@ function bestEvents(sorted: readonly WorkoutSession[]): { date: string; key: str
   return events;
 }
 
+/** New bests set in `session` versus every earlier finished session (a first-ever load isn't one). */
+export function sessionPRs(session: WorkoutSession, history: readonly WorkoutSession[]): PersonalBest[] {
+  const before = finishedSessions(history).filter((s) => s.id !== session.id && (s.local_date < session.local_date || (s.local_date === session.local_date && s.started_at < session.started_at)));
+  const prev = new Map<string, number>();
+  for (const s of before) for (const [k, t] of sessionTops(s)) prev.set(k, Math.max(prev.get(k) ?? 0, t.load));
+  const out: PersonalBest[] = [];
+  for (const [k, t] of sessionTops(session)) {
+    const p = prev.get(k);
+    if (p !== undefined && t.load > p) out.push(t);
+  }
+  return out.sort((a, b) => b.load - a.load || a.name.localeCompare(b.name));
+}
+
 /** Days with any meal entry or finished workout. */
 export function loggedDates(meals: readonly MealEntry[], sessions: readonly WorkoutSession[]): Set<string> {
   return new Set([...liveMeals(meals).map((m) => m.local_date), ...finishedSessions(sessions).map((s) => s.local_date)]);

@@ -489,10 +489,16 @@ test.describe('reminders', () => {
     await invite.getByRole('button', { name: 'Turn on' }).click();
     await expect(page.getByRole('heading', { name: 'Notifications' })).toBeVisible();
     await expect(page.getByText(/In the demo, these settings stay on this phone/)).toBeVisible();
+    // Only three kinds; no daily motivation. The gym time is learned until the person sets one.
+    await expect(page.getByRole('switch', { name: /Routine nudge/ })).toBeChecked();
+    await expect(page.getByRole('switch', { name: /Remind me before gym time/ })).toBeChecked();
+    await expect(page.getByRole('switch', { name: /Milestone or insight ready/ })).toBeChecked();
+    await expect(page.getByText(/Daily motivation/)).toHaveCount(0);
+    await expect(page.getByText(/Never more than 2 a day, never between 10pm and 7am/)).toBeVisible();
+    await expect(page.getByLabel('Next reminders')).toHaveCount(0);
+    await page.getByRole('radio', { name: 'I’ll set a time' }).click();
     await expect(page.getByText('You’ll get it at 17:45 on the days you picked.')).toBeVisible();
-    const upcoming = page.getByLabel('Next reminders');
-    await expect(upcoming.getByText('Daily motivation')).toBeVisible();
-    await expect(upcoming.getByText('Gym reminder')).toBeVisible();
+    await expect(page.getByLabel('Next reminders').getByText('Gym reminder')).toBeVisible();
     await page.getByRole('button', { name: 'Turn on reminders' }).click();
     await expect(page.getByRole('status').getByText('Reminders saved.')).toBeVisible();
     await page.getByRole('button', { name: 'Send a test notification' }).click();
@@ -767,5 +773,40 @@ test.describe('Phase 2: frictionless logging', () => {
     expect(last?.props).toMatchObject({ method: 'quick_add', zero_typing: false });
     // Quick-adds never become "usual meals".
     await expect(page.getByRole('button', { name: /^Wedding plate, / })).toHaveCount(0);
+  });
+});
+
+test.describe('Phase 3: retention', () => {
+  test('streak on Today, Luma Insights story recap with a share card, year recap', async ({ page }) => {
+    await enterDemo(page);
+    const card = page.getByRole('region', { name: /./ }).filter({ hasText: 'How you’re doing' });
+    await expect(card.locator('.ins-streak').first()).toBeVisible();
+    await expect(card).not.toContainText(/you broke|failed|missed your/i);
+    await page.getByRole('button', { name: /Luma Insights/ }).click();
+    await expect(page.getByRole('heading', { name: 'Luma Insights' })).toBeVisible();
+    await expect(page.getByRole('group', { name: 'Choose a week' }).getByText('This week')).toBeVisible();
+    await page.getByRole('button', { name: 'Previous week' }).click();
+    await expect(page.getByRole('group', { name: 'Choose a week' }).getByText('Last week')).toBeVisible();
+    await expect(page.locator('.ins-screen')).not.toContainText(/NaN|undefined/);
+    await page.screenshot({ path: 'docs/screenshots/50-insights.png', fullPage: true });
+    await page.goto('/#/progress');
+    await page.getByRole('button', { name: 'Your year in training' }).click();
+    await expect(page.locator('main')).toContainText(/20\d\d/);
+    await expect(page.locator('main')).not.toContainText(/NaN|undefined/);
+    const events = await page.evaluate(() => Object.keys(localStorage).filter((k) => k.startsWith('trainluma.events.')).flatMap((k) => JSON.parse(localStorage.getItem(k)!) as { event: string }[]).map((e) => e.event));
+    expect(events).toContain('insight_opened');
+  });
+
+  test('circles and invites in the demo are a clearly-labelled sample with a kind board', async ({ page }) => {
+    await enterDemo(page, 'circles');
+    await expect(page.getByText(/sample circle with made-up friends/)).toBeVisible();
+    const circle = page.getByRole('region', { name: 'Morning crew' });
+    await expect(circle.locator('.cb-top')).toContainText('Aman');
+    await expect(circle.getByRole('list', { name: 'Everyone else, alphabetical' }).locator('.cb-row')).toHaveText([/Jas/, /Simran/, /You/]);
+    await page.screenshot({ path: 'docs/screenshots/51-circles.png', fullPage: true });
+    await page.goto('/#/invite');
+    await expect(page.getByText('Give a month, get a month')).toBeVisible();
+    await expect(page.getByText(/Invites need a signed-in account/)).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Share with a friend' })).toBeDisabled();
   });
 });

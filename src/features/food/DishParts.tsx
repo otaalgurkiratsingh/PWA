@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { FoodVersion, MealPreset, MealSlot } from '@shared/contracts';
 import {
-  canUseGrams, closestDish, dietOf, loadFoodDb, MULTIPLIERS, scaleMacros, sourceLine, TYPICAL_LABEL, type Dish, type FoodDb, type Macros,
+  canUseGrams, closestDish, dietOf, pendingMatch, loadFoodDb, MULTIPLIERS, scaleMacros, sourceLine, TYPICAL_LABEL, type Dish, type FoodDb, type Macros,
   type RestaurantHit,
 } from '@shared/fooddb/foodDb';
 import { useJournal } from '@/app/JournalContext';
@@ -184,9 +184,14 @@ export function RestaurantCard({ hit, db, date, slot, onOpen }: { hit: Restauran
 }
 
 /** T14 + T24: never a dead end. Closest match → quick add → your own recipe → request it. */
-export function NoResultPanel({ q, db, vegOnly, onOpenDish, onQuickAdd }: { q: string; db: FoodDb; vegOnly: boolean; onOpenDish: (d: Dish) => void; onQuickAdd: () => void }) {
+export function NoResultPanel({ q, db, vegOnly, onOpenDish, onQuickAdd, listedBelow = [] }: {
+  q: string; db: FoodDb; vegOnly: boolean; onOpenDish: (d: Dish) => void; onQuickAdd: () => void;
+  /** Names of list foods ("More foods") that match the search, shown below this panel. */
+  listedBelow?: readonly string[];
+}) {
   const { mode } = useJournal();
   const close = useMemo(() => closestDish(db, q, { vegOnly }), [db, q, vegOnly]);
+  const pending = useMemo(() => pendingMatch(db, q, { vegOnly }), [db, q, vegOnly]);
   const [requested, setRequested] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
   const request = async () => {
@@ -208,9 +213,15 @@ export function NoResultPanel({ q, db, vegOnly, onOpenDish, onQuickAdd }: { q: s
   return (
     <div className="card tight stack-sm no-result" aria-live="polite">
       <p className="small" style={{ margin: 0 }}>A close guess beats a skipped meal.</p>
+      {pending ? (
+        <p className="small muted" style={{ margin: 0 }} role="status"><strong>{pending.dish.name}</strong> is in our database but still being verified, so it can’t be logged with numbers yet.</p>
+      ) : null}
+      {listedBelow.length ? (
+        <p className="small muted" style={{ margin: 0 }}>Also in <strong>More foods</strong> below: {listedBelow.slice(0, 3).map((n) => `“${n}”`).join(', ')}.</p>
+      ) : null}
       {close ? (
         <button className="choice" onClick={() => onOpenDish(close.dish)}>
-          <Icon name="search" /> <span className="grow"><strong>No “{q}” yet — log as “{close.dish.name}” instead?</strong><br /><span className="small muted">{fmt(close.dish.per_serving!.kcal)} kcal · {fmt(close.dish.per_serving!.protein_g, ' g')} protein · {close.dish.serving_label}</span></span>
+          <Icon name="search" /> <span className="grow"><strong>{pending ? `Log “${close.dish.name}” instead?` : `No “${q}” yet — log as “${close.dish.name}” instead?`}</strong><br /><span className="small muted">{fmt(close.dish.per_serving!.kcal)} kcal · {fmt(close.dish.per_serving!.protein_g, ' g')} protein · {close.dish.serving_label}</span></span>
         </button>
       ) : null}
       <button className="choice" onClick={onQuickAdd}><Icon name="plus" /> <span className="grow"><strong>Quick-add calories</strong><br /><span className="small muted">Just a number, done in seconds.</span></span></button>

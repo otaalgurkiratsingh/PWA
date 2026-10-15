@@ -821,3 +821,46 @@ test.describe('Phase 3: retention', () => {
     await expect(page.getByRole('button', { name: 'Share with a friend' })).toBeDisabled();
   });
 });
+
+test.describe('demo persistence (Oct 12 review: "meals vanished")', () => {
+  test('a meal logged in the demo stays through tabs, reloads, a clock jump within the day, and leaving/re-entering the demo', async ({ page }) => {
+    await enterDemo(page, 'food');
+    await page.getByRole('button', { name: 'Add food' }).click();
+    await page.getByRole('button', { name: /Choose food/ }).click();
+    await page.getByLabel('Search foods').fill('rajmah');
+    await page.getByRole('button', { name: /^Rajma curry, 216 kcal/ }).click();
+    await page.getByRole('dialog', { name: 'Rajma curry' }).getByRole('button', { name: /^Log / }).click();
+    await expect(page.getByRole('status').getByText(/Added Rajma curry/)).toBeVisible();
+    const logged = page.getByRole('button', { name: /Edit Rajma curry/ }).first();
+    await expect(logged).toBeVisible();
+    for (const tab of ['today', 'workout', 'progress', 'settings', 'food']) await page.goto(`/#/${tab}`);
+    await expect(logged).toBeVisible();
+    await page.reload();
+    await expect(logged).toBeVisible();
+    // Leave the demo and come back (same phone): entries are kept, not re-seeded.
+    await page.getByRole('button', { name: 'Demo data' }).click();
+    await page.getByRole('button', { name: 'Leave demo' }).click();
+    await page.getByRole('button', { name: /Explore the demo/ }).click();
+    await page.goto('/#/food');
+    await expect(page.getByRole('button', { name: /Edit Rajma curry/ }).first()).toBeVisible();
+    await page.reload();
+    await expect(page.getByRole('button', { name: /Edit Rajma curry/ }).first()).toBeVisible();
+  });
+});
+
+test.describe('no-result fallback (Oct 12 review: samosa → masala dosa)', () => {
+  test('"samosa" never suggests an unrelated dish; the hidden match is named, the list food is pointed to', async ({ page }) => {
+    await enterDemo(page, 'food');
+    await page.getByRole('button', { name: 'Add food' }).click();
+    await page.getByRole('button', { name: /Choose food/ }).click();
+    await page.getByLabel('Search foods').fill('samosa');
+    const panel = page.locator('.no-result');
+    await expect(panel).toContainText('Aloo samosa is in our database but still being verified');
+    await expect(panel).toContainText('Punjabi samosa');
+    await expect(panel).not.toContainText(/dosa/i);
+    await expect(panel).not.toContainText(/kcal/); // a hidden dish never shows numbers
+    // "kadhi": the only close match is quarantined → nothing suggested at all.
+    await page.getByLabel('Search foods').fill('kadhi');
+    await expect(page.locator('.no-result')).not.toContainText(/kadhi pakoda|log as/i);
+  });
+});

@@ -63,7 +63,8 @@ export function samplePlan(profileVersion: number) {
 
 export class MockSupabase {
   requests: Recorded[] = [];
-  docs = new Map<string, { version: number; body: unknown }>();
+  docs = new Map<string, { version: number; body: unknown; seq?: number; deleted?: boolean }>();
+  private seq = 0;
   consent: { user_id: string; consent_type: string; granted: boolean; notice_version?: string }[] = [];
   aiResponses: Record<string, unknown> = {};
   aiHandler: AiHandler | null = null;
@@ -206,12 +207,19 @@ export class MockSupabase {
         if (op.body.owner_id !== me) return { op_id: op.op_id, status: 'rejected' };
         const k = `${me}:${op.collection}:${op.doc_id}`;
         const v = (this.docs.get(k)?.version ?? 0) + 1;
-        this.docs.set(k, { version: v, body: op.body });
+        this.docs.set(k, { version: v, body: op.body, seq: ++this.seq, deleted: Boolean((op.body as { deleted_at?: string | null }).deleted_at) });
         return { op_id: op.op_id, status: 'applied', server_version: v };
       });
       return this.json(route, 200, out);
     }
-    if (p === '/rest/v1/rpc/sync_pull') return this.json(route, 200, []);
+    if (p === '/rest/v1/rpc/sync_pull') {
+      // Like the real RPC: the caller's own documents changed after p_since, in change order.
+      const { p_since = 0, p_limit = 500 } = body as { p_since?: number; p_limit?: number };
+      const rows = [...this.docs].filter(([k, d]) => k.startsWith(`${me}:`) && (d.seq ?? 0) > p_since)
+        .map(([k, d]) => { const [, collection, ...rest] = k.split(':'); return { collection, doc_id: rest.join(':'), version: d.version, change_seq: d.seq ?? 0, body: d.body, deleted: d.deleted ?? false }; })
+        .sort((a, b) => a.change_seq - b.change_seq).slice(0, p_limit);
+      return this.json(route, 200, rows);
+    }
     if (p === '/rest/v1/consent_events') {
       if (req.method() === 'GET') return this.json(route, 200, []);
       const rows = Array.isArray(body) ? body : [body];

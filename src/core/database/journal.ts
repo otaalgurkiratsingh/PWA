@@ -300,12 +300,23 @@ export class Journal {
    * Apply a document pulled from the cloud. Skipped when this device has a pending change for the
    * same document (that change will be pushed and conflict-checked by the server instead).
    */
-  async applyRemote(aggregate: AggregateName, id: string, body: unknown, serverVersion: number): Promise<'applied' | 'pending_local' | 'invalid'> {
-    const pending = await this.db.getAllFromIndex('outbox', 'by_aggregate', id);
-    if (pending.some((o) => o.aggregate === aggregate && o.status === 'pending')) return 'pending_local';
+  async applyRemote(aggregate: AggregateName, id: string, body: unknown, serverVersion: number): Promise<'applied' | 'pending_local' | 'stale' | 'invalid'> {
     const parsed = SCHEMAS[aggregate].safeParse(body);
     if (!parsed.success || (parsed.data as { owner_id: string }).owner_id !== this.ownerId) return 'invalid';
-    const tx = this.db.transaction([aggregate, 'sync_state'], 'readwrite');
+    // One transaction for the check and the write: a local save landing in between must never be
+    // overwritten by the cloud copy (it would then be pushed back with the older content).
+    const tx = this.db.transaction([aggregate, 'outbox', 'sync_state'], 'readwrite');
+    const pending = await tx.objectStore('outbox').index('by_aggregate').getAll(id);
+    if (pending.some((o) => o.aggregate === aggregate && o.status === 'pending')) {
+      await tx.done;
+      return 'pending_local';
+    }
+    // An echo of a version this device already has (e.g. its own push) changes nothing.
+    const known = (await tx.objectStore('sync_state').get(`sv:${aggregate}:${id}`)) as number | undefined;
+    if (typeof known === 'number' && serverVersion <= known && (await tx.objectStore(aggregate).get(id as never))) {
+      await tx.done;
+      return 'stale';
+    }
     void tx.objectStore(aggregate).put(parsed.data as never);
     void tx.objectStore('sync_state').put(serverVersion, `sv:${aggregate}:${id}`);
     await tx.done;

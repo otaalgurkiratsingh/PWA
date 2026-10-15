@@ -729,3 +729,33 @@ test('invite: give a month, get a month — own code, editable share, redeem rul
   await page.getByRole('button', { name: 'Share', exact: true }).click();
   await expect.poll(() => page.evaluate(() => (window as unknown as { shared: string[] }).shared)).toEqual([`Try this! ${mine}`]);
 });
+
+test('a real account keeps logged meals: backed up, survives reload, and comes back after "remove this phone’s copy"', async ({ page }) => {
+  const sb = new MockSupabase([OWNER]);
+  await sb.install(page);
+  await signIn(page, OWNER.email);
+  await onboardSimple(page);
+  await page.goto('/#/food');
+  await page.getByRole('button', { name: 'Add food' }).click();
+  await page.getByRole('button', { name: /Choose food/ }).click();
+  await page.getByLabel('Search foods').fill('rajmah');
+  await page.getByRole('button', { name: /^Rajma curry, 216 kcal/ }).click();
+  await page.getByRole('dialog', { name: 'Rajma curry' }).getByRole('button', { name: /^Log / }).click();
+  await expect(page.getByRole('status').getByText(/Added Rajma curry/)).toBeVisible();
+  // Backed up to the person's own rows.
+  await expect.poll(() => [...sb.docs.keys()].some((k) => k.startsWith(`${OWNER.id}:meal_entries:`)), { timeout: 15_000 }).toBe(true);
+  await page.reload();
+  await expect(page.getByRole('button', { name: /Edit Rajma curry/ }).first()).toBeVisible();
+  // Sign out and delete this phone's copy, then sign in again: the meal is restored from backup.
+  await page.goto('/#/settings');
+  await expect(page.getByText(/Backed up/).first()).toBeVisible({ timeout: 15_000 });
+  await page.getByRole('button', { name: 'Sign out' }).first().click();
+  await page.getByRole('button', { name: 'Sign out and remove this phone’s copy' }).click();
+  await expect(page.getByRole('heading', { name: /Eat well. Train smart./ })).toBeVisible();
+  // The phone's copy is really gone (checked without opening it, which would re-create it).
+  expect(await page.evaluate(async (id) => (await indexedDB.databases()).some((d) => d.name === `rozana-journal-${id}`), OWNER.id)).toBe(false);
+  await signIn(page, OWNER.email);
+  await expect(page.getByRole('heading', { level: 1, name: 'Today' })).toBeVisible();
+  await page.goto('/#/food');
+  await expect(page.getByRole('button', { name: /Edit Rajma curry/ }).first()).toBeVisible({ timeout: 15_000 });
+});

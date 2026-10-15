@@ -76,7 +76,18 @@ export function JournalProvider({ ownerId, mode, email, onboarding, children }: 
         const j = await Journal.open(ownerId, { onCommit: () => commitListener.current?.() });
         opened = j;
         if (mode === 'demo') await seedDemoIfEmpty(j, ownerId, localDateIn(tz), tz);
-        const p = await j.getProfile();
+        let p = await j.getProfile();
+        // A signed-in member on a new phone (or after "remove this phone's copy"): restore their own
+        // backup BEFORE deciding they need onboarding, so nothing they logged looks lost and a fresh
+        // onboarding never competes with their saved profile. Offline → onboarding/sync later as before.
+        if (mode === 'account' && !p && navigator.onLine) {
+          try {
+            await syncExclusive(j, supabaseTransport);
+            p = await j.getProfile();
+          } catch {
+            // Not configured or unreachable: carry on with what this phone has.
+          }
+        }
         const t = await j.getTimer();
         if (cancelled) return j.close();
         setTimerState(t);

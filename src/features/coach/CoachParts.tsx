@@ -98,7 +98,7 @@ export function AssistantBody({ output, onQuestion, onDraftPlan, showDetails = t
       {showDetails && output.suggestions.length ? (
         <div className="review-block">
           <h3>Suggestions</h3>
-          <ul>{output.suggestions.map((x, i) => <li key={i}>{x.text}{x.rationale ? <span className="label"> · {x.rationale}</span> : null}</li>)}</ul>
+          <ul>{uniqueByText(output.suggestions).map((x, i) => <li key={i}>{x.text}{x.rationale ? <span className="label"> · {x.rationale}</span> : null}</li>)}</ul>
         </div>
       ) : null}
       {showDetails && output.limitations.length ? (
@@ -109,7 +109,7 @@ export function AssistantBody({ output, onQuestion, onDraftPlan, showDetails = t
       ) : null}
       {output.questions.length && onQuestion ? (
         <div className="chips wrap" aria-label="Answer a question">
-          {output.questions.map((q) => <button key={q.id} className="chip" onClick={() => onQuestion(q.text)}>{q.text}</button>)}
+          {uniqueByText(output.questions).map((q) => <button key={q.id} className="chip" onClick={() => onQuestion(q.text)}>{q.text}</button>)}
         </div>
       ) : null}
       {output.candidate_memories.map((m, i) => (
@@ -136,4 +136,18 @@ export function DataWindow({ from, to }: { from: string; to: string }) {
 /** Opens the chat screen; used on Today, Coach and elsewhere. */
 export function AskCoachButton({ label = 'Ask Coach' }: { label?: string }) {
   return <button className="btn" onClick={() => navigate('chat', 'new')}><Icon name="sparkle" size={18} /> {label}</button>;
+}
+
+/**
+ * The model sometimes repeats a question (e.g. "What protein should I aim for?" twice), and old
+ * threads keep what it sent. Show each question once: same words, ignoring case and punctuation.
+ */
+export function uniqueByText<T extends { text: string }>(items: readonly T[]): T[] {
+  const seen = new Set<string>();
+  return items.filter((x) => {
+    const k = x.text.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+    if (!k || seen.has(k)) return false;
+    seen.add(k);
+    return true;
+  });
 }

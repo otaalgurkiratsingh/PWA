@@ -7,7 +7,7 @@ import { aiErrorText, callAi, reviewOutputFromStored, type StoredReview } from '
 import { Icon } from '@/core/design/icons';
 import { Section, Sheet } from '@/core/design/ui';
 import { formatShortDate } from '@/core/time/localDate';
-import { AskCoachButton, AssistantBody, CoachGate, CoachScope } from './CoachParts';
+import { AskCoachButton, AssistantBody, CoachGate, CoachScope, uniqueByText } from './CoachParts';
 
 interface Proposal { id: string; before_value: { energy_kcal: number | null; protein_g: number | null }; after_value: { energy_kcal: number | null; protein_g: number | null; rationale?: string }; status: string }
 interface Memory { id: string; fact: string }
@@ -27,14 +27,14 @@ function ReviewView({ review, proposal, onDecide }: { review: StoredReview; prop
       {o.observations.length ? (
         <div className="review-block">
           <h3>What your logs show</h3>
-          <ul>{o.observations.map((x, i) => <li key={i}>{x.text}</li>)}</ul>
+          <ul>{uniqueByText(o.observations).map((x, i) => <li key={i}>{x.text}</li>)}</ul>
         </div>
       ) : null}
       <AssistantBody output={{ ...o, questions: [] }} />
       {o.questions.length ? (
         <div className="review-block">
           <h3>Questions for you</h3>
-          <ul>{o.questions.map((x) => <li key={x.id}>{x.text}</li>)}</ul>
+          <ul>{uniqueByText(o.questions).map((x) => <li key={x.id}>{x.text}</li>)}</ul>
         </div>
       ) : null}
       {proposal && proposal.status === 'proposed' ? (

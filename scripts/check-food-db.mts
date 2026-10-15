@@ -7,7 +7,7 @@
 // plus: serving maths, combos, restaurant labels, and the brief's QA searches (§11).
 import { readFileSync } from 'node:fs';
 import {
-  closestDish, complete, coveredByDb, coveredNames, cuisineOf, isPublic, MACRO_KEYS, parseFoodDb, scaleMacros, searchDishes, searchRestaurants, TYPICAL_LABEL, type Dish,
+  closestDish, pendingMatch, complete, coveredByDb, coveredNames, cuisineOf, isPublic, MACRO_KEYS, parseFoodDb, scaleMacros, searchDishes, searchRestaurants, TYPICAL_LABEL, type Dish,
 } from '../shared/fooddb/foodDb.ts';
 
 const results: { name: string; ok: boolean; detail: string }[] = [];
@@ -38,6 +38,8 @@ const probe = (q: string) => {
   for (const h of searchDishes(db!, q, { limit: 500 })) if (!isPublic(h.dish) || hidden.includes(h.dish)) leaks.push(`${q} → ${h.dish.id}`);
   const c = closestDish(db!, q);
   if (c && !isPublic(c.dish)) leaks.push(`closest(${q}) → ${c.dish.id}`);
+  const p = pendingMatch(db!, q);
+  if (p?.dish.needs_review) leaks.push(`pending(${q}) → ${p.dish.id} (quarantined)`);
   for (const r of searchRestaurants(db!, q)) for (const it of r.items) if (!isPublic(it.dish)) leaks.push(`restaurant(${q}) → ${it.dish.id}`);
 };
 for (const d of hidden) {
@@ -103,6 +105,23 @@ check('kadhi pakoda (quarantined) is not in search', !searchDishes(db!, 'kadhi p
   const picker = readFileSync(new URL('../src/features/food/FoodPicker.tsx', import.meta.url), 'utf8');
   check('reference values only fill gaps (no food shows two sources)', covered.length > 0 && /filter\(\(f\) => !coveredByDb\(dbNames, f\)\)/.test(picker),
     `${covered.length} list foods covered by the database (hidden); ${withRef} others use CNF/USDA; ${shown.length - withRef} stay "not set"`);
+}
+
+// Extra: the no-results fallback never offers an unrelated dish (Oct 12 review: "samosa" offered
+// "Masala dosa"). A hidden Tier-2 match is named as "being verified"; a quarantined one, nothing.
+{
+  const want: [string, string | null, string | null][] = [
+    // query, closest loggable (or null), pending name (or null)
+    ['samosa', null, 'samosa'], ['dosa', 'masala dosa', 'plain dosa'], ['kadhi pakoda', null, null], ['momos', null, null], ['dal tadka', 'dal', null],
+  ];
+  const bad = want.filter(([q, pub, pend]) => {
+    const c = closestDish(db!, q);
+    const p = pendingMatch(db!, q);
+    const pubOk = pub === null ? c === null : !!c && c.dish.name.toLowerCase().includes(pub);
+    const pendOk = pend === null ? p === null : !!p && p.dish.name.toLowerCase().includes(pend);
+    return !pubOk || !pendOk;
+  }).map(([q]) => `${q}: closest=${closestDish(db!, q)?.dish.name ?? '-'}, pending=${pendingMatch(db!, q)?.dish.name ?? '-'}`);
+  check('no-results fallback never suggests an unrelated dish', bad.length === 0, bad.join('; ') || want.map(([q]) => q).join(', '));
 }
 
 // Extra: bicultural ranking. Suggestions at breakfast, lunch and dinner show both Indian and

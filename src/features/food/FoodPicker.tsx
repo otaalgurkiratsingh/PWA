@@ -176,7 +176,7 @@ export function FoodPicker({ presets, date, slot, onPickPreset, onClose, initial
                 onPick={() => setDish({ d: h.dish, restaurant: null, method: query ? 'search' : 'suggestion' })} />)}
             </div>
           ) : null}
-          {nothing && db ? <NoResultPanel q={query} db={db} vegOnly={vegOnly} onOpenDish={(d) => setDish({ d, restaurant: null, method: 'closest_match' })} onQuickAdd={() => setQuick(true)} /> : null}
+          {nothing && db ? <NoResultPanel q={query} db={db} vegOnly={vegOnly} listedBelow={extraFoods.map((f) => f.name)} onOpenDish={(d) => setDish({ d, restaurant: null, method: 'closest_match' })} onQuickAdd={() => setQuick(true)} /> : null}
           {!nothing ? <button className="link" style={{ alignSelf: 'flex-start' }} onClick={() => setQuick(true)}><Icon name="plus" size={16} /> Quick-add calories</button> : null}
         </div>
 

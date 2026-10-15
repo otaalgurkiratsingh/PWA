@@ -218,6 +218,34 @@ describe('v2 upgrade, restore and sync hooks', () => {
     expect(await j.applyRemote('meal_entries', m.id, { ...m, owner_id: 'intruder' }, 9)).toBe('invalid');
   });
 
+  it('an echo of a version this device already has never overwrites it (own push coming back)', async () => {
+    const m = meal({ name: 'Newest' });
+    const { op_id } = await j.commit('meal_entries', m) as { op_id: string };
+    await j.acknowledge([{ op_id, aggregate: 'meal_entries', aggregate_id: m.id, server_version: 4 }]);
+    expect(await j.applyRemote('meal_entries', m.id, { ...m, name: 'Older cloud copy' }, 3)).toBe('stale');
+    expect(await j.applyRemote('meal_entries', m.id, { ...m, name: 'Same version' }, 4)).toBe('stale');
+    expect((await j.mealsOn('2026-10-09'))[0]!.name).toBe('Newest');
+    // A genuinely newer cloud version (another device) is applied.
+    expect(await j.applyRemote('meal_entries', m.id, { ...m, name: 'Other phone' }, 5)).toBe('applied');
+    expect((await j.mealsOn('2026-10-09'))[0]!.name).toBe('Other phone');
+  });
+
+  it('a local save that races a pull is never overwritten (check and write are one transaction)', async () => {
+    const m = meal({ name: 'Before' });
+    const { op_id } = await j.commit('meal_entries', m) as { op_id: string };
+    await j.acknowledge([{ op_id, aggregate: 'meal_entries', aggregate_id: m.id, server_version: 1 }]);
+    // Start the pull's apply and a local edit at the same time.
+    const [applied] = await Promise.all([
+      j.applyRemote('meal_entries', m.id, { ...m, name: 'Cloud' }, 2),
+      j.commit('meal_entries', { ...m, name: 'Local edit' }),
+    ]);
+    const now = (await j.mealsOn('2026-10-09'))[0]!.name;
+    // Either the cloud copy landed first and the edit came after it, or the edit won outright.
+    expect(now).toBe('Local edit');
+    expect(['applied', 'pending_local']).toContain(applied);
+    expect(await j.pendingOps()).toHaveLength(1);
+  });
+
   it('a conflict keeps the losing local copy and can restore it', async () => {
     const m = meal();
     const { op_id } = await j.commit('meal_entries', { ...m, name: 'Mine' }) as { op_id: string };

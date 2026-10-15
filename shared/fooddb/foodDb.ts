@@ -293,23 +293,68 @@ function dice(a: string, b: string): number {
   return total ? (2 * inter) / total : 0;
 }
 
-/** T14: the closest public dish for a search with no results (null if nothing is reasonably close). */
-export function closestDish(db: FoodDb, q: string, opts: { vegOnly?: boolean } = {}): { dish: Dish; similarity: number } | null {
+export interface ClosestMatch {
+  dish: Dish;
+  similarity: number;
+  /** 'public': loggable. 'verifying': a Tier-2 dish that IS the food searched for but isn't
+   *  loggable yet (shown by name only, never with numbers). */
+  status: 'public' | 'verifying';
+}
+
+function similarityTo(d: Dish, query: string): { s: number; related: boolean } {
+  const qw = query.split(' ');
+  let best = { s: 0, related: false };
+  for (const k of keys(d).all) {
+    // Shared words count most ("dal tadka" → "… dal"), spelling similarity breaks ties.
+    const kw = k.split(' ');
+    const shared = qw.filter((w) => w.length >= 3 && kw.some((x) => x === w || (w.length >= 5 && (x.startsWith(w) || w.startsWith(x))))).length / qw.length;
+    const di = dice(query, k);
+    const s = Math.max(di, 0.5 * di + 0.5 * shared);
+    // Related = a real shared word, or very close spelling ("rajmah chawl"). Letter overlap alone
+    // ("samosa" vs "masala dosa") is not a relation.
+    const related = shared > 0 || di >= 0.6;
+    if (s > best.s || (s === best.s && related && !best.related)) best = { s, related };
+  }
+  return best;
+}
+
+/**
+ * T14: the closest LOGGABLE dish for a search with no results — never an unrelated one ("samosa"
+ * is not "masala dosa"). Null when nothing public is related, or when the best match overall is a
+ * quarantined dish (then nothing is suggested at all).
+ */
+export function closestDish(db: FoodDb, q: string, opts: { vegOnly?: boolean } = {}): ClosestMatch | null {
+  const m = matchesFor(db, q, opts);
+  return m.quarantinedWins ? null : m.pub;
+}
+
+/**
+ * The food searched for exists but is still being verified (Tier 2): returned by name so the panel
+ * can say so instead of offering a lookalike. Never a quarantined (needs_review) dish, never numbers.
+ */
+export function pendingMatch(db: FoodDb, q: string, opts: { vegOnly?: boolean } = {}): ClosestMatch | null {
+  const m = matchesFor(db, q, opts);
+  if (m.quarantinedWins || !m.hidden) return null;
+  return !m.pub || m.hidden.similarity > m.pub.similarity ? m.hidden : null;
+}
+
+function matchesFor(db: FoodDb, q: string, opts: { vegOnly?: boolean }) {
   const query = tokens(q).join(' ');
-  if (query.length < 2) return null;
-  let best: { dish: Dish; similarity: number } | null = null;
-  for (const d of db.publicDishes) {
-    if (opts.vegOnly && dietOf(d) !== 'veg') continue;
-    for (const k of keys(d).all) {
-      // Shared words count most ("dal tadka" → "… dal"), spelling similarity breaks ties.
-      const qw = query.split(' ');
-      const kw = k.split(' ');
-      const shared = qw.filter((w) => w.length >= 3 && kw.includes(w)).length / qw.length;
-      const s = Math.max(dice(query, k), 0.5 * dice(query, k) + 0.5 * shared);
-      if (!best || s > best.similarity) best = { dish: d, similarity: s };
+  let pub: ClosestMatch | null = null;
+  let hidden: ClosestMatch | null = null;
+  let quarantined = 0;
+  if (query.length >= 2) {
+    for (const d of db.dishes) {
+      if (opts.vegOnly && dietOf(d) !== 'veg') continue;
+      const { s, related } = similarityTo(d, query);
+      if (!related || s < 0.4) continue;
+      if (d.needs_review) quarantined = Math.max(quarantined, s);
+      else if (isPublic(d)) { if (!pub || s > pub.similarity) pub = { dish: d, similarity: s, status: 'public' }; }
+      else if (!hidden || s > hidden.similarity) hidden = { dish: d, similarity: s, status: 'verifying' };
     }
   }
-  return best && best.similarity >= 0.4 ? best : null;
+  const top = Math.max(pub?.similarity ?? 0, hidden?.similarity ?? 0);
+  return { pub, hidden, quarantinedWins: quarantined > 0 && quarantined >= top };
 }
 
 export interface RestaurantHit {

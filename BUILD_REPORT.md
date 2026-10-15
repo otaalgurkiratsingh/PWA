@@ -188,27 +188,45 @@ The flaky onboarding-consent failure that appeared on the Phase 4 copy was the P
 | no-results fallback never suggests an unrelated dish | PASS · samosa, dosa, kadhi pakoda, momos, dal tadka |
 | bicultural ranking | PASS |
 
-### Deploy: `supabase link` is not available here, so nothing was deployed
+### Deploy status (updated 2026-10-15, after the Supabase connector was added)
 
-The Supabase CLI isn't installed in this container and no project is linked (no `supabase/.temp/project-ref`). Run these on your computer, in this order:
+**Done for you through the Supabase connector:**
+- **New project** `trainluma`: ref `ukmkcnynfrxidexwaltf`, region `ca-central-1` (Canada Central), free plan, in the TrainLuma organization. URL `https://ukmkcnynfrxidexwaltf.supabase.co`.
+- **All 6 migrations applied in order.** The database fetched each file from GitHub at commit `db17c64`, and its MD5 was checked against the repository copy before running.
+  - The migration history records them under their real versions (`20261009000001` … `20261013000006`), so `supabase db push` will see them as applied.
+- **Checks after applying:**
+  - 43 public tables, all with RLS on; 15 private tables.
+  - Private bucket `progress-photos`.
+  - pg_cron jobs: `trainluma-coach-expire`, `trainluma-circle-posts-expire`, `trainluma-analytics-expire` (the last two from `supabase/admin/growth.sql`).
+- **Security advisor:** the findings are expected by design.
+  - Five RPC-only tables have no client policies: analytics, food requests, referral codes, redemptions and credits.
+  - 22 SECURITY DEFINER RPCs are callable by signed-in users, and each checks membership itself.
+  - One hygiene warning: `pg_net` sits in `public` (it can't be moved without drop/re-create; harmless).
+- **Leftover:** a small helper table, `private._tl_migration_fetch` (6 request ids), from the download step. It isn't exposed through the API. Dropping it needs your OK: `drop table private._tl_migration_fetch;`.
 
-```bash
-git fetch origin && git checkout claude/one-shot-build
-npm install
-npx supabase login                          # once
-npx supabase link --project-ref <YOUR_PROJECT_REF>
-npx supabase db push                        # applies 20261013000005_growth.sql (if not yet) and 20261013000006_growth2.sql
-npx supabase functions deploy ai            # needed for food-plan drafts (diet_draft) and the interview context
-npx supabase functions deploy notify        # needed after migration 0005 (notifications v2), harmless otherwise
-```
+**Still yours: these need a terminal on your computer, a dashboard click, or a secret only you should type.**
+1. **Deploy the two Edge Functions.** This container can't reach the Supabase management API, and the connector can't upload the 487 KB `ai` bundle. On your computer:
 
-Then:
-- Run the housekeeping block at the top of `supabase/admin/growth.sql` once, if you haven't since migration 0005.
-- Deploy the branch on Netlify, or merge it.
+   ```bash
+   git fetch origin && git checkout claude/one-shot-build && npm install
+   npx supabase login
+   npx supabase link --project-ref ukmkcnynfrxidexwaltf
+   npx supabase functions deploy ai
+   npx supabase functions deploy notify
+   ```
+
+2. **Function secrets.** Supabase → Edge Functions → Secrets (OWNER_GUIDE §2d/§2e):
+   - `GEMINI_API_KEY`, `GEMINI_MODEL`, `AI_PRICE_INPUT_PER_MTOK`, `AI_PRICE_OUTPUT_PER_MTOK`, `ALLOWED_ORIGINS`
+   - for reminders: `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`, `NOTIFY_CRON_SECRET`, then run `supabase/admin/notifications.sql` (it schedules `trainluma-notify`).
+3. **Auth settings** (dashboard):
+   - Email sign-in on, new sign-ups off, 6-digit OTP, and the code email template.
+   - SMTP sender; Site URL / Redirect URL = your site.
+4. **Netlify environment variables**, then redeploy the site:
+   - `VITE_SUPABASE_URL=https://ukmkcnynfrxidexwaltf.supabase.co`
+   - `VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_i5mVtRrxURC5LGp7Ln9Ryg_HztkUweF`. This publishable key is meant to be public.
+5. **Invite yourself:** Authentication → Users → Add user, then run the first statement in `supabase/admin/members.sql` with your email.
 
 The Netlify build downloads the 94 MB of form photos (about 15 s) unless they're cached. Set `SKIP_EXERCISE_IMAGES=1` to skip them; the app then shows the steps-only fallback.
-
-Details are in `docs/OWNER_GUIDE.md` §2g and §2h.
 
 ---
 

@@ -38,5 +38,7 @@ if (flag !== '--write') {
 }
 writeFileSync(new URL('../supabase/functions/_shared/data/indian-dishes-v1.json', import.meta.url), `${JSON.stringify(raw, null, 2)}\n`);
 console.log('  installed → supabase/functions/_shared/data/indian-dishes-v1.json');
+// The food-plan composer's shelf is generated from the database; keep it in step.
+execSync('node scripts/build-diet-shelf.mts', { stdio: 'inherit' });
 execSync('node scripts/check-food-db.mts', { stdio: 'inherit' });
-console.log('Next: npm run check (unit tests that pin counts, e.g. "72 public", need their numbers updated).');
+console.log('Next: npm run check (unit tests that pin counts, e.g. "72 public", need their numbers updated), then redeploy the ai function.');

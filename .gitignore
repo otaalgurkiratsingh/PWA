@@ -48,3 +48,6 @@ pw-tmp.config.ts
 pw-auth.config.ts
 pw-both.config.ts
 .claude/worktrees/
+
+# build caches (form photos downloaded once by scripts/vendor-exercise-images.mts)
+.cache/

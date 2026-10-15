@@ -9,6 +9,7 @@ import { WEEKDAY_SHORT, suggestedDay } from '@/domain/training/plan';
 import { reopenSession, sessionProgress } from '@/domain/training/session';
 import { ActiveWorkout, FinishSummary } from './ActiveWorkout';
 import { useWorkout } from './useWorkout';
+import { FormButton } from './FormButton';
 
 const MUSCLE_LABEL: Record<string, string> = { chest: 'Chest', back: 'Back', legs: 'Legs', shoulders: 'Shoulders', arms: 'Arms', core: 'Core', full: 'Full body' };
 
@@ -76,7 +77,8 @@ export function WorkoutScreen() {
                       {d.exercises.map((e) => (
                         <li key={e.id} className="row" style={{ gap: 8 }}>
                           <span style={{ color: 'var(--train-ink)', display: 'inline-flex' }}><EquipmentArt equipment={e.variant} size={20} /></span>
-                          {e.name} · {e.sets.filter((s) => s.type === 'working').length} sets
+                          <span className="grow ex-list-name">{e.name} · {e.sets.filter((s) => s.type === 'working').length} sets</span>
+                          <FormButton exerciseKey={e.exercise_key} equipment={e.variant} name={e.name} />
                         </li>
                       ))}
                     </ul>

@@ -13,6 +13,7 @@ import { useWorkout } from './useWorkout';
 import { track } from '@/core/analytics/analytics';
 import { sessionPRs } from '@/features/insights/recap';
 import { CircleWinShare } from '@/features/social/CircleWinShare';
+import { FormButton } from './FormButton';
 
 const parseNum = (v: string): number | null => {
   if (v.trim() === '') return null;
@@ -121,6 +122,7 @@ function ExerciseCard({ session, ex, history, expanded, onToggle, unit, editable
 
   return (
     <section className="card ex-card" aria-label={ex.name}>
+      <div className="ex-head-row">
       <button className="ex-head" onClick={onToggle} aria-expanded={expanded}>
         <span className="ex-art"><EquipmentArt equipment={ex.variant} /></span>
         <span className="grow">
@@ -131,6 +133,8 @@ function ExerciseCard({ session, ex, history, expanded, onToggle, unit, editable
         {allDone ? <span className="tag train"><Icon name="check" size={14} /> {done === ex.sets.length ? 'Done' : 'Ended'}</span> : null}
         <Icon name={expanded ? 'chevronUp' : 'chevronDown'} />
       </button>
+      <FormButton exerciseKey={ex.exercise_key} equipment={ex.variant} name={ex.name} />
+      </div>
       {expanded ? (
         <div className="ex-body">
           <p className="label" style={{ marginBottom: 8 }}>

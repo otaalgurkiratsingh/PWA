@@ -7,6 +7,12 @@
 
 > "Implemented" is not "tested", and "tested here" is not "tested on your phone or your live Supabase project". Each row below says which.
 
+## Pass 5 / Phase 4 (2026-10-15): exercise form demos
+
+| Area | Done |
+|---|---|
+| **Form demos** | A **Form** button sits next to every exercise name: in the workout, on the plan list, in the plan editor and in the exercise picker. It opens the How-to sheet in place. At the top, the start and end photos from free-exercise-db (public domain, commit `f00c92c`) crossfade on a 1.6 s loop. With reduced motion they show side by side, labelled Start and End. Steps, muscles, equipment and level stay below. Exercises without photos (the 34 written for TrainLuma, three dataset entries without photos, and your own exercises) show "No photo demo for this one yet — steps below." If a photo fails to load, the demo is hidden and the steps stay. The 1,656 photos (94 MB, 828 exercises) are downloaded once at build time into `.cache/`, copied into `dist/exercise-img/` with a manifest, and never loaded from GitHub at runtime. They are not in the JS bundle or the precache list. The service worker keeps up to 200 viewed photos in a separate cache that survives app updates. The picker also has 7 muscle-map cards (glutes match exercises whose primary muscles include glutes, D45). Main JS gzip went from 253.1 to 253.7 kB, because the sheet and the cards load lazily. Tests: unit (paths, manifest, fallback, SW cache cap and offline) and Playwright (session-view demo animates, imageless fallback, reduced motion, offline after viewing, muscle card filter). |
+
 ## Pass 4 (2026-10-13): food database, frictionless logging, retention + referral
 
 Built from `docs/spec/TRAINLUMA_FOOD_DB_BUILD_BRIEF.md` in three phases. The full per-task list, verification results (pass/fail per check), simplifications and owner decisions are in **`BUILD_REPORT.md`** at the repo root.

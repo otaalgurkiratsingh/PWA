@@ -47,7 +47,8 @@ test.describe('first launch, theme and sign-in placeholder', () => {
 
   test('without backend setup, Continue explains the setup state and makes no network call', async ({ page }) => {
     const calls: string[] = [];
-    page.on('request', (r) => { if (!r.url().startsWith('http://localhost:4173')) calls.push(r.url()); });
+    const base = test.info().project.use.baseURL ?? 'http://localhost:4173'; // E2E_DEMO_PORT may move it
+    page.on('request', (r) => { if (!r.url().startsWith(base)) calls.push(r.url()); });
     await page.goto('/');
     await page.getByLabel('Email').fill('me@example.com');
     await page.getByRole('button', { name: 'Continue' }).click();
@@ -638,7 +639,7 @@ test.describe('exercise library', () => {
     await sheet.getByRole('group', { name: 'Muscle group' }).getByRole('button', { name: 'Legs' }).click();
     await sheet.getByLabel('Equipment').selectOption('dumbbell');
     await sheet.getByLabel('Search exercises').fill('bulgarian');
-    await sheet.getByRole('button', { name: /^How to do .*Bulgarian/i }).first().click();
+    await sheet.getByRole('button', { name: /^Form: how to do .*Bulgarian/i }).first().click();
     const how = page.getByRole('dialog', { name: /Bulgarian/i });
     await expect(how.locator('ol.how-to li').first()).toBeVisible();
     await expect(page.locator('.launch-splash')).toHaveCount(0);
@@ -862,5 +863,104 @@ test.describe('no-result fallback (Oct 12 review: samosa → masala dosa)', () =
     // "kadhi": the only close match is quarantined → nothing suggested at all.
     await page.getByLabel('Search foods').fill('kadhi');
     await expect(page.locator('.no-result')).not.toContainText(/kadhi pakoda|log as/i);
+
+test.describe('Phase 4: form demos', () => {
+  /** Both photos decoded (naturalWidth > 0). */
+  const photosLoaded = (page: Page) => page.locator('[data-testid="form-demo"] img').evaluateAll((imgs) =>
+    imgs.length === 2 && imgs.every((i) => (i as HTMLImageElement).complete && (i as HTMLImageElement).naturalWidth > 0));
+  const endAnimations = (page: Page) => page.locator('[data-testid="form-demo"] .form-frame.end').evaluate((el) =>
+    el.getAnimations().map((a) => ({ state: a.playState, name: (a as CSSAnimation).animationName })));
+
+  test('Form from the workout session view: two photos crossfading on a loop, steps kept', async ({ page }) => {
+    await enterDemo(page, 'workout');
+    await page.getByRole('button', { name: 'Start Push' }).click();
+    const bench = page.getByRole('region', { name: 'Bench press' });
+    await bench.getByRole('button', { name: 'Form: how to do Bench press' }).click();
+    const how = page.getByRole('dialog', { name: 'Bench press' });
+    await expect(how.getByAltText('Bench press — start position')).toBeVisible();
+    await expect(how.getByAltText('Bench press — end position')).toBeAttached();
+    await expect.poll(() => photosLoaded(page)).toBe(true);
+    await expect(how.locator('.form-demo.ready')).toBeVisible();
+    await expect.poll(() => endAnimations(page)).toEqual([{ state: 'running', name: 'form-crossfade' }]);
+    await expect(how.getByText('Photos: free-exercise-db (public domain)')).toBeVisible();
+    await expect(how.locator('ol.how-to li').first()).toBeVisible();
+    await expect(how).toContainText('barbell');
+    await expect(page.locator('.launch-splash')).toHaveCount(0);
+    await page.screenshot({ path: 'docs/screenshots/52-exercise-form-demo.png' });
+    // Still on the workout: closing the sheet returns to the same session.
+    await page.keyboard.press('Escape');
+    await expect(how).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Finish', exact: true })).toBeVisible();
+    await expect(page).toHaveURL(/#\/workout/);
+  });
+
+  test('an exercise without photos shows the steps and a neutral line, never a broken image', async ({ page }) => {
+    await enterDemo(page, 'workout');
+    await page.getByRole('button', { name: 'Edit plan' }).click();
+    await page.getByRole('button', { name: 'Add exercise' }).first().click();
+    const sheet = page.getByRole('dialog', { name: 'Add exercise' });
+    await sheet.getByLabel('Search exercises').fill('burpee');
+    await sheet.getByRole('button', { name: /^Form: how to do Burpee/ }).first().click();
+    const how = page.getByRole('dialog', { name: /Burpee/ });
+    await expect(how.getByText('No photo demo for this one yet — steps below.')).toBeVisible();
+    await expect(how.locator('ol.how-to li').first()).toBeVisible();
+    await expect(how.locator('img')).toHaveCount(0);
+    await expect(how.locator('[data-testid="form-demo"]')).toHaveCount(0);
+  });
+
+  test('reduced motion: start and end side by side, labelled, no animation', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await enterDemo(page, 'workout');
+    await page.getByRole('button', { name: 'Form: how to do Bench press' }).first().click();
+    const how = page.getByRole('dialog', { name: 'Bench press' });
+    await expect.poll(() => photosLoaded(page)).toBe(true);
+    await expect(how.getByText('Start', { exact: true })).toBeVisible();
+    await expect(how.getByText('End', { exact: true })).toBeVisible();
+    expect(await endAnimations(page)).toEqual([]);
+    const [a, b] = await how.locator('.form-frame img').evaluateAll((imgs) => imgs.map((i) => { const r = i.getBoundingClientRect(); return { x: r.x, y: r.y, w: r.width }; }));
+    expect(b!.x).toBeGreaterThan(a!.x + a!.w - 1); // side by side, not stacked
+    expect(Math.abs(b!.y - a!.y)).toBeLessThan(2);
+    expect(await how.locator('.form-frame.end').evaluate((el) => getComputedStyle(el).opacity)).toBe('1');
+  });
+
+  test('offline: a demo viewed once still shows its photos from the service worker cache', async ({ page, context }) => {
+    await enterDemo(page);
+    await expect.poll(() => page.evaluate(() => navigator.serviceWorker.ready.then(() => true))).toBe(true);
+    await page.reload();
+    await expect.poll(() => page.evaluate(() => !!navigator.serviceWorker.controller)).toBe(true);
+    await page.goto('/#/workout');
+    await page.getByRole('button', { name: 'Form: how to do Bench press' }).first().click();
+    await expect.poll(() => photosLoaded(page)).toBe(true);
+    await expect.poll(() => page.evaluate(async () => {
+      const c = await caches.open('trainluma-exercise-img-v1');
+      return (await c.keys()).map((r) => new URL(r.url).pathname).filter((p) => p.endsWith('.jpg')).length;
+    })).toBe(2);
+    await context.setOffline(true);
+    await page.reload();
+    await page.getByRole('button', { name: 'Form: how to do Bench press' }).first().click();
+    await expect(page.getByRole('dialog', { name: 'Bench press' }).getByAltText('Bench press — start position')).toBeVisible();
+    await expect.poll(() => photosLoaded(page)).toBe(true);
+    await context.setOffline(false);
+  });
+
+  test('muscle map cards filter the picker like the chips', async ({ page }) => {
+    await enterDemo(page, 'workout');
+    await page.getByRole('button', { name: 'Edit plan' }).click();
+    await page.getByRole('button', { name: 'Add exercise' }).first().click();
+    const sheet = page.getByRole('dialog', { name: 'Add exercise' });
+    const map = sheet.getByRole('group', { name: 'Muscle map' });
+    await expect(map.getByRole('button')).toHaveCount(7);
+    await map.getByRole('button', { name: 'Chest' }).click();
+    await expect(map.getByRole('button', { name: 'Chest' })).toHaveAttribute('aria-pressed', 'true');
+    await expect(sheet.getByRole('group', { name: 'Muscle group' }).getByRole('button', { name: 'Chest' })).toHaveAttribute('aria-pressed', 'true');
+    const subs = sheet.locator('.ex-row .er-sub');
+    await expect(subs.first()).toBeVisible();
+    expect((await subs.allTextContents()).every((t) => t.startsWith('Chest'))).toBe(true);
+    await page.screenshot({ path: 'docs/screenshots/53-muscle-map.png' });
+    await map.getByRole('button', { name: 'Glutes' }).click();
+    await expect(sheet.getByRole('button', { name: /^Hip thrust/ }).first()).toBeVisible();
+    await expect(sheet.getByRole('button', { name: /^Bench press/ })).toHaveCount(0);
+    await map.getByRole('button', { name: 'Glutes' }).click();
+    await expect(sheet.getByText(/Showing popular exercises/)).toBeVisible();
   });
 });

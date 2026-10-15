@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState, type InputHTMLAttributes } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useState, type InputHTMLAttributes } from 'react';
 import type { Equipment, ExerciseDefinition, Measurement, MuscleGroup, PlannedExercise, PrescribedSet, ProgramVersion } from '@shared/contracts';
-import { loadGuide, searchGuide, type GuideExercise } from '@shared/catalogue/exerciseGuide';
+import { loadGuide, matchesMuscle, searchGuide, type GuideExercise, type MuscleFilter } from '@shared/catalogue/exerciseGuide';
 import { EXERCISE_LIBRARY, type LibraryExercise } from '@shared/fixtures/exerciseLibrary';
 import { useJournal, useQuery } from '@/app/JournalContext';
 import { goBack } from '@/app/router';
@@ -18,6 +18,7 @@ import {
 import { saveErrorMessage } from '@/features/food/useFood';
 import { decideDraft } from '@/core/ai/coachData';
 import { PLAN_SEED_KEY } from '@/domain/training/aiPlan';
+import { FormButton, FormLink, HowToSheet } from './FormButton';
 
 const MUSCLES: { value: MuscleGroup; label: string }[] = [
   { value: 'chest', label: 'Chest' }, { value: 'back', label: 'Back' }, { value: 'legs', label: 'Legs' }, { value: 'shoulders', label: 'Shoulders' },
@@ -28,6 +29,8 @@ const EQUIPMENT: { value: Equipment; label: string }[] = [
   { value: 'bodyweight', label: 'Bodyweight' }, { value: 'kettlebell', label: 'Kettlebell' }, { value: 'band', label: 'Band' }, { value: 'other', label: 'Other' },
 ];
 const REST = [30, 45, 60, 90, 120, 150, 180, 240];
+// Muscle map cards load with the picker, not with the app.
+const MuscleCards = lazy(() => import('./MuscleCards').then((m) => ({ default: m.MuscleCards })));
 
 /** Keeps the raw text while typing (so "62." or a cleared field survive) and commits on blur. */
 function DraftNumberInput({ value, onCommit, ...rest }: Omit<InputHTMLAttributes<HTMLInputElement>, 'value' | 'onChange' | 'onBlur'> & {
@@ -51,19 +54,19 @@ function ExercisePicker({ onPick, onClose, title }: { onPick: (d: LibraryExercis
   const [creating, setCreating] = useState(false);
   const [form, setForm] = useState({ name: '', equipment: 'dumbbell' as Equipment, muscle: 'chest' as MuscleGroup, measurement: 'weight_reps' as Measurement, unilateral: false });
   const [guide, setGuide] = useState<GuideExercise[] | null>(null);
-  const [muscle, setMuscle] = useState<MuscleGroup | null>(null);
+  const [muscle, setMuscle] = useState<MuscleFilter | null>(null);
   const [equipment, setEquipment] = useState<Equipment | null>(null);
   const [limit, setLimit] = useState(60);
-  const [howTo, setHowTo] = useState<GuideExercise | null>(null);
+  const [howTo, setHowTo] = useState<{ ex: GuideExercise | null; pick: LibraryExercise } | null>(null);
   useEffect(() => {
     let live = true;
     loadGuide().then((g) => live && setGuide(g), () => live && setGuide([]));
     return () => { live = false; };
   }, []);
   const mine = useMemo(() => (custom ?? []).map(defToLibrary).filter((x) =>
-    (!muscle || x.muscle_group === muscle) && (!equipment || x.equipment === equipment) && x.name.toLowerCase().includes(q.trim().toLowerCase())), [custom, q, muscle, equipment]);
+    matchesMuscle(x, muscle) && (!equipment || x.equipment === equipment) && x.name.toLowerCase().includes(q.trim().toLowerCase())), [custom, q, muscle, equipment]);
   const found = useMemo(() => {
-    const list = guide && guide.length ? guide : EXERCISE_LIBRARY.map((x) => ({ ...x, level: null, instructions: [], primary_muscles: [], aliases: [], popular: true, builtin: true, words: x.name.toLowerCase().split(/\W+/) }));
+    const list = guide && guide.length ? guide : EXERCISE_LIBRARY.map((x) => ({ ...x, level: null, instructions: [], primary_muscles: [], aliases: [], source_id: null, popular: true, builtin: true, words: x.name.toLowerCase().split(/\W+/) }));
     const r = searchGuide(list, q, { muscle, equipment });
     return q.trim() || muscle || equipment ? r : r.filter((x) => x.popular);
   }, [guide, q, muscle, equipment]);
@@ -118,6 +121,7 @@ function ExercisePicker({ onPick, onClose, title }: { onPick: (d: LibraryExercis
           <button className="choice" onClick={() => { setForm({ ...form, name: q }); setCreating(true); }}>
             <Icon name="plus" /> <span className="grow"><strong>Create my own exercise</strong>{q ? <><br /><span className="small muted">“{q}”</span></> : null}</span>
           </button>
+          <Suspense fallback={<div className="muscle-cards-wait" aria-hidden="true" />}><MuscleCards value={muscle} onChange={setMuscle} /></Suspense>
           <div className="chips scroll" role="group" aria-label="Muscle group">
             <button className="chip" aria-pressed={muscle === null} onClick={() => setMuscle(null)}>All</button>
             {MUSCLES.map((m) => <button key={m.value} className="chip" aria-pressed={muscle === m.value} onClick={() => setMuscle(muscle === m.value ? null : m.value)}>{m.label}</button>)}
@@ -129,11 +133,14 @@ function ExercisePicker({ onPick, onClose, title }: { onPick: (d: LibraryExercis
           {!guide ? <div className="skeleton" /> : null}
           <div className="list-divided">
             {mine.map((x) => (
-              <button key={`${x.key}-${x.equipment}`} className="ex-row" onClick={() => onPick(x)}>
-                <span className="ex-art"><EquipmentArt equipment={x.equipment} /></span>
-                <span className="grow"><span className="er-name">{x.name}</span><br /><span className="er-sub">{MUSCLES.find((m) => m.value === x.muscle_group)?.label} · {EQUIPMENT.find((m) => m.value === x.equipment)?.label} · yours</span></span>
-                <Icon name="plus" />
-              </button>
+              <div key={`${x.key}-${x.equipment}`} className="ex-row-wrap">
+                <button className="ex-row grow" onClick={() => onPick(x)}>
+                  <span className="ex-art"><EquipmentArt equipment={x.equipment} /></span>
+                  <span className="grow"><span className="er-name">{x.name}</span><br /><span className="er-sub">{MUSCLES.find((m) => m.value === x.muscle_group)?.label} · {EQUIPMENT.find((m) => m.value === x.equipment)?.label} · yours</span></span>
+                  <Icon name="plus" />
+                </button>
+                <FormLink name={x.name} onClick={() => setHowTo({ ex: null, pick: x })} />
+              </div>
             ))}
             {found.slice(0, limit).map((x) => (
               <div key={`${x.key}:${x.equipment}`} className="ex-row-wrap">
@@ -143,7 +150,7 @@ function ExercisePicker({ onPick, onClose, title }: { onPick: (d: LibraryExercis
                     <span className="er-sub">{MUSCLES.find((m) => m.value === x.muscle_group)?.label} · {EQUIPMENT.find((m) => m.value === x.equipment)?.label}{x.level ? ` · ${x.level}` : ''}</span></span>
                   <Icon name="plus" />
                 </button>
-                {x.instructions.length ? <button className="icon-btn plain" aria-label={`How to do ${x.name}`} onClick={() => setHowTo(x)}><Icon name="info" size={20} /></button> : null}
+                <FormLink name={x.name} onClick={() => setHowTo({ ex: x, pick: x })} />
               </div>
             ))}
           </div>
@@ -151,13 +158,8 @@ function ExercisePicker({ onPick, onClose, title }: { onPick: (d: LibraryExercis
           {!q.trim() && !muscle && !equipment && guide?.length ? <p className="label">Showing popular exercises. Search or pick a muscle group to see all {guide.length}.</p> : null}
           {q.trim() && !found.length && !mine.length ? <p className="small muted">No exercise matches “{q}”. Create it as your own above.</p> : null}
           {howTo ? (
-            <Sheet title={howTo.name} onClose={() => setHowTo(null)} actions={<button className="btn block" onClick={() => { const x = howTo; setHowTo(null); onPick(x); }}>Add {howTo.name}</button>}>
-              <div className="stack-sm">
-                <span className="small muted">{[howTo.level, ...howTo.primary_muscles].filter(Boolean).join(' · ')}</span>
-                <ol className="how-to">{howTo.instructions.map((t, i) => <li key={i}>{t}</li>)}</ol>
-                <p className="label">Steps from the public-domain free-exercise-db or written for TrainLuma. Stop if anything hurts; ask a qualified professional about pain or injuries.</p>
-              </div>
-            </Sheet>
+            <HowToSheet name={howTo.pick.name} exercise={howTo.ex} custom={howTo.pick.key.startsWith('custom:')} onClose={() => setHowTo(null)}
+              actions={<button className="btn block" onClick={() => { const x = howTo.pick; setHowTo(null); onPick(x); }}>Add {howTo.pick.name}</button>} />
           ) : null}
         </div>
       )}
@@ -393,6 +395,7 @@ function PlanEditorForm({ current, seed }: { current: ProgramVersion | null; see
                     </span>
                     <Icon name={openEx === ex.id ? 'chevronUp' : 'chevronDown'} />
                   </button>
+                  <FormButton exerciseKey={ex.exercise_key} equipment={ex.variant} name={ex.name} />
                 </div>
                 {openEx === ex.id ? (
                   <div className="stack-sm" style={{ paddingBottom: 12 }}>

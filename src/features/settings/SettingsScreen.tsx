@@ -16,6 +16,7 @@ import { CoachAvatar } from '@/core/design/CoachAvatar';
 import { ATTRIBUTION } from '@shared/fooddb/foodDb';
 import { setShareUsage, shareUsageEnabled } from '@/core/analytics/analytics';
 import { LEGACY_REFERENCE_VALUES } from '@/core/config/dataPolicy';
+import { FORM_PHOTO_COMMIT_SHORT } from '@shared/catalogue/exerciseImages';
 import { TrainerSheet, useTrainer } from '@/features/coach/Trainer';
 
 const GOALS: { value: Goal; label: string }[] = [
@@ -215,7 +216,7 @@ export function SettingsScreen() {
 
       <Section title="Data sources">
         <div className="card stack-sm">
-          <span className="label">{ATTRIBUTION} Packaged foods by barcode: Open Food Facts (ODbL). Exercises: free-exercise-db (public domain).{LEGACY_REFERENCE_VALUES ? ' Earlier reference values: Canadian Nutrient File (Health Canada, 2026) and USDA FoodData Central.' : ''} TrainLuma isn’t affiliated with or endorsed by any of them. Restaurant dishes show typical values — each restaurant’s recipe will differ.</span>
+          <span className="label">{ATTRIBUTION} Packaged foods by barcode: Open Food Facts (ODbL). Exercises and form photos: free-exercise-db (public domain, commit {FORM_PHOTO_COMMIT_SHORT}).{LEGACY_REFERENCE_VALUES ? ' Earlier reference values: Canadian Nutrient File (Health Canada, 2026) and USDA FoodData Central.' : ''} TrainLuma isn’t affiliated with or endorsed by any of them. Restaurant dishes show typical values — each restaurant’s recipe will differ.</span>
           <button className="link" onClick={() => navigate('data-review')}>Dishes still being verified <Icon name="chevronRight" size={16} /></button>
           {mode === 'account' ? (
             <Toggle label="Share usage stats with the owner" checked={shareUsage} onChange={(v) => { setShareUsage(journal.ownerId, v); setShareUsageState(v); }}

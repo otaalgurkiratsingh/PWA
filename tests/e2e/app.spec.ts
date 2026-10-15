@@ -863,6 +863,8 @@ test.describe('no-result fallback (Oct 12 review: samosa → masala dosa)', () =
     // "kadhi": the only close match is quarantined → nothing suggested at all.
     await page.getByLabel('Search foods').fill('kadhi');
     await expect(page.locator('.no-result')).not.toContainText(/kadhi pakoda|log as/i);
+  });
+});
 
 test.describe('Phase 4: form demos', () => {
   /** Both photos decoded (naturalWidth > 0). */

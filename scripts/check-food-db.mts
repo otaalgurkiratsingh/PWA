@@ -7,7 +7,7 @@
 // plus: serving maths, combos, restaurant labels, and the brief's QA searches (§11).
 import { readFileSync } from 'node:fs';
 import {
-  closestDish, complete, coveredByDb, coveredNames, isPublic, MACRO_KEYS, parseFoodDb, scaleMacros, searchDishes, searchRestaurants, TYPICAL_LABEL, type Dish,
+  closestDish, complete, coveredByDb, coveredNames, cuisineOf, isPublic, MACRO_KEYS, parseFoodDb, scaleMacros, searchDishes, searchRestaurants, TYPICAL_LABEL, type Dish,
 } from '../shared/fooddb/foodDb.ts';
 
 const results: { name: string; ok: boolean; detail: string }[] = [];
@@ -103,6 +103,17 @@ check('kadhi pakoda (quarantined) is not in search', !searchDishes(db!, 'kadhi p
   const picker = readFileSync(new URL('../src/features/food/FoodPicker.tsx', import.meta.url), 'utf8');
   check('reference values only fill gaps (no food shows two sources)', covered.length > 0 && /filter\(\(f\) => !coveredByDb\(dbNames, f\)\)/.test(picker),
     `${covered.length} list foods covered by the database (hidden); ${withRef} others use CNF/USDA; ${shown.length - withRef} stay "not set"`);
+}
+
+// Extra: bicultural ranking. Suggestions at breakfast, lunch and dinner show both Indian and
+// Western dishes in the first 8; a search with matches on both sides shows both.
+{
+  const sides = (hits: { dish: Dish }[]) => new Set(hits.slice(0, 8).map((h) => cuisineOf(h.dish)));
+  const bad: string[] = [];
+  for (const hour of [8, 13, 20]) { const s = sides(searchDishes(db!, '', { hour })); if (!s.has('indian') || !s.has('western')) bad.push(`suggestions at ${hour}:00`); }
+  for (const q of ['chicken', 'egg']) { const s = sides(searchDishes(db!, q, { hour: 13 })); if (!s.has('indian') || !s.has('western')) bad.push(`search "${q}"`); }
+  const firsts = qa.filter(([q, id]) => searchDishes(db!, q)[0]?.dish.id !== id);
+  check('bicultural ranking: Indian + Western blended in suggestions and search', bad.length === 0 && firsts.length === 0, bad.join('; ') || 'breakfast/lunch/dinner suggestions; "chicken", "egg"; #1 results unchanged');
 }
 
 report();

@@ -33,6 +33,8 @@ const DishSchema = z.object({
   source: z.string(),
   tier: z.union([z.literal(1), z.literal(2)]),
   needs_review: z.boolean(),
+  /** Optional in newer files; inferred otherwise (see cuisineOf). */
+  cuisine: z.string().optional(),
 });
 export type Dish = z.infer<typeof DishSchema>;
 
@@ -150,12 +152,78 @@ const TIME_CATEGORIES: Record<MealTime, readonly string[]> = {
 };
 export function fitsTime(d: Dish, t: MealTime | null): boolean {
   if (!t) return false;
-  if (t === 'breakfast' && d.brand) return /coffee|timbit|donut|mcmuffin|latte|fritter|cream/i.test(d.name);
+  if (d.brand) {
+    const sweetOrDrink = /coffee|double|timbit|donut|latte|fritter|cream/i.test(d.name);
+    if (t === 'breakfast') return sweetOrDrink || /mcmuffin/i.test(d.name);
+    if (t === 'lunch' || t === 'dinner') return !sweetOrDrink && !/mcmuffin/i.test(d.name);
+  }
   return TIME_CATEGORIES[t].includes(d.category);
+}
+
+/**
+ * Bicultural ranking: TrainLuma users eat dal-roti AND a Tim's double-double. Every dish is
+ * 'indian', 'western' or 'neutral' (fruit, milk, nuts, eggs…: eaten by everyone). A file may set
+ * `cuisine`; otherwise brand/chain items are western, a short list of Western staples is western,
+ * plain pantry/fruit/vegetable/dairy items are neutral, and the rest is Indian.
+ */
+export type Cuisine = 'indian' | 'western' | 'neutral';
+const WESTERN = /\b(oats?|oatmeal|toast|bagel|muffin|pancake|waffle|cereal|granola|pasta|spaghetti|pizza|burger|sandwich|wrap|salad|fries|latte|cappuccino|coffee|donut|doughnut|croissant|steak|chicken breast|peanut butter|protein bar|shawarma|nuggets?)\b/i;
+const NEUTRAL_CATEGORIES = new Set(['pantry', 'fruits', 'vegetables', 'dairy']);
+const NEUTRAL = /\b(boiled egg|omelette|milkshake|milk|banana|apple|almonds?|walnuts?|peanuts?|yogh?urt|whey|protein shake)\b/i;
+const INDIAN_WORDS = /\b(ghee|paneer|dahi|lassi|chaas|raita|khoya|makhana|sattu|besan|atta|chai|curry|dal)\b/i;
+export function cuisineOf(d: Dish): Cuisine {
+  const c = d.cuisine?.toLowerCase();
+  if (c) return /indian|punjabi|south asian|desi|indo/.test(c) ? 'indian' : /western|american|canadian|italian|mexican|chain|fast/.test(c) ? 'western' : 'neutral';
+  if (d.brand || d.category === 'chain restaurants') return 'western';
+  if (WESTERN.test(`${d.name} ${d.aliases.join(' ')}`)) return 'western';
+  const text = `${d.name} ${d.aliases.join(' ')}`;
+  if (!INDIAN_WORDS.test(text) && (NEUTRAL_CATEGORIES.has(d.category) || NEUTRAL.test(d.name))) return 'neutral';
+  return 'indian';
+}
+
+/** The chain items people actually log most often get a nudge among equals (ids from the file). */
+const EVERYDAY_WESTERN = /^(th-double-double-m|mcd-egg-mcmuffin|mcd-mcchicken|osm-shawarma-wrap|sbux-latte-grande)$/;
+
+/** How many of each side the top of a list must hold, when relevant ones exist. */
+export const BLEND = { window: 8, minEach: 2 } as const;
+
+/**
+ * Make sure the visible top of a ranked list mixes Indian and Western dishes: if one side has fewer
+ * than `minEach` in the first `window` while relevant ones exist further down, the best of them
+ * replace the lowest-scoring dishes of the over-represented side. The #1 result never moves, and
+ * nothing irrelevant is promoted (search passes only real matches; see `relevant`).
+ */
+export function blendCuisines<T extends { dish: Dish; score: number }>(hits: readonly T[], relevant: (h: T) => boolean = () => true, opts: { window?: number; minEach?: number } = {}): T[] {
+  const window = opts.window ?? BLEND.window;
+  const minEach = opts.minEach ?? BLEND.minEach;
+  const out = [...hits];
+  if (out.length <= 1) return out;
+  for (const side of ['western', 'indian'] as const) {
+    const other = side === 'western' ? 'indian' : 'western';
+    const top = out.slice(0, window);
+    let have = top.filter((h) => cuisineOf(h.dish) === side).length;
+    if (have >= minEach) continue;
+    const extra = out.slice(window).filter((h) => cuisineOf(h.dish) === side && relevant(h));
+    for (const add of extra) {
+      if (have >= minEach) break;
+      // Replace the lowest-ranked dish of the other side inside the window (never position 0).
+      let at = -1;
+      for (let i = Math.min(window, out.length) - 1; i >= 1; i--) if (cuisineOf(out[i]!.dish) === other) { at = i; break; }
+      if (at < 0) break;
+      const from = out.indexOf(add);
+      const [moved] = out.splice(from, 1);
+      const [bumped] = out.splice(at, 1, moved!);
+      out.splice(window, 0, bumped!);
+      have++;
+    }
+  }
+  return out;
 }
 
 export interface SearchOptions {
   vegOnly?: boolean;
+  /** Mix Indian and Western dishes at the top (default on). */
+  blend?: boolean;
   hour?: number;
   /** How often the person logged each dish id recently (recent + frequent first). */
   usage?: ReadonlyMap<string, number>;
@@ -205,10 +273,13 @@ export function searchDishes(db: FoodDb, q: string, opts: SearchOptions = {}): S
       base = 20 + (30 * got) / qt.length;
     }
     const used = opts.usage?.get(d.id) ?? 0;
-    const score = base + Math.min(used, 10) * 2 + (fitsTime(d, time) ? 6 : 0) + (isPunjabiStaple(d) ? 3 : 0);
+    const score = base + Math.min(used, 10) * 2 + (fitsTime(d, time) ? 6 : 0) + (isPunjabiStaple(d) ? 3 : 0) + (EVERYDAY_WESTERN.test(d.id) ? 2 : 0);
     hits.push({ dish: d, score, match });
   }
-  return hits.sort((a, b) => b.score - a.score || a.dish.name.localeCompare(b.dish.name)).slice(0, opts.limit ?? 50);
+  hits.sort((a, b) => b.score - a.score || a.dish.name.localeCompare(b.dish.name));
+  // Search blends only real matches (alias/name/prefix/all words); suggestions blend everything.
+  const ranked = opts.blend === false ? hits : blendCuisines(hits, (h) => !qt.length || h.match !== 'partial');
+  return ranked.slice(0, opts.limit ?? 50);
 }
 
 /** Character-bigram similarity (0–1), for "did you mean". */

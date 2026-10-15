@@ -22,7 +22,8 @@
     "smoke:ai": "node scripts/smoke-ai-function.mjs",
     "screenshots": "node scripts/screenshots.mjs",
     "smoke:notify": "node scripts/smoke-notify-function.mjs",
-    "check:food-db": "node scripts/check-food-db.mts"
+    "check:food-db": "node scripts/check-food-db.mts",
+    "import:food-db": "node scripts/import-food-db.mts"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.117.3",

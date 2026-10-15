@@ -1,4 +1,4 @@
-import { ATTRIBUTION, sourceLine } from '@shared/fooddb/foodDb';
+import { ATTRIBUTION } from '@shared/fooddb/foodDb';
 import { goBack } from '@/app/router';
 import { Icon } from '@/core/design/icons';
 import { Section } from '@/core/design/ui';
@@ -23,7 +23,8 @@ export function DataReviewScreen() {
       <p className="small muted">{db.publicDishes.length} dishes are live in search. These {db.pending.length} are hidden until their data is complete or approved. They never appear in search.</p>
       <Section title={`Pending approval (${quarantined.length})`}>
         <div className="card tight list-divided">
-          {quarantined.map((d) => <div key={d.id} className="review-row"><strong>{d.name}</strong><span className="small muted">Quarantined: published value under review. {sourceLine(d)}</span></div>)}
+          {/* needs_review dishes are never shown, not even by name; only the count. */}
+          {quarantined.length ? <div className="review-row"><strong>{quarantined.length} dish{quarantined.length === 1 ? '' : 'es'} under review</strong><span className="small muted">A published value looked wrong, so {quarantined.length === 1 ? 'it stays' : 'they stay'} out of the app until the owner approves a fix.</span></div> : null}
         </div>
       </Section>
       <Section title={`Verifying (${tier2.length})`}>

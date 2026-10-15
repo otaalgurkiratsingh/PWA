@@ -1,9 +1,15 @@
-/* TrainLuma service worker — app shell and static assets ONLY.
- * Never caches API responses, health data, or photos. Personal data lives in IndexedDB.
+/* TrainLuma service worker — app shell, static assets and public exercise form photos ONLY.
+ * Never caches API responses, health data, or personal photos. Personal data lives in IndexedDB.
  * The build id and precache list are injected at build time by vite.config.ts. */
 const BUILD_ID = '__BUILD_ID__';
 const PRECACHE = __PRECACHE__;
 const CACHE = `rozana-shell-${BUILD_ID}`;
+// Exercise form photos (public-domain free-exercise-db, vendored same-origin under /exercise-img/)
+// are cached when viewed, in their own cache that is NOT tied to the build id, so they survive app
+// updates. At most IMG_MAX photos; the oldest (insertion order) are dropped first.
+const IMG_CACHE = 'trainluma-exercise-img-v1';
+const IMG_PREFIX = '/exercise-img/';
+const IMG_MAX = 200;
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE).then((c) => c.addAll(PRECACHE)));
@@ -14,6 +20,7 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches
       .keys()
+      // Only old shell caches are removed; the exercise photo cache (IMG_CACHE) is kept on purpose.
       .then((keys) => Promise.all(keys.filter((k) => k.startsWith('rozana-shell-') && k !== CACHE).map((k) => caches.delete(k))))
       .then(() => self.clients.claim()),
   );
@@ -36,8 +43,40 @@ self.addEventListener('fetch', (event) => {
   }
   if (PRECACHE.includes(url.pathname)) {
     event.respondWith(caches.match(url.pathname).then((r) => r || fetch(req)));
+    return;
   }
+  if (url.pathname.startsWith(IMG_PREFIX)) event.respondWith(exercisePhoto(req, url));
 });
+
+/** Drop the oldest photos (insertion order) so at most IMG_MAX stay. The manifest is never dropped. */
+async function trimPhotos(cache) {
+  const photos = (await cache.keys()).filter((k) => new URL(k.url).pathname.endsWith('.jpg'));
+  const extra = photos.length - IMG_MAX;
+  for (let i = 0; i < extra; i++) await cache.delete(photos[i]);
+}
+
+/** Photos: cache first, then network (and keep a copy). The manifest: network first, cached copy offline. */
+async function exercisePhoto(req, url) {
+  const cache = await caches.open(IMG_CACHE);
+  const key = url.pathname; // ignore query strings
+  const isPhoto = key.endsWith('.jpg');
+  if (isPhoto) {
+    const hit = await cache.match(key);
+    if (hit) return hit;
+  }
+  try {
+    const res = await fetch(req);
+    if (res.ok && res.status === 200 && res.type === 'basic') {
+      await cache.put(key, res.clone());
+      if (isPhoto) await trimPhotos(cache);
+    }
+    return res;
+  } catch (e) {
+    const hit = isPhoto ? null : await cache.match(key);
+    if (hit) return hit;
+    throw e;
+  }
+}
 
 // ---------- reminders (Web Push) ----------
 // The payload is end-to-end encrypted to this device by the `notify` function; the browser

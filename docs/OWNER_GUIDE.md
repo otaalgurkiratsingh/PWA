@@ -52,6 +52,8 @@ You do this once. Until it's done, the sign-in screen says "Sign-in is still bei
 2. Netlify **Site configuration → Environment variables**: add `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`.
 3. Trigger a new deploy.
 
+**Exercise form photos:** the first `npm run build` on a machine downloads about 1,650 public-domain exercise photos (about 94 MB, from free-exercise-db at a fixed version) into a `.cache/` folder. Later builds reuse them, so nothing is downloaded again. If the download is blocked or you're offline, the build still finishes, and exercises show their steps without photos. To skip the photos on purpose (for example, a quick test build), set `SKIP_EXERCISE_IMAGES=1`. A fresh build server (such as Netlify) downloads them again on each deploy, which takes about 15 seconds.
+
 ### 2d. AI Coach (Gemini, paid API project)
 1. In Google AI Studio / Google Cloud, use a **separate project with paid billing on** (a Gemini consumer subscription is different). Turn on MFA. Set a budget alert (alerts only notify; the app enforces its own limits).
 2. Create an API key in Google AI Studio and restrict it to the Gemini (Generative Language) API.
@@ -104,7 +106,7 @@ Optional. Until it's done, the Notifications screen saves people's choices and s
 - **Food:** the cards are your usual meals; **+** adds your usual amount. **Add food → Choose food** opens your meals and the full food list (293 Punjabi and Canadian foods with pictures). 145 of them start with **standard values** (Canadian Nutrient File or USDA), shown with their source. The rest start as **not set**: they log as entries and totals show as partial ("≥") until you add a label or recipe. Weigh your usual bowl or roti once for better estimates.
 - **Barcode:** in Choose food, tap the barcode button and point the camera at a package (or type the numbers). The product comes from Open Food Facts; only the number is sent. Check the label values once, then it's one tap next time.
 - **Your own recipe:** Edit meal → **My recipe** → **Add from ingredient list** (atta, dal, ghee, onion, paneer…). Enter grams for each and weigh the cooked pot; TrainLuma works out each portion.
-- **Exercises:** in the plan editor, **Add exercise** searches 823 exercises, with muscle and equipment filters and how-to steps (ⓘ).
+- **Exercises:** in the plan editor, **Add exercise** searches 823 exercises, with muscle-map cards, muscle and equipment filters, and how-to steps. Tap **Form** next to any exercise (in the picker, your plan or during a workout) to see the start and end photos and the steps without leaving the workout.
 - **Water:** tap **+** on Today for each glass (250 ml).
 - **Reminders:** Settings → Notifications: a daily motivation time, gym days and time (reminder 15 minutes before by default), and "Hide details on the lock screen".
 - **Your AI trainer:** tap the round avatar button at the bottom right (or **Chat with …** on Today). Give your trainer a name and a look in the chat header or Settings → Your AI trainer.

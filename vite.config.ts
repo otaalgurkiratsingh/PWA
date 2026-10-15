@@ -2,9 +2,10 @@ import { defineConfig, type Plugin } from 'vitest/config';
 import { loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import { createHash } from 'node:crypto';
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { constants, copyFileSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath, URL } from 'node:url';
+import { FORM_PHOTO_BASE, FORM_PHOTO_COMMIT, FORM_PHOTO_COMMIT_SHORT, isSafePhotoId, libraryPhotoIds } from './shared/catalogue/exerciseImages.ts';
 
 /** Emit /sw.js with a precache list of this build's shell files and a content-derived build id. */
 function serviceWorker(): Plugin {
@@ -32,6 +33,58 @@ function serviceWorker(): Plugin {
   };
 }
 
+/**
+ * Copy the vendored exercise form photos (downloaded once into .cache/ by
+ * scripts/vendor-exercise-images.mts) into <outDir>/exercise-img/ with a manifest of the ids that
+ * have both photos. Runs after the bundle is written, so the photos are never in the JS bundle or
+ * the service worker precache list. SKIP_EXERCISE_IMAGES=1 writes an empty manifest (steps only).
+ */
+function exerciseImages(): Plugin {
+  const cacheDir = fileURLToPath(new URL(`./.cache/exercise-img/${FORM_PHOTO_COMMIT.slice(0, 12)}`, import.meta.url));
+  const has = (p: string) => { try { return statSync(p).size > 0; } catch { return false; } };
+  const available = () => {
+    if (process.env.SKIP_EXERCISE_IMAGES === '1') return [];
+    const raw: unknown = JSON.parse(readFileSync(fileURLToPath(new URL('./shared/data/exercise-library-v1.json', import.meta.url)), 'utf8'));
+    return libraryPhotoIds(raw).filter((id) => has(join(cacheDir, id, '0.jpg')) && has(join(cacheDir, id, '1.jpg')));
+  };
+  const manifest = (ids: string[]) => JSON.stringify({ commit: FORM_PHOTO_COMMIT, ids });
+  return {
+    name: 'trainluma-exercise-img',
+    configureServer(server) {
+      // Dev server: serve the same paths straight from the cache.
+      server.middlewares.use(FORM_PHOTO_BASE, (req, res, next) => {
+        const path = (req.url ?? '').split('?')[0]!;
+        if (path === '/manifest.json') {
+          res.setHeader('Content-Type', 'application/json');
+          res.end(manifest(available()));
+          return;
+        }
+        const m = /^\/([^/]+)\/([01])\.jpg$/.exec(path);
+        const file = m && isSafePhotoId(m[1]) ? join(cacheDir, m[1], `${m[2]}.jpg`) : null;
+        if (!file || !has(file)) return next();
+        res.setHeader('Content-Type', 'image/jpeg');
+        res.end(readFileSync(file));
+      });
+    },
+    writeBundle(opts) {
+      const outDir = opts.dir ?? fileURLToPath(new URL('./dist', import.meta.url));
+      const ids = available();
+      let bytes = 0;
+      for (const id of ids) {
+        mkdirSync(join(outDir, 'exercise-img', id), { recursive: true });
+        for (const f of ['0.jpg', '1.jpg']) {
+          copyFileSync(join(cacheDir, id, f), join(outDir, 'exercise-img', id, f), constants.COPYFILE_FICLONE);
+          bytes += statSync(join(cacheDir, id, f)).size;
+        }
+      }
+      mkdirSync(join(outDir, 'exercise-img'), { recursive: true });
+      writeFileSync(join(outDir, 'exercise-img', 'manifest.json'), manifest(ids));
+      console.log(`\n[exercise-img] form photos: ${ids.length} exercises, ${ids.length * 2} photos, ${(bytes / 1e6).toFixed(1)} MB (free-exercise-db @ ${FORM_PHOTO_COMMIT_SHORT})`);
+      if (!ids.length && process.env.SKIP_EXERCISE_IMAGES !== '1') console.warn('[exercise-img] WARNING: no exercise form photos in .cache/exercise-img — run `npm run vendor:exercise-images`; the app shows steps only');
+    },
+  };
+}
+
 /** Emit Netlify-style _headers with a CSP whose connect-src names only this app, its Supabase project and Open Food Facts. */
 function securityHeaders(mode: string): Plugin {
   return {
@@ -51,7 +104,7 @@ function securityHeaders(mode: string): Plugin {
 }
 
 export default defineConfig(({ mode }) => ({
-  plugins: [react(), serviceWorker(), securityHeaders(mode)],
+  plugins: [react(), serviceWorker(), securityHeaders(mode), exerciseImages()],
   resolve: {
     alias: {
       '@shared': fileURLToPath(new URL('./shared', import.meta.url)),
@@ -66,7 +119,7 @@ export default defineConfig(({ mode }) => ({
   preview: { port: 4173, strictPort: true },
   test: {
     environment: 'jsdom',
-    include: ['src/**/*.test.{ts,tsx}', 'shared/**/*.test.ts', 'supabase/functions/**/*.test.ts', 'scripts/**/*.test.tsx'],
+    include: ['src/**/*.test.{ts,tsx}', 'shared/**/*.test.ts', 'supabase/functions/**/*.test.ts', 'scripts/**/*.test.tsx', 'tests/unit/**/*.test.ts'],
     setupFiles: ['src/test/setup.ts'],
   },
 }));

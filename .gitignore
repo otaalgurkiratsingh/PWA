@@ -43,7 +43,7 @@ keystore.properties
 .idea/
 .vscode/*
 !.vscode/extensions.json
-dist-e2e-auth/
+dist-e2e-auth*/
 pw-tmp.config.ts
 pw-auth.config.ts
 pw-both.config.ts

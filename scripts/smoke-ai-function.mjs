@@ -6,7 +6,8 @@
 // Phase 2 — INTEGRATION HARNESS, NOT THE REAL PROVIDER: the function runs with a fake key and
 //   GEMINI_TEST_BASE_URL pointing at a loopback mock of the Gemini API, plus a mock Supabase.
 //   It proves the wiring end to end (envelope → reservation → model call → validation → storage
-//   RPCs → finish) for text chat and an onboarding plan. It says nothing about real Gemini output.
+//   RPCs → finish) for text chat, an onboarding plan and a diet draft. It says nothing about real
+//   Gemini output.
 import { spawn } from 'node:child_process';
 import { createServer } from 'node:http';
 import { readFileSync } from 'node:fs';
@@ -18,6 +19,8 @@ const now = Math.floor(Date.now() / 1000);
 const goodJwt = `${b64({ alg: 'HS256', typ: 'JWT' })}.${b64({ sub: USER, role: 'authenticated', aud: 'authenticated', exp: now + 600, iat: now })}.sig`;
 const SECRET = 'sb_secret_smoke_not_real';
 const promptSrc = readFileSync('supabase/functions/_shared/coachPrompt.ts', 'utf8');
+const diet = await import('../supabase/functions/_shared/diet.ts');
+const shelf = JSON.parse(readFileSync('supabase/functions/_shared/data/diet-shelf.json', 'utf8'));
 const SYSTEM = JSON.parse(/COACH_SYSTEM_PROMPT = (".*");/s.exec(promptSrc)[1]);
 
 const training = {
@@ -26,7 +29,7 @@ const training = {
   restrictions: '', screening: 'no_concerns', inspiration_note: '', updated_at: '2026-10-10T00:00:00Z',
 };
 const docs = [
-  { collection: 'settings', doc_id: 's', body: { profile: { units: 'kg', goal: 'consistency', timezone: 'America/Toronto', adult_confirmed: true, profile_version: 1, training, food_prefs: { pattern: 'unspecified', meatless_weekdays: [], allergies: [] }, consent: {} } }, deleted_at: null },
+  { collection: 'settings', doc_id: 's', body: { profile: { units: 'kg', goal: 'consistency', timezone: 'America/Toronto', adult_confirmed: true, profile_version: 1, training, food_prefs: { pattern: 'vegetarian', meatless_weekdays: [], allergies: [], cuisine: 'punjabi_home' }, consent: {}, height_cm: 172, body: { weight_kg: 80, age_years: 35, sex: 'male' } } }, deleted_at: null },
   { collection: 'workout_sessions', doc_id: 'w1', body: { status: 'finished', local_date: '2026-10-09', day_name: 'Full body', exercises: [] }, deleted_at: null },
 ];
 const ex = (id) => ({ exercise_id: id, variant_id: null, working_sets: 2, rep_min: 8, rep_max: 12, target_load: null, load_unit: 'kg', rest_seconds: 60, effort_instruction: 'Comfortable', substitution_exercise_ids: [], notes: '' });
@@ -38,6 +41,13 @@ const planOut = { ...baseOut, status: 'draft_ready', assistant_message: 'Here is
   days: [{ label: 'Day 1', weekday: 1, estimated_minutes: 30, exercises: [ex('goblet_squat:dumbbell'), ex('push_up:bodyweight')] }],
   recovery_notes: [], progression_rule: 'Add a rep when all sets feel easy.', review_trigger: 'After 4 weeks',
 } };
+
+// What a well-behaved model would return for the diet draft (real ids; the function recomputes totals).
+const dietTargets = diet.dietTargets({ weight_kg: 80, height_cm: 172, age_years: 35, sex: 'male', goal: 'consistency', sessions_per_week: 2 });
+const vegShelf = diet.shelfFor(shelf.dishes, { pattern: 'vegetarian', allergies: [] });
+const dietOut = { ...diet.composeDay(vegShelf, dietTargets, { variant: 1 }), notes: ['Keep a water bottle handy.'] };
+let dietBad = false;
+const storedDrafts = [];
 
 const calls = [];
 let geminiBodies = [];
@@ -58,12 +68,18 @@ const mock = createServer((req, res) => {
     if (u.startsWith('/rest/v1/rpc/ai_reserve')) return send(200, { status: 'reserved', request_id: '99999999-9999-4999-8999-999999999999' });
     if (u.startsWith('/rest/v1/rpc/ai_finish')) return send(200, null);
     if (u.startsWith('/rest/v1/rpc/coach_store_exchange')) return send(200, { status: 'stored', thread_id: '77777777-7777-4777-8777-777777777777', assistant_message_id: '88888888-8888-4888-8888-888888888888' });
-    if (u.startsWith('/rest/v1/rpc/store_plan_draft')) return send(200, 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa');
+    if (u.startsWith('/rest/v1/rpc/store_plan_draft')) {
+      storedDrafts.push(JSON.parse(body));
+      return send(200, 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa');
+    }
     if (u.startsWith('/v1beta/models/')) {
       const parsed = JSON.parse(body);
       geminiBodies.push(parsed);
-      const isPlan = parsed.contents[0].parts[0].text.startsWith('OPERATION: onboarding_plan');
-      return send(200, { candidates: [{ content: { parts: [{ text: JSON.stringify(isPlan ? planOut : chatOut) }] } }], usageMetadata: { promptTokenCount: 3000, candidatesTokenCount: 200, thoughtsTokenCount: 40, totalTokenCount: 3240 } });
+      const text = parsed.contents[0].parts[0].text;
+      const isPlan = text.startsWith('OPERATION: onboarding_plan');
+      const isDiet = text.startsWith('OPERATION: diet_draft');
+      const reply = isDiet ? (dietBad ? { meals: [{ slot: 'lunch', items: [{ dish_id: 'invented-dish', servings: 1 }] }], notes: [] } : dietOut) : isPlan ? planOut : chatOut;
+      return send(200, { candidates: [{ content: { parts: [{ text: JSON.stringify(reply) }] } }], usageMetadata: { promptTokenCount: 3000, candidatesTokenCount: 200, thoughtsTokenCount: 40, totalTokenCount: 3240 } });
     }
     return send(404, { message: `unexpected ${u}` });
   });
@@ -131,6 +147,21 @@ try {
   check('plan output budget 6,000 tokens and allowed exercise ids in the envelope', g2?.generationConfig?.maxOutputTokens === 6000 && g2.contents[0].parts[0].text.includes('"allowed_exercises"'), g2?.generationConfig);
   const stale = await post(phase.port, { authorization: `Bearer ${goodJwt}` }, { ...planReq, operation_id: '45444444-4444-4444-8444-444444444444', profile_version: 0 });
   check('stale profile version refused before any model call', stale.status === 409 && geminiBodies.length === 2, stale);
+
+  const dietReq = { operation: 'diet_draft', operation_id: '46444444-4444-4444-8444-444444444444', today: '2026-10-10', timezone: 'America/Toronto', profile_version: 1 };
+  const d1 = await post(phase.port, { authorization: `Bearer ${goodJwt}` }, dietReq);
+  const g3 = geminiBodies[2];
+  const g3text = g3?.contents?.[0]?.parts?.[0]?.text ?? '';
+  const env = g3 ? JSON.parse(g3text.slice(g3text.indexOf('{', g3text.indexOf('ENVELOPE')))) : null;
+  check('diet draft: envelope has code-computed targets and only veg database ids', env && env.targets.energy_kcal === dietTargets.energy_kcal && env.allowed_dishes.every(([id]) => shelf.dishes.find((x) => x.id === id)?.diet === 'veg'), env?.targets);
+  check('diet draft: diet reservation, 1,500-token output cap', calls.some((c) => c.url.includes('ai_reserve') && JSON.parse(c.body).p_operation === 'diet_draft') && g3?.generationConfig?.maxOutputTokens === 1500, g3?.generationConfig);
+  const sd = storedDrafts.at(-1);
+  check('diet draft: stored as kind=diet with totals recomputed from the database', d1.status === 200 && d1.body.draft?.plan?.source === 'ai' && sd?.p_kind === 'diet'
+    && d1.body.draft.plan.totals.kcal === diet.dayTotals(d1.body.draft.plan, new Map(shelf.dishes.map((x) => [x.id, x]))).kcal, d1.body);
+  dietBad = true;
+  const d2 = await post(phase.port, { authorization: `Bearer ${goodJwt}` }, { ...dietReq, operation_id: '47444444-4444-4444-8444-444444444444' });
+  check('diet draft: invented ids → one retry, then the app composes the day (real ids only)', d2.status === 200 && d2.body.draft?.plan?.source === 'code' && geminiBodies.length === 5
+    && d2.body.draft.plan.meals.every((m) => m.items.every((i) => shelf.dishes.some((x) => x.id === i.dish_id))), d2.body);
 } finally {
   phase.fn.kill();
   mock.close();

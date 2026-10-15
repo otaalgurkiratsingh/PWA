@@ -15,7 +15,7 @@ import type {
   ProgramVersion,
   RecipeRevision,
 } from '../contracts';
-import { DEFAULT_COACH } from '../contracts/profile';
+import { DEFAULT_COACH, PROFILE_EXTRAS_DEFAULT } from '../contracts/profile';
 import { fixtureId } from './ids';
 
 const T0 = '2026-01-01T00:00:00.000Z';
@@ -39,10 +39,12 @@ export const DEMO_PROFILES: readonly LocalProfile[] = [
     adult_confirmed: true,
     height_cm: null,
     consent: { cloud_backup: false, ai_processing: false, photo_storage: false, ai_images: false, updated_at: null },
-    food_prefs: { pattern: 'unspecified', meatless_weekdays: [], allergies: [] },
+    food_prefs: { pattern: 'unspecified', meatless_weekdays: [], allergies: [], cuisine: 'unspecified' },
     training: null,
     profile_version: 0,
     coach: { ...DEFAULT_COACH },
+    ...PROFILE_EXTRAS_DEFAULT,
+    ...PROFILE_EXTRAS_DEFAULT,
     onboarded_at: '2026-01-01T00:00:00.000Z',
     updated_at: null,
   },
@@ -57,10 +59,12 @@ export const DEMO_PROFILES: readonly LocalProfile[] = [
     adult_confirmed: true,
     height_cm: null,
     consent: { cloud_backup: false, ai_processing: false, photo_storage: false, ai_images: false, updated_at: null },
-    food_prefs: { pattern: 'unspecified', meatless_weekdays: [], allergies: [] },
+    food_prefs: { pattern: 'unspecified', meatless_weekdays: [], allergies: [], cuisine: 'unspecified' },
     training: null,
     profile_version: 0,
     coach: { ...DEFAULT_COACH },
+    ...PROFILE_EXTRAS_DEFAULT,
+    ...PROFILE_EXTRAS_DEFAULT,
     onboarded_at: '2026-01-01T00:00:00.000Z',
     updated_at: null,
   },

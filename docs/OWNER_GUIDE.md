@@ -26,7 +26,7 @@ You do this once. Until it's done, the sign-in screen says "Sign-in is still bei
 2. Apply the database migrations **in order**. Either:
    - with the Supabase CLI: `supabase link --project-ref <your-ref>`, then `supabase db push`; or
    - in **SQL Editor**, paste and run each file in `supabase/migrations/`, oldest first:
-     `20261009000001_init.sql`, `20261009000002_sync_auth_ai.sql`, `20261010000003_coach_v2.sql`, `20261012000004_notifications.sql`, `20261013000005_growth.sql`.
+     `20261009000001_init.sql`, `20261009000002_sync_auth_ai.sql`, `20261010000003_coach_v2.sql`, `20261012000004_notifications.sql`, `20261013000005_growth.sql`, `20261013000006_growth2.sql` (see 2h).
    The third one creates the private **progress-photos** storage bucket, the chat tables, plan drafts and the daily chat-expiry job. The fourth, `20261012000004_notifications.sql`, adds reminder settings and devices (see 2e). The fifth, `20261013000005_growth.sql`, adds usage stats, food requests, friend circles, the referral credit ledger and notifications v2 (see 2g).
 3. Check **Storage**: a bucket named `progress-photos` exists and is **Private** (not public).
 4. Check **Database → Extensions**: `pg_cron` is enabled. If the migration couldn't schedule the job, enable `pg_cron` and run the migration's last block again (or ask me). Expired chats are hidden either way.
@@ -82,6 +82,13 @@ Optional. Until it's done, the Notifications screen saves people's choices and s
 2. **Redeploy the notify function** (`supabase functions deploy notify`). The old version calls a database function this migration removes; until you redeploy, reminders stop (nothing breaks for people).
 3. SQL Editor: run the housekeeping block at the top of `supabase/admin/growth.sql` once (expires circle posts after 30 days and raw usage events after 400 days). The rest of that file holds the read-only views: daily events, **% of food logs with zero typing**, D1/D7/D30 retention, top food requests ("Request this food"), referral funnel.
 4. Nothing to set up for circles or invites. Plus months from invites are only a **ledger** (no billing exists); they are shown to people as "saved".
+
+### 2h. Trainer interview, trucker path, food plans (after migration 0006)
+1. Apply `20261013000006_growth2.sql` after the first five. It lets AI Coach draft **food plans** (`diet_draft`), counted under the existing 20 chat messages a day (no new allowance), and stores those drafts next to plan drafts so they need the person's Accept like workout plans.
+2. **Redeploy the ai function** (`supabase functions deploy ai`). Until you do, onboarding, workout drafts and chat work as before; only AI food-plan drafts are missing (the app then builds the food plan on the phone from the food database, which always works).
+3. Nothing else to set up. New members now meet their trainer as a short chat ("Prefer a form?" brings back the old form). Questions about food, weight, age, sleep and goals come later, at most one a day during the first week, and can always be skipped.
+4. Please read and approve the photo wording (Onboarding → Optional photos): "Progress photos: these help you see change over time. No app can measure body fat from photos reliably — anyone who claims otherwise is guessing." It is marked pending your approval in DECISIONS D43.
+5. If the food database file is ever replaced (e.g. the 229-dish version), run `node scripts/build-diet-shelf.mts` once and redeploy `ai`; `npm run check` fails until you do, so it can't be forgotten.
 
 ### 2f. First live check (about 20 minutes, with me)
 - [ ] Sign in with your email: a 6-digit code arrives and works; a wrong code shows an error.

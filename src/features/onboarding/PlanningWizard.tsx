@@ -1,12 +1,13 @@
 /**
- * Onboarding after the basics (and the same planning questions later from Settings):
- * goal → week → experience → equipment & screening → usual foods → optional photos → privacy →
- * review & generate ONE draft plan. Progress is saved on this device after every change, so the
- * wizard resumes where it was. Nothing is sent to AI until the person asks for a draft.
+ * Onboarding after the basics (and the same planning questions later from Settings).
+ * New onboarding starts as a conversation with the trainer (Interview.tsx, no AI calls); "Prefer a
+ * form?" switches to the step-by-step form below with the same answers:
+ * goal → week → experience → equipment, body & screening → usual foods → optional photos → privacy →
+ * review & generate ONE draft plan. Progress is saved on this device after every change, so either
+ * path resumes where it was. Nothing is sent to AI until the person asks for a draft.
  */
 import { useEffect, useRef, useState } from 'react';
-import type { Goal, LocalProfile, TrainingProfile } from '@shared/contracts';
-import { EXERCISE_LIBRARY } from '@shared/fixtures/exerciseLibrary';
+import { PAIN_AREAS, type Goal, type TrainingProfile } from '@shared/contracts';
 import { useJournal } from '@/app/JournalContext';
 import { goBack, navigate } from '@/app/router';
 import { useAuth } from '@/core/auth/AuthContext';
@@ -18,14 +19,20 @@ import { newId } from '@/core/ids';
 import { listPhotos } from '@/core/photos/progressPhotos';
 import { base64Of } from '@/core/ai/photo';
 import { editorDraftFromAi, PLAN_SEED_KEY } from '@/domain/training/aiPlan';
-import { WEEKDAY_SHORT, addDay, addExercise, commitPlan, draftFrom, plannedFromDefinition } from '@/domain/training/plan';
+import { WEEKDAY_SHORT, commitPlan } from '@/domain/training/plan';
+import { standardPlan } from '@/domain/training/standardPlan';
 import { existingPresetFor, presetFromCatalogue } from '@/features/food/catalogueFood';
 import { saveErrorMessage } from '@/features/food/useFood';
 import { loadCatalogue } from '@shared/catalogue/catalogue';
 import { PlanPreview } from '@/features/coach/DraftScreen';
 import { requestPlanDraft } from '@/features/coach/planDraft';
 import { PhotoGuidance, PhotoPermissions, PhotoSlots, type SessionPhoto } from '@/features/photos/PhotoSlots';
-import { allergyList, FoodPrefsFields, UsualFoodsPicker } from './FoodChoices';
+import { FoodPrefsFields, UsualFoodsPicker } from './FoodChoices';
+import { Interview } from './Interview';
+import { LOCATION_LABEL, PAIN_DISCLAIMER, PAIN_LABEL } from './interviewScript';
+import { initialWizard, profileFromWizard, resumeWizard, WIZARD_DRAFT_KEY, type WizardState } from './wizardState';
+
+export { initialWizard, profileFromWizard, WIZARD_DRAFT_KEY, type WizardState };
 
 const GOALS: { value: Goal; label: string; sub: string }[] = [
   { value: 'consistency', label: 'Be consistent', sub: 'Show up and log regularly' },
@@ -44,104 +51,10 @@ const EQUIP: { value: TrainingProfile['equipment'][number]; label: string }[] = 
   { value: 'kettlebell', label: 'Kettlebell' }, { value: 'band', label: 'Bands' },
 ];
 const CSEP_URL = 'https://store.csep.ca/pages/getactivequestionnaire';
-export const WIZARD_DRAFT_KEY = 'onboarding_draft';
 
-export interface WizardState {
-  step: number;
-  goals: Goal[];
-  days: number[];
-  sessions: number;
-  minutes: number;
-  windows: TrainingProfile['time_windows'];
-  rotating: boolean;
-  experience: TrainingProfile['experience'] | null;
-  routine: string;
-  likes: string;
-  recent: string;
-  location: TrainingProfile['location'] | null;
-  equipment: TrainingProfile['equipment'];
-  avoid: string;
-  restrictions: string;
-  screening: TrainingProfile['screening'];
-  foods: string[];
-  pattern: LocalProfile['food_prefs']['pattern'];
-  meatless: number[];
-  allergies: string;
-  energy: string;
-  protein: string;
-  height: string;
-  inspiration: string;
-}
-
-export function initialWizard(p: LocalProfile): WizardState {
-  const t = p.training;
-  return {
-    step: 1,
-    goals: t?.goal_priorities ?? [p.goal],
-    days: t?.days_available ?? [],
-    sessions: t?.sessions_per_week ?? 3,
-    minutes: t?.minutes_per_session ?? 45,
-    windows: t?.time_windows ?? [],
-    rotating: t?.rotating_schedule ?? false,
-    experience: t?.experience ?? null,
-    routine: t?.current_routine ?? '',
-    likes: t?.exercise_likes ?? '',
-    recent: t?.recent_performance ?? '',
-    location: t?.location ?? null,
-    equipment: t?.equipment ?? [],
-    avoid: t?.avoid_exercises ?? '',
-    restrictions: t?.restrictions ?? '',
-    screening: t?.screening ?? 'not_answered',
-    foods: [],
-    pattern: p.food_prefs.pattern,
-    meatless: p.food_prefs.meatless_weekdays,
-    allergies: p.food_prefs.allergies.join(', '),
-    energy: p.targets?.energy_kcal ? String(p.targets.energy_kcal) : '',
-    protein: p.targets?.protein_g ? String(p.targets.protein_g) : '',
-    height: p.height_cm ? String(p.height_cm) : '',
-    inspiration: t?.inspiration_note ?? '',
-  };
-}
-
-/** The profile these answers produce. Changing planning answers bumps the profile version. */
-export function profileFromWizard(p: LocalProfile, w: WizardState, now: string): LocalProfile {
-  const training: TrainingProfile = {
-    goal_priorities: w.goals.length ? w.goals : [p.goal],
-    days_available: w.rotating ? [] : [...w.days].sort(),
-    sessions_per_week: w.sessions,
-    minutes_per_session: w.minutes,
-    time_windows: w.windows,
-    rotating_schedule: w.rotating,
-    experience: w.experience ?? 'new',
-    current_routine: w.routine.trim().slice(0, 400),
-    exercise_likes: w.likes.trim().slice(0, 300),
-    recent_performance: w.recent.trim().slice(0, 400),
-    location: w.location ?? 'gym',
-    equipment: w.equipment,
-    avoid_exercises: w.avoid.trim().slice(0, 300),
-    restrictions: w.restrictions.trim().slice(0, 400),
-    screening: w.screening,
-    inspiration_note: w.inspiration.trim().slice(0, 300),
-    updated_at: now,
-  };
-  const e = Number(w.energy);
-  const pr = Number(w.protein);
-  const food_prefs = { pattern: w.pattern, meatless_weekdays: w.pattern === 'vegetarian' ? [] : w.meatless, allergies: allergyList(w.allergies) };
-  const targets = w.energy.trim() || w.protein.trim()
-    ? { energy_kcal: e > 0 ? e : null, protein_g: pr > 0 ? pr : null, source: p.targets?.source ?? 'Set by you' }
-    : null;
-  const withoutTime = (t: TrainingProfile | null) => (t ? JSON.stringify({ ...t, updated_at: '' }) : '');
-  const changed = withoutTime(training) !== withoutTime(p.training) || JSON.stringify(food_prefs) !== JSON.stringify(p.food_prefs);
-  return {
-    ...p,
-    goal: training.goal_priorities[0]!,
-    training,
-    food_prefs,
-    targets,
-    height_cm: Number(w.height) > 0 && Number(w.height) < 260 ? Number(w.height) : null,
-    profile_version: changed ? p.profile_version + 1 : p.profile_version,
-  };
-}
+export const DIRECTIONS: { value: NonNullable<TrainingProfile['goal_direction']>; label: string }[] = [
+  { value: 'lean', label: 'Lean' }, { value: 'athletic', label: 'Athletic' }, { value: 'strong', label: 'Strong' },
+];
 
 const STEP_TITLES = ['', 'Your goal', 'Your week', 'Your experience', 'Your equipment', 'Your usual foods', 'Optional photos', 'Your privacy', 'Review and plan'];
 
@@ -160,8 +73,8 @@ export function PlanningWizard({ mode }: { mode: 'onboarding' | 'edit' }) {
     let live = true;
     journal.getMeta<WizardState>(WIZARD_DRAFT_KEY).then((saved) => {
       if (!live) return;
-      setW(mode === 'onboarding' && saved ? { ...initialWizard(profile), ...saved } : initialWizard(profile));
-    }, () => live && setW(initialWizard(profile)));
+      setW(mode === 'onboarding' ? resumeWizard(profile, saved) : { ...initialWizard(profile), mode: 'form' });
+    }, () => live && setW(mode === 'onboarding' ? initialWizard(profile) : { ...initialWizard(profile), mode: 'form' }));
     return () => {
       live = false;
     };
@@ -191,8 +104,11 @@ export function PlanningWizard({ mode }: { mode: 'onboarding' | 'edit' }) {
   const saveAnswers = async (finish: boolean) => {
     const now = new Date().toISOString();
     const next = profileFromWizard(profile, w, now);
-    await updateProfile({ ...next, onboarded_at: finish ? (profile.onboarded_at ?? now) : profile.onboarded_at });
-    return next;
+    // Finishing onboarding starts the gentle week-1 questions (one a day at most, only in the app).
+    const profiling = finish && !profile.profiling.started_on ? { ...profile.profiling, started_on: today } : profile.profiling;
+    const saved = { ...next, profiling, onboarded_at: finish ? (profile.onboarded_at ?? now) : profile.onboarded_at };
+    await updateProfile(saved);
+    return saved;
   };
 
   /** Create the chosen usual foods as the person's own meals (once each; never 293 copies). */
@@ -268,18 +184,10 @@ export function PlanningWizard({ mode }: { mode: 'onboarding' | 'edit' }) {
   const simplePlan = async () => {
     setBusy('simple');
     try {
-      const wanted = [['Full body A', ['squat:barbell', 'bench_press:barbell', 'row:cable', 'plank:bodyweight']], ['Full body B', ['romanian_deadlift:barbell', 'overhead_press:dumbbell', 'lat_pulldown:cable', 'split_squat:dumbbell']]] as const;
-      const home = [['Full body A', ['goblet_squat:dumbbell', 'push_up:bodyweight', 'one_arm_row:dumbbell', 'plank:bodyweight']], ['Full body B', ['romanian_deadlift:dumbbell', 'overhead_press:dumbbell', 'reverse_lunge:bodyweight', 'dead_bug:bodyweight']]] as const;
-      let d = draftFrom(null);
-      for (const [name, ids] of w.location === 'home' ? home : wanted) {
-        d = addDay(d, name, newId);
-        const day = d.days[d.days.length - 1]!;
-        for (const id of ids) {
-          const def = EXERCISE_LIBRARY.find((x) => `${x.key}:${x.equipment}` === id);
-          if (def) d = addExercise(d, day.id, plannedFromDefinition(def, profile.units, newId));
-        }
-      }
-      await journal.commit('programs', commitPlan({ draft: { ...d, name: 'My plan' }, previous: await journal.currentProgram(), ownerId: journal.ownerId, newId, now: new Date().toISOString(), synthetic: false }));
+      // The same rules as AI drafts: no-gym equipment without gym access, pain areas respected.
+      const t = profileFromWizard(profile, w, new Date().toISOString()).training!;
+      const d = standardPlan(t, profile.units, newId);
+      await journal.commit('programs', commitPlan({ draft: d, previous: await journal.currentProgram(), ownerId: journal.ownerId, newId, now: new Date().toISOString(), synthetic: false }));
       await createFoods();
       await done(() => navigate('workout'));
     } catch (e) {
@@ -376,13 +284,24 @@ export function PlanningWizard({ mode }: { mode: 'onboarding' | 'edit' }) {
         return (
           <>
             <h1>{STEP_TITLES[4]}</h1>
-            <Segmented label="Where you train" full value={w.location ?? ''} onChange={(v) => set({ location: v as WizardState['location'] })} options={[{ value: 'gym', label: 'Gym' }, { value: 'home', label: 'Home' }, { value: 'both', label: 'Both' }]} />
+            <Toggle label="I drive long-haul / I’m on the road most days" description="Short sessions that work in the cab or at a rest stop; no gym assumed." checked={w.lifestyle === 'trucker'}
+              onChange={(v) => set(v ? { lifestyle: 'trucker', location: w.location ?? 'truck', equipment: w.equipment.length ? w.equipment : ['dumbbell', 'band'] } : { lifestyle: 'standard' })} />
+            <Segmented label="Where you train" full value={w.location ?? ''} onChange={(v) => set({ location: v as WizardState['location'] })} options={[{ value: 'gym', label: 'Gym' }, { value: 'home', label: 'Home' }, { value: 'both', label: 'Both' }, { value: 'truck', label: 'Truck cab' }]} />
+            {w.location === 'truck' || w.location === 'home' ? <span className="label">No gym needed: plans use bodyweight, dumbbells, kettlebells and bands only.</span> : null}
             <div className="stack-sm">
               <span className="label" style={{ fontWeight: 600 }}>Equipment you can use (bodyweight is always included)</span>
               <div className="chips wrap" role="group" aria-label="Equipment">
                 {EQUIP.map((x) => <button key={x.value} className="chip" aria-pressed={w.equipment.includes(x.value)} onClick={() => set({ equipment: w.equipment.includes(x.value) ? w.equipment.filter((y) => y !== x.value) : [...w.equipment, x.value] })}>{x.label}</button>)}
               </div>
             </div>
+            <div className="stack-sm">
+              <span className="label" style={{ fontWeight: 600 }}>Anything bothering you? (optional)</span>
+              <div className="chips wrap" role="group" aria-label="Areas that bother you">
+                {PAIN_AREAS.map((a) => <button key={a} className="chip" aria-pressed={w.painAreas.includes(a)} onClick={() => set({ painAreas: w.painAreas.includes(a) ? w.painAreas.filter((x) => x !== a) : [...w.painAreas, a] })}>{PAIN_LABEL[a]}</button>)}
+              </div>
+              {w.painAreas.length ? <span className="label">Plans leave out moves that load these areas and add gentle supportive ones. {PAIN_DISCLAIMER}</span> : null}
+            </div>
+            <label className="field">Anything hurting right now, or any injury I should work around? (optional)<input className="input" maxLength={300} value={w.painNote} onChange={(e) => set({ painNote: e.target.value })} /></label>
             <label className="field">Exercises to avoid (optional)<input className="input" maxLength={300} value={w.avoid} placeholder="e.g. deadlift, lunges" onChange={(e) => set({ avoid: e.target.value })} /></label>
             <label className="field">Limitations a professional has given you (optional)<textarea className="textarea" maxLength={400} value={w.restrictions} placeholder="e.g. physio: no overhead pressing for 6 weeks" onChange={(e) => set({ restrictions: e.target.value })} /></label>
             <div className="card flat stack-sm">
@@ -428,6 +347,13 @@ export function PlanningWizard({ mode }: { mode: 'onboarding' | 'edit' }) {
                 <PhotoSlots session={session} onSessionChange={setSession} />
               </>
             )}
+            <div className="stack-sm">
+              <span className="label" style={{ fontWeight: 600 }} id="direction-label">What direction appeals to you? (optional)</span>
+              <div className="chips wrap" role="group" aria-labelledby="direction-label">
+                {DIRECTIONS.map((d) => <button key={d.value} className="chip" aria-pressed={w.direction === d.value} onClick={() => set({ direction: w.direction === d.value ? null : d.value })}>{d.label}</button>)}
+              </div>
+              <span className="label">You pick it; nothing is read from your photos. It only shapes the style of your plan.</span>
+            </div>
             <label className="field">What do you like about your goal? (optional)
               <textarea className="textarea" maxLength={300} value={w.inspiration} placeholder="e.g. strong shoulders, more energy, being able to hike" onChange={(e) => set({ inspiration: e.target.value })} />
             </label>
@@ -459,7 +385,7 @@ export function PlanningWizard({ mode }: { mode: 'onboarding' | 'edit' }) {
             <Summary w={w} onEdit={(s) => set({ step: s })} />
             {result?.draft ? (
               <div className="stack">
-                <PlanPreview plan={result.draft.plan} rationale={result.output?.assistant_message} />
+                <PlanPreview plan={result.draft.plan} rationale={result.output?.assistant_message} training={profile.training} />
                 <button className="btn block" disabled={busy !== null} onClick={() => void acceptDraft(result.draft!)}>{busy === 'accept' ? <span className="spinner" /> : <Icon name="check" />} Accept plan</button>
                 <div className="row">
                   <button className="btn secondary grow" disabled={busy !== null} onClick={() => void editDraft(result.draft!)}><Icon name="edit" size={18} /> Edit</button>
@@ -496,6 +422,23 @@ export function PlanningWizard({ mode }: { mode: 'onboarding' | 'edit' }) {
         );
     }
   })();
+
+  if (mode === 'onboarding' && w.mode === 'interview') {
+    return (
+      <main className="welcome">
+        <div className="row between">
+          <span className="brand"><Mark /> TrainLuma</span>
+          <button className="link" onClick={() => void signOut()}>Sign out</button>
+        </div>
+        <div style={{ paddingTop: 20, flex: 1 }}>
+          <Interview w={w} busy={busy !== null} onChange={setW}
+            onForm={() => setW({ ...w, mode: 'form', step: 1 })}
+            onFinish={() => setW({ ...w, mode: 'form', step: 8 })}
+            onStandard={() => void simplePlan()} />
+        </div>
+      </main>
+    );
+  }
 
   const total = lastStep;
   return (
@@ -537,7 +480,8 @@ function Summary({ w, onEdit }: { w: WizardState; onEdit: (step: number) => void
     ['Goal', w.goals.map(goal).join(' → ') || 'Not set', 1],
     ['Week', `${w.sessions} × ${w.minutes} min · ${w.rotating ? 'changing schedule' : w.days.sort().map((d) => WEEKDAY_SHORT[d]).join(', ') || 'no days picked'}`, 2],
     ['Experience', w.experience === 'new' ? 'New to training' : w.experience === 'returning' ? 'Coming back' : w.experience === 'regular' ? 'Training regularly' : 'Not set', 3],
-    ['Equipment', `${w.location ?? '—'} · ${['bodyweight', ...w.equipment].join(', ')}${w.avoid ? ` · avoid: ${w.avoid}` : ''}`, 4],
+    ['Equipment', `${w.location ? LOCATION_LABEL[w.location] : '—'} · ${['bodyweight', ...w.equipment].join(', ')}${w.avoid ? ` · avoid: ${w.avoid}` : ''}${w.lifestyle === 'trucker' ? ' · on the road most days' : ''}`, 4],
+    ['Body', w.painAreas.length ? `Bothering you: ${w.painAreas.map((a) => PAIN_LABEL[a]).join(', ')}${w.painNote ? ` · “${w.painNote}”` : ''}` : 'Nothing flagged', 4],
     ['Screening', w.screening === 'no_concerns' ? 'Read, nothing applied' : w.screening === 'has_concerns' ? 'Something applied: check with a professional' : 'Not read yet', 4],
     ['Usual foods', w.foods.length ? `${w.foods.length} chosen` : 'None yet', 5],
   ];

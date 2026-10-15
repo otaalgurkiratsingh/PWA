@@ -13,14 +13,15 @@ import { newId } from '@/core/ids';
 import { deviceTimezone } from '@/core/time/localDate';
 import type { PhotoSlot } from '@/core/photos/progressPhotos';
 
-export type { AiResponse, StoredReview, StoredDraft, ChatReply, CoachOutput, PlanDraft as AiPlanDraft, NotebookPhotoOutput } from '../../../supabase/functions/_shared/aiContracts';
+export type { AiResponse, StoredReview, StoredDraft, StoredDietDraft, DietDraft, ChatReply, CoachOutput, PlanDraft as AiPlanDraft, NotebookPhotoOutput } from '../../../supabase/functions/_shared/aiContracts';
 export { reviewOutputFromStored, MAX_CHAT_CHARS } from '../../../supabase/functions/_shared/aiContracts';
 
 export type AiBody =
   | { operation: 'weekly_review'; today: string }
   | { operation: 'coach_question'; today: string; thread_id: string | null; message: string }
   | { operation: 'onboarding_plan'; today: string; profile_version: number; source?: 'onboarding' | 'chat'; instruction?: string; photo_ids?: string[]; inline_photos?: { slot: PhotoSlot; image_base64: string }[] }
-  | { operation: 'photo_suggest'; kind: 'food' | 'notebook'; image_base64: string };
+  | { operation: 'photo_suggest'; kind: 'food' | 'notebook'; image_base64: string }
+  | { operation: 'diet_draft'; today: string; profile_version: number };
 
 const OFFLINE = 'You’re offline. The coach needs a connection; logging still works.';
 

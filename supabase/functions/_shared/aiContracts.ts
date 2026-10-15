@@ -6,7 +6,7 @@
 import { z } from 'zod';
 export const SCHEMA_VERSION = '2.0';
 
-export const AiOperation = z.enum(['weekly_review', 'coach_question', 'onboarding_plan', 'photo_suggest']);
+export const AiOperation = z.enum(['weekly_review', 'coach_question', 'onboarding_plan', 'photo_suggest', 'diet_draft']);
 export type AiOperation = z.infer<typeof AiOperation>;
 
 const Uuid = z.string().regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i);
@@ -49,6 +49,14 @@ export const AiRequest = z.discriminatedUnion('operation', [
       slot: z.enum(['front', 'back', 'left', 'right', 'inspiration']),
       image_base64: z.string().min(100).max(400_000),
     })).max(5).default([]),
+  }),
+  z.object({
+    /** A food plan composed from real database dishes; counts under the daily chat allowance. */
+    operation: z.literal('diet_draft'),
+    operation_id: Uuid,
+    today: IsoDate,
+    timezone: Tz.default('UTC'),
+    profile_version: z.number().int().nonnegative(),
   }),
   z.object({
     operation: z.literal('photo_suggest'),
@@ -140,6 +148,37 @@ export function emptyOutput(status: z.infer<typeof CoachStatus>, message: string
   };
 }
 
+// ---- diet draft (ids + servings only; every number is recomputed in code) -----------------
+const DietSlot = z.enum(['breakfast', 'lunch', 'dinner', 'snack']);
+const DietItemSchema = z.object({ dish_id: z.string().min(1).max(60), servings: z.number().min(0.5).max(4) });
+
+/** What the model may return for diet_draft. Totals are never taken from the model. */
+export const DietDraftModelOutput = z.object({
+  meals: z.array(z.object({ slot: DietSlot, items: z.array(DietItemSchema).min(1).max(6) })).min(1).max(4),
+  notes: z.array(z.string().max(200)).max(3),
+});
+export type DietDraftModelOutput = z.infer<typeof DietDraftModelOutput>;
+
+const Totals = z.object({ kcal: z.number(), protein_g: z.number(), carbs_g: z.number(), fat_g: z.number(), fiber_g: z.number() });
+
+/** A validated food-plan draft (stored like a plan draft; activated only when the person accepts). */
+export const DietDraft = z.object({
+  kind: z.literal('diet'),
+  profile_version: z.number().int().nonnegative(),
+  targets: z.object({
+    energy_kcal: z.number().positive(), protein_g: z.number().positive(), carbs_g: z.number().nonnegative(), fat_g: z.number().positive(),
+    bmr: z.number().positive(), tdee: z.number().positive(), activity_factor: z.number().positive(),
+    direction: z.enum(['loss', 'gain', 'maintain']), adjustment: z.number(), capped: z.boolean(), notes: z.array(z.string().max(300)).max(4),
+  }),
+  meals: z.array(z.object({ slot: DietSlot, items: z.array(DietItemSchema).max(6) })).min(1).max(4),
+  totals: Totals,
+  /** 'ai' = proposed by AI Coach and checked in code; 'code' = composed by the app's own rules. */
+  source: z.enum(['ai', 'code']),
+  notes: z.array(z.string().max(200)).max(3),
+  shelf_version: z.string().max(80),
+});
+export type DietDraft = z.infer<typeof DietDraft>;
+
 // ---- notebook import (structured extraction, unchanged) ----------------------------------
 export const NotebookPhotoOutput = z.object({
   is_workout_notes: z.boolean(),
@@ -207,6 +246,15 @@ export interface StoredDraft {
   prompt_version: string;
 }
 
+export interface StoredDietDraft {
+  id: string;
+  created_at: string;
+  profile_version: number;
+  plan: DietDraft;
+  model_id: string;
+  prompt_version: string;
+}
+
 export interface ChatReply {
   thread_id: string;
   message_id: string | null;
@@ -221,6 +269,7 @@ export type AiResponse =
   | { status: 'ok'; operation: 'weekly_review'; review: StoredReview }
   | { status: 'ok'; operation: 'coach_question'; reply: ChatReply }
   | { status: 'ok'; operation: 'onboarding_plan'; output: CoachOutput; draft: StoredDraft | null; model_id: string | null }
+  | { status: 'ok'; operation: 'diet_draft'; draft: StoredDietDraft | null; message: string; questions: string[]; model_id: string | null }
   | { status: 'ok'; operation: 'photo_suggest'; kind: 'food'; result: CoachOutput; model_id: string }
   | { status: 'ok'; operation: 'photo_suggest'; kind: 'notebook'; result: NotebookPhotoOutput; model_id: string }
   | { status: 'insufficient_data'; message: string }

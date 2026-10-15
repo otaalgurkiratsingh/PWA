@@ -140,6 +140,8 @@ export function PhotoGuidance() {
   return (
     <div className="stack-sm">
       <p className="muted" style={{ margin: 0 }}>Wear whatever feels comfortable. Photos are not needed to create your plan.</p>
+      {/* Honest framing (T4; wording pending owner approval, see DECISIONS D43). */}
+      <p className="small" style={{ margin: 0 }}>Progress photos: these help you see change over time. No app can measure body fat from photos reliably — anyone who claims otherwise is guessing.</p>
       <p className="small muted" style={{ margin: 0 }}>An inspiration photo helps describe your goal; it does not predict your results.</p>
     </div>
   );

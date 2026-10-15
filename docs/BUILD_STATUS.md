@@ -2,10 +2,33 @@
 
 **App:** TrainLuma (renamed from Rozana on 2026-10-10; new TL logo).
 **Phase:** V2 food, AI onboarding and text AI Coach (`docs/spec/CLAUDE_CODE_FOOD_AND_AI_ONBOARDING_UPDATE_V2.md`), built on the approved redesign.
-**Last updated:** 2026-10-13 · Branch `claude/meal-workout-journal-phase-0-pepxc3`
+**Last updated:** 2026-10-15 · Branch `claude/meal-workout-journal-phase-0-pepxc3`
 **Live credentials used:** none. Nothing was published, billed or shared, and nobody was invited.
 
 > "Implemented" is not "tested", and "tested here" is not "tested on your phone or your live Supabase project". Each row below says which.
+
+## Phase 3 (2026-10-15): AI interview onboarding upgrade
+
+From `TRAINLUMA_AI_INTERVIEW_SPEC.md` (T1–T7); decisions D42–D44. Live credentials used: none.
+
+| Area | Done (tested here with mocks; not yet on a live project) |
+|---|---|
+| T1 interview | Onboarding is a scripted chat with the person's trainer (no AI calls): chips, one question at a time, progress line, "Skip for now", "Prefer a form?", "Just set me up with a standard plan"; same draft/fields as the form; resumes after reload; ends at the review + Generate. |
+| T2 trucker | "I drive long-haul" answer, "Truck cab / rest stop" location, cab defaults, code filter (no gym → bodyweight/dumbbell/kettlebell/band only), "Built for the cab — no gym needed." |
+| Pain areas (owner) | Back/knees/shoulders/neck/hips/wrists-ankles chips + note; `PAIN_RULES` exclude loading moves and add a supportive one per area (validator + standard plan); not-a-physio copy; urgent note → safety reply. |
+| T3–T5 | Week-1 Today card: one question a day (veg/egg/non-veg, cuisine, weight/height, age/sex, timeline, sleep, direction), skippable, stops after 7 days; once-only kind timeline reality check; photo honesty copy (pending owner approval); direction picked, never inferred. |
+| T6 adaptation | One weekly proposal from logs (2-day version / +1 pressing set / higher-protein breakfast) on Today and Coach → Weekly review; Accept / Edit / Not now. |
+| T7 food plan | Food plan screen: Mifflin-St Jeor targets with code safety floors and plain explainer; day composed from public food-database ids (AI `diet_draft`, validated and recomputed in code, or the on-phone composer); Accept / Edit / Regenerate; "On the road" tips. Migration `0006` (diet_draft under the chat allowance, `plan_drafts.kind`). |
+
+| Check (2026-10-15) | Result |
+|---|---|
+| `npm run check` | **pass** · 316 unit tests (2 skipped generators) |
+| `npm run test:db` (6 migrations) | **104/104** |
+| `npm run smoke:ai` | **22/22** |
+| `deno check` ai function | pass |
+| Playwright (demo + auth harness) | **64/64** (9 new: interview → draft → accept, trucker filter, skip-everything escape, pain areas, week-1 question, timeline check once + diet draft totals/ids, adaptation accept / edit / not now) |
+
+**Owner action:** apply migration `20261013000006_growth2.sql`, then **redeploy `ai`** (OWNER_GUIDE §2h). Approve the photo wording (D43).
 
 ## Pass 5 / Phase 4 (2026-10-15): exercise form demos
 

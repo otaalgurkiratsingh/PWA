@@ -24,6 +24,8 @@ import { useWorkout } from '@/features/workout/useWorkout';
 import { MilestoneCelebration, StreakBadge, useStreak } from '@/features/insights';
 import { track } from '@/core/analytics/analytics';
 import { InvitePrompt } from '@/features/social/InvitePrompt';
+import { ProfilingCard } from '@/features/profiling/ProfilingCard';
+import { AdaptationCard } from '@/features/adaptation/AdaptationCard';
 
 /** True the first time this milestone key is seen (then remembered); false without storage. */
 export function claimMilestone(key: string, today: string, store: Pick<Storage, 'getItem' | 'setItem'> = localStorage): boolean {
@@ -121,6 +123,8 @@ export function TodayScreen() {
         <h2 style={{ fontSize: '1.25rem', fontWeight: 700 }}>{greeting}, {profile.nickname.split(' ')[0]}</h2>
       </div>
 
+      <ProfilingCard />
+
       <NudgeCard />
 
       <div className={`card ${feature.tone}`}>
@@ -129,6 +133,8 @@ export function TodayScreen() {
         <p className="small" style={{ color: feature.tone === 'train' ? 'var(--train-ink)' : 'var(--food-ink)' }}>{feature.text}</p>
         <button className="btn block" style={{ marginTop: 14 }} onClick={feature.go}>{feature.action}</button>
       </div>
+
+      {mode === 'account' ? <AdaptationCard /> : null}
 
       {mood ? (
         <section className={`card momentum ${mood.tone}`} aria-labelledby="momentum-title">
@@ -203,6 +209,18 @@ export function TodayScreen() {
           </div>
         ) : null}
       </Section>
+
+      {mode === 'account' ? (
+        <button className="card insights-entry" onClick={() => navigate('diet')}>
+          <span className="ie-icon" aria-hidden="true"><Icon name="food" size={22} /></span>
+          <span className="grow">
+            <span className="eyebrow">Food plan</span>
+            <strong style={{ display: 'block' }}>{profile.diet_plan ? `Your food plan: ${profile.diet_plan.targets.energy_kcal.toLocaleString('en-US')} kcal · ${profile.diet_plan.targets.protein_g} g protein` : 'Get a day of meals built from your foods'}</strong>
+            <span className="small muted">Real dishes from the food database, targets worked out in the app.</span>
+          </span>
+          <Icon name="chevronRight" size={20} />
+        </button>
+      ) : null}
 
       <WaterCard />
 

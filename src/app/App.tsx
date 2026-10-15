@@ -22,6 +22,7 @@ import { AccessScreen, WelcomeScreen } from '@/features/auth/WelcomeScreen';
 import { ChatScreen } from '@/features/coach/ChatScreen';
 import { CoachScreen } from '@/features/coach/CoachScreen';
 import { DraftScreen } from '@/features/coach/DraftScreen';
+import { DietScreen } from '@/features/diet/DietScreen';
 import { PhotosScreen } from '@/features/photos/PhotosScreen';
 import { FoodScreen } from '@/features/food/FoodScreen';
 import { MealEditor } from '@/features/food/MealEditor';
@@ -39,7 +40,7 @@ import { applyUpdate, onUpdateReady, updateFoundAtLaunch } from './serviceWorker
 
 const TITLES: Record<RouteName, string> = {
   today: 'Today', food: 'Food', workout: 'Workout', progress: 'Progress', settings: 'Settings', coach: 'AI Coach', chat: 'AI Coach chat', draft: 'Plan draft',
-  plan: 'Edit plan', meal: 'Meal', photos: 'Progress photos', answers: 'Planning answers', notifications: 'Notifications', recipe: 'My recipe', insights: 'Luma Insights', year: 'Your year', circles: 'Circles', invite: 'Invite friends', 'data-review': 'Data verification', quicklog: 'Log',
+  plan: 'Edit plan', meal: 'Meal', photos: 'Progress photos', answers: 'Planning answers', notifications: 'Notifications', recipe: 'My recipe', insights: 'Luma Insights', year: 'Your year', circles: 'Circles', invite: 'Invite friends', 'data-review': 'Data verification', quicklog: 'Log', diet: 'Food plan',
 };
 const NAV_ICON: Record<(typeof TABS)[number], IconName> = { today: 'today', food: 'food', workout: 'workout', progress: 'progress' };
 
@@ -172,6 +173,7 @@ function AppShell() {
     case 'recipe': screen = <RecipeBuilderScreen param={route.param} />; break;
     case 'quicklog': screen = <QuickLogScreen param={route.param} />; break;
     case 'data-review': screen = <DataReviewScreen />; break;
+    case 'diet': screen = <DietScreen />; break;
     case 'insights': screen = <InsightsScreen onOpen={onInsightsOpen} onShare={onStoryShared} />; break;
     case 'year': screen = <YearScreen year={route.param && /^\d{4}$/.test(route.param) ? Number(route.param) : undefined} onShare={onStoryShared} />; break;
     case 'circles': screen = <CirclesScreen code={route.param} />; break;

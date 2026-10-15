@@ -8,6 +8,7 @@ import { Icon } from '@/core/design/icons';
 import { Section, Sheet } from '@/core/design/ui';
 import { formatShortDate } from '@/core/time/localDate';
 import { AskCoachButton, AssistantBody, CoachGate, CoachScope, uniqueByText } from './CoachParts';
+import { AdaptationCard } from '@/features/adaptation/AdaptationCard';
 
 interface Proposal { id: string; before_value: { energy_kcal: number | null; protein_g: number | null }; after_value: { energy_kcal: number | null; protein_g: number | null; rationale?: string }; status: string }
 interface Memory { id: string; fact: string }
@@ -211,6 +212,7 @@ function CoachHome() {
       </Section>
 
       <Section title="Weekly review">
+        <AdaptationCard />
         <div className="card coach stack">
           {review ? <ReviewView review={review} proposal={proposal} onDecide={(a) => void decide(a)} /> : <p className="small">No review yet. It looks at the last 7 days of your own logs.</p>}
           <button className="btn" disabled={busy || !online || (usage ? usage.reviews_week >= usage.limits.review_per_week : false)} onClick={getReview}>

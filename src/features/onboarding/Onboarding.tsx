@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { DEFAULT_COACH, type LoadUnit, type LocalProfile } from '@shared/contracts';
+import { DEFAULT_COACH, PROFILE_EXTRAS_DEFAULT, type LoadUnit, type LocalProfile } from '@shared/contracts';
 import { useSetup } from '@/app/JournalContext';
 import { useAuth } from '@/core/auth/AuthContext';
 import { Icon, Mark } from '@/core/design/icons';
@@ -35,10 +35,12 @@ export function Onboarding() {
       adult_confirmed: true,
       height_cm: null,
       consent: { cloud_backup: false, ai_processing: false, photo_storage: false, ai_images: false, updated_at: now },
-      food_prefs: { pattern: 'unspecified', meatless_weekdays: [], allergies: [] },
+      food_prefs: { pattern: 'unspecified', meatless_weekdays: [], allergies: [], cuisine: 'unspecified' },
       training: null,
       profile_version: 0,
       coach: { ...DEFAULT_COACH },
+      ...PROFILE_EXTRAS_DEFAULT,
+      ...PROFILE_EXTRAS_DEFAULT,
       onboarded_at: null,
       updated_at: now,
     };

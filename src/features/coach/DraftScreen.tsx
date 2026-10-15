@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import type { TrainingProfile } from '@shared/contracts';
+import { PAIN_DISCLAIMER } from '../../../supabase/functions/_shared/planRules';
 import { useJournal } from '@/app/JournalContext';
 import { goBack, navigate } from '@/app/router';
 import { decideDraft, getDraft, type DraftRow } from '@/core/ai/coachData';
@@ -15,13 +17,15 @@ import { requestPlanDraft } from './planDraft';
 const EQUIP = new Map(EXERCISE_LIBRARY.map((x) => [exerciseId(x), x.equipment]));
 
 /** Read-only preview of a validated AI draft. Nothing is activated until the person accepts. */
-export function PlanPreview({ plan, rationale }: { plan: AiPlanDraft; rationale?: string }) {
+export function PlanPreview({ plan, rationale, training }: { plan: AiPlanDraft; rationale?: string; training?: TrainingProfile | null }) {
   const warm = plan.warmup.reduce((s, w) => s + w.minutes, 0);
+  const cab = training?.lifestyle === 'trucker' || training?.location === 'truck';
   return (
     <div className="stack">
       <div className="card train stack-sm">
         <span className="eyebrow">Draft plan</span>
         <div className="feature-title">{plan.title}</div>
+        {cab ? <span className="tag" style={{ alignSelf: 'flex-start' }}>Built for the cab — no gym needed.</span> : null}
         <span className="small" style={{ color: 'var(--train-ink)' }}>
           {plan.days.length} workout{plan.days.length === 1 ? '' : 's'} a week · {plan.schedule_mode === 'weekdays' ? 'on set weekdays' : 'in order, whenever you train'} · review after {plan.duration_weeks_before_review} weeks
         </span>
@@ -67,6 +71,7 @@ export function PlanPreview({ plan, rationale }: { plan: AiPlanDraft; rationale?
           <ul>{plan.recovery_notes.map((r, i) => <li key={i}>{r}</li>)}</ul>
         </div>
       ) : null}
+      {training?.pain_areas.length ? <div className="notice">{PAIN_DISCLAIMER}</div> : null}
       <p className="label">This is a draft from AI Coach, checked by the app against your answers and equipment. Stop any exercise that hurts. Times are estimates.</p>
     </div>
   );
@@ -162,7 +167,7 @@ function DraftActions({ draft }: { draft: DraftRow }) {
 
   return (
     <>
-      <PlanPreview plan={draft.plan} rationale={draft.response?.assistant_message} />
+      <PlanPreview plan={draft.plan} rationale={draft.response?.assistant_message} training={profile.training} />
       {status !== 'draft' ? (
         <div className="notice">This draft was {status === 'accepted' ? 'accepted' : status === 'rejected' ? 'dismissed' : 'replaced by a newer draft'}.</div>
       ) : (

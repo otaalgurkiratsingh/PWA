@@ -300,7 +300,7 @@ function PlanEditorForm({ current, seed }: { current: ProgramVersion | null; see
       const v: ProgramVersion = commitPlan({ draft, previous: current, ownerId: journal.ownerId, newId, now: new Date().toISOString(), synthetic: profile.synthetic });
       await journal.commit('programs', v);
       // Saving an edited AI draft is the person's approval of it (best effort; the plan is already saved).
-      if (seed) void decideDraft(seed.draftId, 'accepted', profile.profile_version).catch(() => undefined);
+      if (seed?.draftId) void decideDraft(seed.draftId, 'accepted', profile.profile_version).catch(() => undefined);
       refresh();
       notify({ kind: 'info', message: 'Plan saved. Past workouts keep their own plan.' });
       goBack('workout');

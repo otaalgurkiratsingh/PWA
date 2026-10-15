@@ -5,7 +5,7 @@
  * and confirm or delete memories.
  */
 import type { CoachOutput } from '../../../supabase/functions/_shared/aiContracts';
-import { CoachOutput as CoachOutputSchema, PlanDraft as PlanDraftSchema, type PlanDraft } from '../../../supabase/functions/_shared/aiContracts';
+import { CoachOutput as CoachOutputSchema, DietDraft as DietDraftSchema, PlanDraft as PlanDraftSchema, type DietDraft, type PlanDraft } from '../../../supabase/functions/_shared/aiContracts';
 import { supabase } from '@/core/auth/supabase';
 import { deviceTimezone } from '@/core/time/localDate';
 
@@ -61,9 +61,35 @@ export async function getDraft(id: string): Promise<DraftRow | null> {
   return data ? toDraft(data) : null;
 }
 
+/** Rows without `kind` (before migration 0006) are training drafts. */
+const kindOf = (row: Record<string, unknown>) => (row.kind === 'diet' ? 'diet' : 'training');
+
 export async function latestOpenDraft(): Promise<DraftRow | null> {
-  const { data } = await (await supabase()).from('plan_drafts').select('*').eq('status', 'draft').order('created_at', { ascending: false }).limit(1);
-  return data?.[0] ? toDraft(data[0]) : null;
+  const { data } = await (await supabase()).from('plan_drafts').select('*').eq('status', 'draft').order('created_at', { ascending: false }).limit(5);
+  const row = (data ?? []).find((r) => kindOf(r) === 'training');
+  return row ? toDraft(row) : null;
+}
+
+export interface DietDraftRow { id: string; created_at: string; status: string; profile_version: number; plan: DietDraft }
+
+/** The newest open food-plan draft, if any (validated; anything malformed is ignored). */
+export async function latestOpenDietDraft(): Promise<DietDraftRow | null> {
+  const { data } = await (await supabase()).from('plan_drafts').select('*').eq('status', 'draft').order('created_at', { ascending: false }).limit(5);
+  for (const row of data ?? []) {
+    if (kindOf(row) !== 'diet') continue;
+    const plan = DietDraftSchema.safeParse(row.plan);
+    if (plan.success) return { id: row.id as string, created_at: row.created_at as string, status: row.status as string, profile_version: Number(row.profile_version), plan: plan.data };
+  }
+  return null;
+}
+
+/** Accept or dismiss a food-plan draft (same server rule as plans: owner, open, current profile version). */
+export async function decideDietDraft(id: string, decision: 'accepted' | 'rejected', profileVersion: number): Promise<{ status: 'accepted' | 'rejected' | 'stale' | 'not_found'; plan?: DietDraft }> {
+  const { data, error } = await (await supabase()).rpc('decide_plan_draft', { p_draft_id: id, p_decision: decision, p_profile_version: profileVersion });
+  if (error) throw new Error('Couldn’t record your decision. Try again.');
+  const r = data as { status: 'accepted' | 'rejected' | 'stale' | 'not_found'; plan?: unknown };
+  const plan = r.plan ? DietDraftSchema.safeParse(r.plan) : null;
+  return { status: r.status, plan: plan?.success ? plan.data : undefined };
 }
 
 export async function decideDraft(id: string, decision: 'accepted' | 'rejected', profileVersion: number): Promise<{ status: 'accepted' | 'rejected' | 'stale' | 'not_found'; plan?: PlanDraft }> {

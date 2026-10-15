@@ -11,11 +11,13 @@ import { z } from 'zod';
 import {
   AiRequest,
   CoachOutput,
+  DietDraftModelOutput,
   NotebookPhotoOutput,
   SCHEMA_VERSION,
   emptyOutput,
   type AiErrorCode,
   type AiResponse,
+  type DietDraft,
   type StoredDraft,
   type StoredReview,
 } from './aiContracts.ts';
@@ -23,7 +25,8 @@ import { COACH_SYSTEM_PROMPT, PROMPT_VERSION } from './coachPrompt.ts';
 import { buildEnvelope, estimateTokens, fitConversation, readProfile, type ProfileView } from './envelope.ts';
 import { reservationUsd, actualUsd, ProviderError, type ModelResult, type ModelUsage, type Pricing } from './gemini.ts';
 import { checkJpeg, decodeBase64 } from './image.ts';
-import { allowedExercises, checkPlan, missingAnswers } from './planRules.ts';
+import { allowedExercises, checkPlan, enforceBodyRules, missingAnswers, painAreasOf, PAIN_RULES } from './planRules.ts';
+import { checkDietDay, composeDay, dayTotals, dietTargets, missingDietInputs, ON_THE_ROAD, shelfFor, type DietDay, type ShelfDish } from './diet.ts';
 import { notebookPhotoSystem, screenText, urgentSafetyMessage, userTurn } from './prompts.ts';
 import { hasEnoughForReview, type DocRow } from './summary.ts';
 
@@ -53,7 +56,7 @@ export interface AdminDb {
   finish(requestId: string, user: string, status: 'succeeded' | 'failed', actualUsd: number | null, result: unknown, usage: ModelUsage | null, error: string | null): Promise<void>;
   storeReview(user: string, review: Omit<StoredReview, 'id' | 'created_at' | 'proposal_id'>): Promise<{ id: string; created_at: string }>;
   storeExchange(a: { user: string; threadId: string | null; clientOpId: string; userText: string; assistantText: string; response: unknown; modelId: string; promptVersion: string }): Promise<{ status: string; thread_id?: string; assistant_message_id?: string }>;
-  storePlanDraft(a: { user: string; profileVersion: number; source: 'onboarding' | 'chat'; plan: unknown; response: unknown; modelId: string; promptVersion: string }): Promise<{ id: string; created_at: string }>;
+  storePlanDraft(a: { user: string; profileVersion: number; source: 'onboarding' | 'chat'; plan: unknown; response: unknown; modelId: string; promptVersion: string; kind?: 'training' | 'diet' }): Promise<{ id: string; created_at: string }>;
 }
 
 /** Measured ceilings (configurable in code; the prompt cannot enforce them). */
@@ -68,6 +71,9 @@ export interface AiLimits {
   planRetries: number;
   photoInputTokens: number;
   photoOutputTokens: number;
+  dietInputTokens: number;
+  dietOutputTokens: number;
+  dietRetries: number;
   /** Tokens reserved per image (conservative; verify against provider usage). */
   imageTokens: number;
   /** Extra output reserved for billable thinking, as a multiple of the output cap. */
@@ -87,6 +93,9 @@ export const DEFAULT_LIMITS: AiLimits = {
   planRetries: 1,
   photoInputTokens: 6000,
   photoOutputTokens: 1024,
+  dietInputTokens: 9000,
+  dietOutputTokens: 1500,
+  dietRetries: 1,
   imageTokens: 1300,
   thinkingFactor: 1,
 };
@@ -101,6 +110,8 @@ export interface HandlerConfig {
   limits?: Partial<AiLimits>;
   /** Compact food list (id + name) for food photo matching. */
   catalogue?: readonly { id: string; name: string }[];
+  /** Public food-database dishes (generated diet shelf) for diet drafts. */
+  dietShelf?: { version: string; dishes: readonly ShelfDish[] };
 }
 
 export interface HandlerDeps {
@@ -131,6 +142,14 @@ const COLLECTIONS = ['settings', 'meal_entries', 'daily_log_status', 'weight_ent
 
 const COACH_SCHEMA = z.toJSONSchema(CoachOutput) as Record<string, unknown>;
 const NOTEBOOK_SCHEMA = z.toJSONSchema(NotebookPhotoOutput) as Record<string, unknown>;
+const DIET_SCHEMA = z.toJSONSchema(DietDraftModelOutput) as Record<string, unknown>;
+
+const DIET_QUESTIONS: Record<string, string> = {
+  weight: 'What do you weigh right now?',
+  height: 'How tall are you?',
+  age: 'How old are you?',
+  sex: 'Female, male, or prefer not to say? (Only for the calorie formula.)',
+};
 
 const SCREENING_GUIDANCE = 'Thanks for answering the pre-exercise questions. Because something came up, please talk to a doctor or a qualified exercise professional before starting a new routine. TrainLuma can’t give medical clearance. You can keep logging meals and workouts, and come back to planning once you have their advice.';
 
@@ -226,6 +245,43 @@ export async function handleAiRequest(req: Request, deps: HandlerDeps): Promise<
   const profile: ProfileView = readProfile(rows);
   const memory = parsed.operation === 'photo_suggest' ? [] : await db.memory();
 
+  // Something urgent in the person's own pain note gets the safety reply, never the model.
+  if (parsed.operation === 'onboarding_plan' && profile.training?.pain_note) {
+    const urgentPain = urgentSafetyMessage(profile.training.pain_note);
+    if (urgentPain) return json(200, { status: 'safety', message: urgentPain }, h);
+  }
+
+  // Diet draft pre-checks: version, the details the maths needs, the person's allowed shelf.
+  let dietCtx: { targets: ReturnType<typeof dietTargets>; allowed: ShelfDish[]; fallback: DietDay; usual: string[] } | null = null;
+  if (parsed.operation === 'diet_draft') {
+    if (parsed.profile_version !== profile.version) {
+      return fail(409, 'stale_profile', 'Your answers changed since you reviewed them. Review them again, then generate.', h);
+    }
+    const missing = missingDietInputs(profile.body);
+    if (missing.length) {
+      return json(200, { status: 'ok', operation: 'diet_draft', draft: null, message: 'A few details are needed before a food plan can be worked out.', questions: missing.map((m) => DIET_QUESTIONS[m]!), model_id: null }, h);
+    }
+    const shelf = deps.config.dietShelf?.dishes ?? [];
+    const allowedShelf = shelfFor(shelf, profile.food_prefs);
+    if (allowedShelf.length < 4) {
+      return json(200, { status: 'ok', operation: 'diet_draft', draft: null, message: 'There aren’t enough foods in the database yet for your choices to build a day.', questions: [], model_id: null }, h);
+    }
+    const t = profile.training;
+    const targets = dietTargets({
+      weight_kg: profile.body.weight_kg!, height_cm: profile.body.height_cm!, age_years: profile.body.age_years!, sex: profile.body.sex,
+      goal: t?.goal_priorities[0] ?? profile.goal ?? 'consistency', goal_direction: profile.context.goal_direction, lifestyle: t?.lifestyle,
+      sessions_per_week: t?.sessions_per_week ?? 0, goal_weight_kg: profile.body.goal_weight_kg, goal_weeks: profile.body.goal_weeks,
+    });
+    const ids = new Set(allowedShelf.map((d) => d.id));
+    const usual = [...new Set(rows.filter((r) => r.collection === 'presets' && !r.deleted).flatMap((r) => {
+      const dish = typeof r.body.dish_id === 'string' && ids.has(r.body.dish_id) ? [r.body.dish_id] : [];
+      const name = String(r.body.name ?? '').toLowerCase().trim();
+      const byName = name.length >= 3 ? allowedShelf.filter((d) => d.name.toLowerCase() === name).map((d) => d.id) : [];
+      return [...dish, ...byName];
+    }))].slice(0, 15);
+    dietCtx = { targets, allowed: allowedShelf, usual, fallback: composeDay(allowedShelf, targets, { cuisine: profile.food_prefs.cuisine, usual }) };
+  }
+
   // Onboarding plan pre-checks: current profile version, required answers, screening outcome.
   let planImages: { id: string; slot: string; base64: string }[] = [];
   let allowed: ReturnType<typeof allowedExercises> = [];
@@ -320,12 +376,39 @@ export async function handleAiRequest(req: Request, deps: HandlerDeps): Promise<
     dataWindow = env.ctx.period;
     inputCap = L.chatInputTokens;
     outputCap = L.chatOutputTokens;
+  } else if (parsed.operation === 'diet_draft') {
+    const d = dietCtx!;
+    const t = profile.training;
+    // Minimised: targets computed in code, food choices, the allowed dishes. No history, no photos, no name.
+    const env = {
+      operation: 'diet_draft',
+      targets: { energy_kcal: d.targets.energy_kcal, protein_g: d.targets.protein_g, carbs_g: d.targets.carbs_g, fat_g: d.targets.fat_g },
+      food_preferences: { pattern: profile.food_prefs.pattern, cuisine: profile.food_prefs.cuisine, allergies: profile.food_prefs.allergies },
+      lifestyle: { long_haul_driver: t?.lifestyle === 'trucker' },
+      usual_dish_ids: d.usual,
+      allowed_dishes: d.allowed.map((x) => [x.id, x.name, x.serving_label, Math.round(x.kcal), x.protein_g]),
+      constraints: { ids_only: true, servings_half_steps_0_5_to_4: true, max_items_per_meal: 6, totals_recomputed_by_app: true },
+    };
+    text = userTurn('diet_draft', env,
+      'Compose ONE day of eating as {meals:[{slot,items:[{dish_id,servings}]}],notes:[]} using only allowed_dishes ids. Put usual dishes first, respect the stated cuisine, aim for the calorie target within 10% and at least 90% of the protein target. Do not state any numbers; the app computes every total. Notes: at most 3 short practical tips, no medical claims.');
+    validRefs = new Set();
+    inputCap = L.dietInputTokens;
+    outputCap = L.dietOutputTokens;
+    schema = DIET_SCHEMA;
   } else {
     const env = buildEnvelope({
       operation: 'onboarding_plan', rows, today: parsed.today, memory, profile, allowed, instruction: parsed.instruction,
       images: planImages.map((p) => ({ role: p.slot === 'inspiration' ? 'inspiration' : `current_${p.slot}` })),
     });
-    text = userTurn('onboarding_plan', env.json, 'Return a plan draft that uses only allowed_exercises ids and fits availability and minutes_per_session.');
+    const t = profile.training!;
+    const areas = painAreasOf(t);
+    const extra = [
+      'Return a plan draft that uses only allowed_exercises ids and fits availability and minutes_per_session.',
+      t.lifestyle === 'trucker' || t.location === 'truck' ? 'This person drives long-haul: short sessions that work in a truck cab or at a rest stop, no gym needed; include hip, hamstring and upper-back mobility to offset long hours of sitting. Respectful, never pitying.' : '',
+      areas.length ? `They mentioned their ${areas.map((x) => PAIN_RULES[x].label).join(', ')}: include gentle supportive work (core, glutes, upper back) for each area, keep loads conservative, never diagnose or promise to fix pain.` : '',
+      profile.context.goal_direction === 'athletic' ? 'They picked an athletic direction: include some conditioning.' : '',
+    ].filter(Boolean).join('\n');
+    text = userTurn('onboarding_plan', env.json, extra);
     validRefs = new Set(env.ctx.valid_refs);
     dataWindow = env.ctx.period;
     inputCap = L.planInputTokens + planImages.length * L.imageTokens;
@@ -333,7 +416,7 @@ export async function handleAiRequest(req: Request, deps: HandlerDeps): Promise<
     images = planImages.length ? planImages.map((p) => p.base64) : undefined;
   }
 
-  const attempts = parsed.operation === 'onboarding_plan' ? 1 + L.planRetries : 1;
+  const attempts = parsed.operation === 'onboarding_plan' ? 1 + L.planRetries : parsed.operation === 'diet_draft' ? 1 + L.dietRetries : 1;
 
   // 6. Transactional reservation for the maximum cost of every allowed attempt.
   const reserveUsd = attempts * reservationUsd(pricing, inputCap + 1500, outputCap * (1 + L.thinkingFactor));
@@ -388,6 +471,24 @@ export async function handleAiRequest(req: Request, deps: HandlerDeps): Promise<
       if (!nb.success) break;
       const response: AiResponse = { status: 'ok', operation: 'photo_suggest', kind: 'notebook', model_id: deps.config.modelId, result: { ...nb.data, exercises: nb.data.exercises.map((x) => ({ ...x, reps_max: Math.max(x.reps_min, x.reps_max) })) } };
       await deps.admin.finish(requestId, user, 'succeeded', cost(), response, usageTotal, null);
+      return json(200, response, h);
+    }
+
+    if (parsed.operation === 'diet_draft') {
+      const d = dietCtx!;
+      const dm = DietDraftModelOutput.safeParse(model.json);
+      const fallbackTotals = dayTotals(d.fallback, new Map(d.allowed.map((x) => [x.id, x])));
+      const check = dm.success ? checkDietDay(dm.data, d.allowed, d.targets, { proteinFloor: fallbackTotals.protein_g * 0.95 }) : null;
+      if (!check?.ok) {
+        lastError = check ? `diet rejected: ${check.errors.join(' | ')}`.slice(0, 300) : 'invalid diet output';
+        feedback = check ? check.errors.join('\n') : 'The JSON did not match the schema.';
+        if (attempt < attempts) continue;
+      }
+      // Valid → the AI's day; still invalid after the retry → the app's own composition (never the model's numbers).
+      const ok = Boolean(check?.ok && dm.success);
+      const notes = ok ? dm.data!.notes.filter((n) => screenText(n).ok).slice(0, 3) : ['Built by the app from the food database, because the coach’s suggestion didn’t fit your targets.'];
+      const response = await storeDiet(deps, user, profile.version, d, ok ? check!.day : d.fallback, ok ? 'ai' : 'code', notes);
+      await deps.admin.finish(requestId, user, 'succeeded', cost(), response, usageTotal, ok ? null : lastError);
       return json(200, response, h);
     }
 
@@ -461,13 +562,17 @@ export async function handleAiRequest(req: Request, deps: HandlerDeps): Promise<
       feedback = 'status was draft_ready but plan was null.';
       continue;
     }
-    const check = checkPlan(out.plan, profile.training!, allowed, profile.units, profile.version);
+    // Pain-area rules first (remove loading moves, add supportive ones), then the usual checks.
+    const body = enforceBodyRules(out.plan, profile.training!, allowed);
+    const check = checkPlan(body.plan, profile.training!, allowed, profile.units, profile.version);
     if (!check.ok) {
       lastError = `plan rejected: ${check.errors.join(' | ')}`.slice(0, 300);
       feedback = check.errors.join('\n');
       continue;
     }
-    const output: CoachOutput = { ...out, status: 'draft_ready', plan: check.plan };
+    // What code changed is said plainly (the app adds the cab line and the pain disclaimer itself).
+    const message = body.changes.length ? `${out.assistant_message}\n\nChecked by the app: ${body.changes.join(' ')}`.slice(0, 2400) : out.assistant_message;
+    const output: CoachOutput = { ...out, assistant_message: message, status: 'draft_ready', plan: check.plan };
     const stored = await deps.admin.storePlanDraft({ user, profileVersion: profile.version, source: parsed.source, plan: check.plan, response: { ...output, plan: null }, modelId: deps.config.modelId, promptVersion: PROMPT_VERSION });
     const draft: StoredDraft = { id: stored.id, created_at: stored.created_at, profile_version: profile.version, plan: check.plan, model_id: deps.config.modelId, prompt_version: PROMPT_VERSION };
     const response: AiResponse = { status: 'ok', operation: 'onboarding_plan', output, draft, model_id: deps.config.modelId };
@@ -480,6 +585,22 @@ export async function handleAiRequest(req: Request, deps: HandlerDeps): Promise<
   return fail(502, 'invalid_output', op === 'onboarding_plan'
     ? 'The coach couldn’t produce a plan that fits your answers. Your answers are saved; try again later or build your plan by hand.'
     : 'The coach gave an unusable answer. Please try again later.', h);
+}
+
+async function storeDiet(deps: HandlerDeps, user: string, version: number, d: { targets: ReturnType<typeof dietTargets>; allowed: ShelfDish[] }, day: DietDay, source: 'ai' | 'code', notes: string[]): Promise<AiResponse> {
+  const totals = dayTotals(day, new Map(d.allowed.map((x) => [x.id, x])));
+  const t = d.targets;
+  const plan: DietDraft = {
+    kind: 'diet', profile_version: version,
+    targets: { energy_kcal: t.energy_kcal, protein_g: t.protein_g, carbs_g: t.carbs_g, fat_g: t.fat_g, bmr: t.bmr, tdee: t.tdee, activity_factor: t.activity_factor, direction: t.direction, adjustment: t.adjustment, capped: t.capped, notes: t.notes.slice(0, 4) },
+    meals: day.meals, totals, source, notes, shelf_version: (deps.config.dietShelf?.version ?? '').slice(0, 80),
+  };
+  const stored = await deps.admin.storePlanDraft({ user, profileVersion: version, source: 'onboarding', plan, response: { notes, on_the_road: ON_THE_ROAD.length }, modelId: deps.config.modelId, promptVersion: PROMPT_VERSION, kind: 'diet' });
+  return {
+    status: 'ok', operation: 'diet_draft', message: source === 'ai' ? 'Here’s a day built from your foods. Nothing changes until you accept.' : 'Here’s a day the app built from the food database. Nothing changes until you accept.',
+    questions: [], model_id: deps.config.modelId,
+    draft: { id: stored.id, created_at: stored.created_at, profile_version: version, plan, model_id: deps.config.modelId, prompt_version: PROMPT_VERSION },
+  };
 }
 
 export { SCHEMA_VERSION };

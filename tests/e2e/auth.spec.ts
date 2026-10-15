@@ -27,6 +27,8 @@ async function answer(page: Page, opts: { ai?: boolean; foods?: boolean; photos?
   await page.getByLabel('What should we call you?').fill('Gurkirat');
   await page.getByRole('checkbox', { name: /18 or older/ }).click();
   await next(page);
+  // New onboarding starts as the trainer interview; these tests use the form path.
+  await page.getByRole('button', { name: 'Prefer a form?' }).click();
   await expect(page.getByRole('heading', { name: 'Your goal' })).toBeVisible();
   await page.getByRole('button', { name: /Get stronger/ }).click();
   await page.getByRole('button', { name: /Be consistent/ }).click();
@@ -169,6 +171,7 @@ test('onboarding resumes where it was after a reload (recoverable draft)', async
   await page.getByLabel('What should we call you?').fill('Gurkirat');
   await page.getByRole('checkbox', { name: /18 or older/ }).click();
   await next(page);
+  await page.getByRole('button', { name: 'Prefer a form?' }).click();
   await page.getByRole('button', { name: /Build muscle/ }).click();
   await next(page);
   await page.getByRole('group', { name: 'Days you can train' }).getByRole('button', { name: 'Tue' }).click();

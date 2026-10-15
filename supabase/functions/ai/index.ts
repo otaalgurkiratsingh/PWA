@@ -1,4 +1,4 @@
-// TrainLuma AI Edge Function: weekly_review | coach_question (text chat) | onboarding_plan | photo_suggest.
+// TrainLuma AI Edge Function: weekly_review | coach_question (text chat) | onboarding_plan | photo_suggest | diet_draft.
 // Wiring only — all decisions live in ../_shared/handler.ts (unit-tested).
 //
 // Secrets (set by the owner in the Supabase dashboard, never in the app or git):
@@ -14,6 +14,8 @@ import { createClient } from '@supabase/supabase-js';
 import { handleAiRequest, type HandlerDeps } from '../_shared/handler.ts';
 import { callModel } from '../_shared/gemini.ts';
 import catalogue from '../_shared/data/punjabi-canadian-v2.json' with { type: 'json' };
+import dietShelf from '../_shared/data/diet-shelf.json' with { type: 'json' };
+import type { Shelf } from '../_shared/diet.ts';
 
 function env(name: string): string | null {
   const v = Deno.env.get(name);
@@ -52,6 +54,8 @@ const config: HandlerDeps['config'] = {
   allowedOrigins: (env('ALLOWED_ORIGINS') ?? '').split(',').map((s) => s.trim()).filter(Boolean),
   timeoutMs: 25_000,
   catalogue: (catalogue as { foods: { id: string; name: string }[] }).foods.map((f) => ({ id: f.id, name: f.name })),
+  // Public food-database dishes only (generated from the bundled database; see scripts/build-diet-shelf.mts).
+  dietShelf: dietShelf as Shelf,
 };
 
 function toBase64(bytes: Uint8Array): string {
@@ -162,6 +166,8 @@ const deps: HandlerDeps = {
       const { data, error } = await admin.rpc('store_plan_draft', {
         p_user: a.user, p_profile_version: a.profileVersion, p_source: a.source, p_plan: a.plan, p_response: a.response,
         p_model_id: a.modelId, p_prompt_version: a.promptVersion,
+        // Diet drafts need migration 0006; training drafts keep working without it.
+        ...(a.kind === 'diet' ? { p_kind: 'diet' } : {}),
       });
       if (error) throw new Error('could not store draft');
       return { id: data as string, created_at: new Date().toISOString() };

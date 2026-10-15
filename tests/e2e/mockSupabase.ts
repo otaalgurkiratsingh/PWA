@@ -6,6 +6,14 @@
  */
 import type { Page, Route } from '@playwright/test';
 import { randomUUID } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+// Phase 3: the scripted "model" below is checked by the REAL rules code, exactly as the ai function does.
+import { allowedExercises, checkPlan, enforceBodyRules } from '../../supabase/functions/_shared/planRules';
+import { readProfile } from '../../supabase/functions/_shared/envelope';
+import { checkDietDay, composeDay, dayTotals, dietTargets, missingDietInputs, shelfFor, type Shelf } from '../../supabase/functions/_shared/diet';
+import type { PlanDraft as AiPlanDraft } from '../../supabase/functions/_shared/aiContracts';
+
+const SHELF = JSON.parse(readFileSync('supabase/functions/_shared/data/diet-shelf.json', 'utf8')) as Shelf;
 
 export const FAKE_URL = 'https://abcdefghijklmnopqrst.supabase.co';
 
@@ -34,7 +42,7 @@ export function fakeJwt(u: MockUser) {
 
 export interface Thread { id: string; user_id: string; title: string; created_at: string; updated_at: string; expires_at: string }
 export interface Message { id: string; thread_id: string; user_id: string; role: 'user' | 'assistant'; content: string; response: unknown; created_at: string; model_id: string | null; client_op_id: string }
-export interface Draft { id: string; user_id: string; created_at: string; status: string; profile_version: number; source: string; plan: unknown; response: unknown; model_id: string; prompt_version: string }
+export interface Draft { id: string; user_id: string; created_at: string; status: string; profile_version: number; source: string; plan: unknown; response: unknown; model_id: string; prompt_version: string; kind?: 'training' | 'diet' }
 export interface PhotoRow { id: string; user_id: string; slot: string; object_path: string; created_at: string; width: number; height: number; bytes: number }
 
 type AiHandler = (op: string, body: Record<string, unknown>, caller: MockUser, sb: MockSupabase) => unknown;
@@ -441,6 +449,69 @@ export class MockSupabase {
     return { status: 'ok', operation: 'coach_question', reply: { thread_id: threadId, message_id: msg.id, output, data_window: { from: '2026-09-27', to: '2026-10-10' }, model_id: 'gemini-3.8-flash', prompt_version: 'coach-2.0+test' } };
   }
 
+  /**
+   * Like the real function for plans, with the real validator: the scripted model first proposes a
+   * gym-style plan (some moves may be outside the person's equipment); pain rules run, then checkPlan;
+   * if that fails, the "retry" keeps only allowed ids. The stored draft is what the validator accepts.
+   */
+  validatedPlanReply(caller: MockUser, b: Record<string, unknown>) {
+    const prof = this.profileOf(caller.id);
+    const version = Number(prof?.profile_version ?? -1);
+    if (version !== Number(b.profile_version)) return { status: 'error', error: 'stale_profile', message: 'Your answers changed since you reviewed them.' };
+    const view = readProfile([{ collection: 'settings', doc_id: 'p', deleted: false, body: { profile: prof } } as never]);
+    const t = view.training!;
+    const allowed = allowedExercises(t);
+    const ex = (id: string) => ({ exercise_id: id, variant_id: null, working_sets: 2, rep_min: 8, rep_max: 12, target_load: null, load_unit: 'kg' as const, rest_seconds: 60, effort_instruction: 'Controlled, comfortable effort', substitution_exercise_ids: [], notes: '' });
+    const naive: AiPlanDraft = {
+      title: 'Two-day starter', status: 'draft', goal: 'start', profile_version: String(version), schedule_mode: 'rotation', duration_weeks_before_review: 4,
+      warmup: [{ instruction: 'Easy walk', minutes: 3 }],
+      days: [
+        { label: 'Day 1', weekday: null, estimated_minutes: 25, exercises: ['squat:barbell', 'goblet_squat:dumbbell', 'push_up:bodyweight'].map(ex) },
+        { label: 'Day 2', weekday: null, estimated_minutes: 25, exercises: ['romanian_deadlift:dumbbell', 'one_arm_row:dumbbell', 'band_row:band'].map(ex) },
+      ],
+      recovery_notes: [], progression_rule: 'Add a rep when every set feels easy.', review_trigger: 'After 4 weeks.',
+    };
+    const ok = new Set(allowed.map((x) => x.id));
+    let check = checkPlan(enforceBodyRules(naive, t, allowed).plan, t, allowed, view.units, version);
+    if (!check.ok) {
+      const retry = { ...naive, days: naive.days.map((d) => ({ ...d, exercises: d.exercises.filter((e) => ok.has(e.exercise_id)) })).filter((d) => d.exercises.length) };
+      check = checkPlan(enforceBodyRules(retry, t, allowed).plan, t, allowed, view.units, version);
+    }
+    if (!check.ok) return { status: 'error', error: 'invalid_output', message: 'The coach couldn’t produce a plan that fits your answers.' };
+    const plan = check.plan;
+    const now = new Date().toISOString();
+    for (const d of this.drafts) if (d.user_id === caller.id && d.status === 'draft' && d.kind !== 'diet') d.status = 'superseded';
+    const output = v2({ status: 'draft_ready', assistant_message: 'A short two-day plan to start.', plan });
+    const draft: Draft = { id: randomUUID(), user_id: caller.id, created_at: now, status: 'draft', profile_version: version, source: 'onboarding', plan, response: { ...output, plan: null }, model_id: 'gemini-3.8-flash', prompt_version: 'coach-2.0+test', kind: 'training' };
+    this.drafts.push(draft);
+    return { status: 'ok', operation: 'onboarding_plan', output, draft: { id: draft.id, created_at: now, profile_version: version, plan, model_id: draft.model_id, prompt_version: draft.prompt_version }, model_id: 'gemini-3.8-flash' };
+  }
+
+  /** Like the real function for diet_draft: targets in code, the "model" proposes real ids, checked, totals recomputed. */
+  dietReply(caller: MockUser, b: Record<string, unknown>) {
+    const prof = this.profileOf(caller.id);
+    const version = Number(prof?.profile_version ?? -1);
+    if (version !== Number(b.profile_version)) return { status: 'error', error: 'stale_profile', message: 'Your answers changed since you reviewed them.' };
+    const view = readProfile([{ collection: 'settings', doc_id: 'p', deleted: false, body: { profile: prof } } as never]);
+    const missing = missingDietInputs(view.body);
+    if (missing.length) return { status: 'ok', operation: 'diet_draft', draft: null, message: 'A few details are needed.', questions: missing, model_id: null };
+    const t = view.training;
+    const targets = dietTargets({ weight_kg: view.body.weight_kg!, height_cm: view.body.height_cm!, age_years: view.body.age_years!, sex: view.body.sex, goal: t?.goal_priorities[0] ?? view.goal ?? 'consistency', lifestyle: t?.lifestyle, sessions_per_week: t?.sessions_per_week ?? 0, goal_direction: view.context.goal_direction, goal_weight_kg: view.body.goal_weight_kg, goal_weeks: view.body.goal_weeks });
+    const allowed = shelfFor(SHELF.dishes, view.food_prefs);
+    const day = composeDay(allowed, targets, { cuisine: view.food_prefs.cuisine, variant: 1 });
+    const check = checkDietDay(day, allowed, targets, { proteinFloor: dayTotals(day, new Map(allowed.map((x) => [x.id, x]))).protein_g });
+    if (!check.ok) return { status: 'error', error: 'invalid_output', message: check.errors.join(' ') };
+    const plan = {
+      kind: 'diet', profile_version: version, targets: { energy_kcal: targets.energy_kcal, protein_g: targets.protein_g, carbs_g: targets.carbs_g, fat_g: targets.fat_g, bmr: targets.bmr, tdee: targets.tdee, activity_factor: targets.activity_factor, direction: targets.direction, adjustment: targets.adjustment, capped: targets.capped, notes: targets.notes },
+      meals: check.day.meals, totals: check.totals, source: 'ai', notes: ['Keep water within reach.'], shelf_version: SHELF.version,
+    };
+    const now = new Date().toISOString();
+    for (const d of this.drafts) if (d.user_id === caller.id && d.status === 'draft' && d.kind === 'diet') d.status = 'superseded';
+    const draft: Draft = { id: randomUUID(), user_id: caller.id, created_at: now, status: 'draft', profile_version: version, source: 'onboarding', plan, response: {}, model_id: 'gemini-3.8-flash', prompt_version: 'coach-2.0+test', kind: 'diet' };
+    this.drafts.push(draft);
+    return { status: 'ok', operation: 'diet_draft', message: 'Here’s a day built from your foods.', questions: [], model_id: 'gemini-3.8-flash', draft: { id: draft.id, created_at: now, profile_version: version, plan, model_id: draft.model_id, prompt_version: draft.prompt_version } };
+  }
+
   /** Behaves like the real function for plans: stale check against the synced profile, stores a draft. */
   planReply(caller: MockUser, b: Record<string, unknown>) {
     const prof = this.profileOf(caller.id);
@@ -448,9 +519,9 @@ export class MockSupabase {
     if (version !== Number(b.profile_version)) return { status: 'error', error: 'stale_profile', message: 'Your answers changed since you reviewed them.' };
     const plan = samplePlan(version);
     const now = new Date().toISOString();
-    for (const d of this.drafts) if (d.user_id === caller.id && d.status === 'draft') d.status = 'superseded';
+    for (const d of this.drafts) if (d.user_id === caller.id && d.status === 'draft' && d.kind !== 'diet') d.status = 'superseded';
     const output = v2({ status: 'draft_ready', assistant_message: 'A three-day starting plan around your Monday, Wednesday and Friday. Start light and controlled.', plan });
-    const draft: Draft = { id: randomUUID(), user_id: caller.id, created_at: now, status: 'draft', profile_version: version, source: String(b.source ?? 'onboarding'), plan, response: { ...output, plan: null }, model_id: 'gemini-3.8-flash', prompt_version: 'coach-2.0+test' };
+    const draft: Draft = { id: randomUUID(), user_id: caller.id, created_at: now, status: 'draft', profile_version: version, source: String(b.source ?? 'onboarding'), plan, response: { ...output, plan: null }, model_id: 'gemini-3.8-flash', prompt_version: 'coach-2.0+test', kind: 'training' };
     this.drafts.push(draft);
     return { status: 'ok', operation: 'onboarding_plan', output, draft: { id: draft.id, created_at: now, profile_version: version, plan, model_id: draft.model_id, prompt_version: draft.prompt_version }, model_id: 'gemini-3.8-flash' };
   }

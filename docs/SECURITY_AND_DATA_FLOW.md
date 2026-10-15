@@ -65,6 +65,16 @@ pg_cron (every 5 min, Vault-held bearer secret) ──> Edge Function "notify"
 - Camera frames for barcode scanning never leave the phone. ZXing is bundled (no CDN).
 - Bundled reference data: Canadian Nutrient File 2026 (Health Canada, attribution kept, unaltered), USDA FNDDS (public domain), free-exercise-db (Unlicense). Indian Nutrient Databank values are excluded until its licence is clear.
 
+## Added in the interview upgrade (2026-10-15, migration 0006)
+
+- **New profile fields** (in the synced profile document, same RLS + active-membership rules as every journal document; no new table): `training.lifestyle`, `training.location = 'truck'`, `training.pain_areas`, `training.pain_note`, `training.goal_direction`, `training.sleep_pattern`, `food_prefs.cuisine`, `body` (weight, age, sex, goal weight, weeks, timeline flags), `profiling` (which week-1 questions were asked), `diet_plan`, `adaptation`. **Weight, age, sex, sleep and pain areas are health-adjacent personal data**: the person's own answers, never guessed from photos, kept only in their journal, exported and deleted with it. Diet preference and cuisine are always asked, never inferred from name, photo or language.
+- **The interview makes no AI calls** (scripted on the phone). Nothing leaves the device until backup is chosen.
+- **What the AI receives**
+  - `onboarding_plan` additionally gets: long-haul driver yes/no, time windows, current routine, liked exercises, inspiration note (their own words), the picked direction, sleep pattern, the pain areas and pain note (minimised, with the rule that flagged movements were removed). Never weight, age or sex. Photos only as before (D26).
+  - `diet_draft` gets only: the targets **computed in code**, the stated diet pattern, cuisine and allergies, long-haul yes/no, the ids of the person's usual dishes, and the allowed database dishes (id, name, serving, kcal, protein). **Not** sent: name, email, weight, height, age, sex, logs, history, photos, chats. The reply may only contain dish ids + servings and up to 3 short notes (screened); every number is recomputed from the database in code.
+- **Accounting:** `diet_draft` is reserved through `ai_reserve` like every operation and shares the 20-a-day chat allowance (DB-tested). Diet drafts live in `plan_drafts` (`kind = 'diet'`), written only by the service-role `store_plan_draft`, readable only by the owner, decided only through `decide_plan_draft` (owner, open status, current profile version). A diet draft never supersedes an open workout draft.
+- **Safety in code:** urgent words in a pain note get the safety reply with no model call; pain-excluded movements are removed from allowed exercises and from drafts; calorie floors (≤ 750 kcal deficit, ≥ 1500/1200 kcal, ≤ about 1 kg/week) cannot be overridden by the model.
+
 ## Keys
 
 | Value | Allowed location | Never in |
@@ -80,7 +90,7 @@ Checks: `npm run scan:secrets` covers tracked files, the full git history and `d
 
 ## Database controls
 
-Migrations: `20261009000001_init.sql`, `20261009000002_sync_auth_ai.sql` and `20261010000003_coach_v2.sql`.
+Migrations: `20261009000001_init.sql`, `20261009000002_sync_auth_ai.sql`, `20261010000003_coach_v2.sql`, `20261012000004_notifications.sql`, `20261013000005_growth.sql` and `20261013000006_growth2.sql`.
 - `anon` has no table privileges. `authenticated` gets only the operations each table needs. Every public table has RLS on.
 - Policies require `user_id = auth.uid()` **and** `private.is_active_member()`.
 - Composite `(id, user_id)` foreign keys prevent cross-owner references. Triggers make id, owner, version and timestamps server-controlled and freeze sealed revisions.

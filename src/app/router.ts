@@ -2,13 +2,13 @@ import { useEffect, useState } from 'react';
 
 export const TABS = ['today', 'food', 'workout', 'progress'] as const;
 export type Tab = (typeof TABS)[number];
-export type RouteName = Tab | 'settings' | 'coach' | 'chat' | 'draft' | 'plan' | 'meal' | 'photos' | 'answers' | 'notifications' | 'recipe' | 'insights' | 'year' | 'circles' | 'invite' | 'data-review' | 'quicklog';
+export type RouteName = Tab | 'settings' | 'coach' | 'chat' | 'draft' | 'plan' | 'meal' | 'photos' | 'answers' | 'notifications' | 'recipe' | 'insights' | 'year' | 'circles' | 'invite' | 'data-review' | 'quicklog' | 'diet';
 export interface Route {
   name: RouteName;
   param: string | null;
 }
 
-const NAMES: readonly RouteName[] = [...TABS, 'settings', 'coach', 'chat', 'draft', 'plan', 'meal', 'photos', 'answers', 'notifications', 'recipe', 'insights', 'year', 'circles', 'invite', 'data-review', 'quicklog'];
+const NAMES: readonly RouteName[] = [...TABS, 'settings', 'coach', 'chat', 'draft', 'plan', 'meal', 'photos', 'answers', 'notifications', 'recipe', 'insights', 'year', 'circles', 'invite', 'data-review', 'quicklog', 'diet'];
 
 export function parseRoute(hash: string = location.hash): Route {
   const [name, ...rest] = hash.replace(/^#\/?/, '').split('/');

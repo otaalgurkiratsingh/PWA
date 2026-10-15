@@ -18,15 +18,37 @@ export interface ProfileView {
   timezone: string;
   goal: string | null;
   training: PlanningAnswers | null;
-  food_prefs: { pattern: string; meatless_weekdays: number[]; allergies: string[] };
+  food_prefs: { pattern: string; meatless_weekdays: number[]; allergies: string[]; cuisine: string };
   ai_images: boolean;
+  /** Extra planning context the person gave (their own words or choices; minimised). */
+  context: {
+    time_windows: string[];
+    current_routine: string;
+    exercise_likes: string;
+    inspiration_note: string;
+    goal_direction: 'lean' | 'athletic' | 'strong' | null;
+    sleep_pattern: 'regular' | 'irregular' | 'shift' | null;
+  };
+  /** Optional body details for food-plan maths (only used by diet_draft). */
+  body: {
+    weight_kg: number | null;
+    height_cm: number | null;
+    age_years: number | null;
+    sex: 'female' | 'male' | 'unspecified' | null;
+    goal_weight_kg: number | null;
+    goal_weeks: number | null;
+  };
 }
+
+const num = (v: unknown, min: number, max: number): number | null => (typeof v === 'number' && Number.isFinite(v) && v >= min && v <= max ? v : null);
+const PAIN = ['lower_back', 'knees', 'shoulders', 'neck', 'hips', 'wrists_ankles'];
 
 export function readProfile(rows: readonly DocRow[]): ProfileView {
   const p = (rows.find((r) => r.collection === 'settings' && !r.deleted)?.body.profile ?? {}) as Doc;
   const t = (p.training ?? null) as Doc | null;
   const fp = (p.food_prefs ?? {}) as Doc;
   const consent = (p.consent ?? {}) as Doc;
+  const body = (p.body ?? {}) as Doc;
   const arr = (v: unknown) => (Array.isArray(v) ? v : []);
   return {
     version: typeof p.profile_version === 'number' ? p.profile_version : 0,
@@ -41,19 +63,39 @@ export function readProfile(rows: readonly DocRow[]): ProfileView {
       minutes_per_session: Number(t.minutes_per_session) || 0,
       rotating_schedule: t.rotating_schedule === true,
       experience: (['new', 'returning', 'regular'].includes(t.experience as string) ? t.experience : 'new') as PlanningAnswers['experience'],
-      location: (['gym', 'home', 'both'].includes(t.location as string) ? t.location : 'gym') as PlanningAnswers['location'],
+      location: (['gym', 'home', 'both', 'truck'].includes(t.location as string) ? t.location : 'gym') as PlanningAnswers['location'],
       equipment: arr(t.equipment).map((x) => str(x, 20)).slice(0, 8),
       avoid_exercises: str(t.avoid_exercises, 300),
       restrictions: str(t.restrictions, 400),
       screening: (['no_concerns', 'has_concerns'].includes(t.screening as string) ? t.screening : 'not_answered') as PlanningAnswers['screening'],
       recent_performance: str(t.recent_performance, 400),
+      lifestyle: t.lifestyle === 'trucker' ? 'trucker' : 'standard',
+      pain_areas: arr(t.pain_areas).filter((x): x is string => typeof x === 'string' && PAIN.includes(x)).slice(0, 6),
+      pain_note: str(t.pain_note, 300),
     } : null,
     food_prefs: {
       pattern: str(fp.pattern, 20) || 'unspecified',
       meatless_weekdays: arr(fp.meatless_weekdays).filter((d): d is number => Number.isInteger(d)).slice(0, 7),
       allergies: arr(fp.allergies).map((x) => str(x, 60)).slice(0, 20),
+      cuisine: ['punjabi_home', 'mixed', 'western'].includes(fp.cuisine as string) ? (fp.cuisine as string) : 'unspecified',
     },
     ai_images: consent.ai_images === true,
+    context: {
+      time_windows: t ? arr(t.time_windows).map((x) => str(x, 20)).slice(0, 5) : [],
+      current_routine: t ? str(t.current_routine, 400) : '',
+      exercise_likes: t ? str(t.exercise_likes, 300) : '',
+      inspiration_note: t ? str(t.inspiration_note, 300) : '',
+      goal_direction: t && ['lean', 'athletic', 'strong'].includes(t.goal_direction as string) ? (t.goal_direction as 'lean') : null,
+      sleep_pattern: t && ['regular', 'irregular', 'shift'].includes(t.sleep_pattern as string) ? (t.sleep_pattern as 'regular') : null,
+    },
+    body: {
+      weight_kg: num(body.weight_kg, 30, 350),
+      height_cm: num(p.height_cm, 100, 260),
+      age_years: num(body.age_years, 18, 100),
+      sex: ['female', 'male', 'unspecified'].includes(body.sex as string) ? (body.sex as 'female') : null,
+      goal_weight_kg: num(body.goal_weight_kg, 30, 350),
+      goal_weeks: num(body.goal_weeks, 1, 104),
+    },
   };
 }
 
@@ -104,6 +146,18 @@ function approvedPlan(rows: readonly DocRow[]) {
   };
 }
 
+function lifestyleEnvelope(t: PlanningAnswers, p: ProfileView) {
+  return {
+    long_haul_driver: t.lifestyle === 'trucker',
+    time_windows: p.context.time_windows,
+    current_routine: p.context.current_routine || null,
+    exercise_likes: p.context.exercise_likes || null,
+    inspiration_note: p.context.inspiration_note || null,
+    goal_direction: p.context.goal_direction,
+    sleep_pattern: p.context.sleep_pattern,
+  };
+}
+
 export interface EnvelopeInput {
   operation: 'weekly_review' | 'coach_question' | 'onboarding_plan' | 'photo_suggest';
   rows: readonly DocRow[];
@@ -136,7 +190,13 @@ export function buildEnvelope(i: EnvelopeInput): Envelope {
     profile: { goal: i.profile.goal, goal_priorities: t?.goal_priorities ?? [], units: i.profile.units, timezone: i.profile.timezone, language: 'en' },
     availability: t ? { days_available: t.days_available, sessions_per_week: t.sessions_per_week, minutes_per_session: t.minutes_per_session, rotating_schedule: t.rotating_schedule } : null,
     experience: t ? { level: t.experience, recent_performance: t.recent_performance || null } : null,
-    equipment: t ? { location: t.location, available: t.equipment, avoid: t.avoid_exercises || null } : null,
+    equipment: t ? { location: t.location, available: t.equipment, avoid: t.avoid_exercises || null, no_gym_access: t.location === 'truck' || t.location === 'home' } : null,
+    lifestyle: t ? lifestyleEnvelope(t, i.profile) : null,
+    body_considerations: t && (t.pain_areas?.length || t.pain_note) ? {
+      pain_areas: t.pain_areas ?? [],
+      in_their_words: t.pain_note || null,
+      rule: 'Movements that load these areas were removed from allowed_exercises. Include gentle supportive work for each area; never diagnose or promise to fix pain.',
+    } : null,
     screening_state: t?.screening ?? 'not_answered',
     confirmed_restrictions: t?.restrictions || null,
     nutrition_preferences: { ...i.profile.food_prefs, targets: ctx.targets, usual_foods: usualFoods(i.rows) },
